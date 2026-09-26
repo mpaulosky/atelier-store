@@ -66,7 +66,8 @@ jobs:
           EVENT_TITLE: ${{ github.event.pull_request.title }}
           EVENT_URL: ${{ github.event.pull_request.html_url }}
           EVENT_MERGE_SHA: ${{ github.event.pull_request.merge_commit_sha }}
-          EVENT_LABELS_CSV: ${{ join(github.event.pull_request.labels.*.name, ',') }}
+          # JSON, not a joined string: label names may contain commas.
+          EVENT_LABELS_JSON: ${{ toJSON(github.event.pull_request.labels.*.name) }}
           REPOSITORY: ${{ github.repository }}
         run: |
           if [ -n "$INPUT_PR_NUMBER" ]; then
@@ -112,7 +113,7 @@ jobs:
             TITLE="$EVENT_TITLE"
             URL="$EVENT_URL"
             MERGE_SHA="$EVENT_MERGE_SHA"
-            LABELS=$(printf '%s' "$EVENT_LABELS_CSV" | jq -Rc 'if length == 0 then [] else split(",") end')
+            LABELS=$(printf '%s' "${EVENT_LABELS_JSON:-[]}" | jq -c 'if type == "array" then . else [] end')
           fi
 
           if [ -z "$PR_NUMBER" ]; then
