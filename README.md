@@ -14,6 +14,7 @@
 cp .env.example .env          # then fill in the Auth0 values
 docker compose up -d          # start Postgres
 dotnet tool restore           # installs dotnet-ef
+dotnet ef database update --project src/AtelierStore.Web   # create the catalog tables and seed data
 dotnet run --project src/AtelierStore.Web --launch-profile https
 ```
 
@@ -27,7 +28,9 @@ The app runs at https://localhost:7207. In your Auth0 Regular Web Application, s
 | Path | Purpose |
 | --- | --- |
 | `src/AtelierStore.Web/Program.cs` | Service wiring: Auth0, EF Core/Npgsql, health checks |
-| `src/AtelierStore.Web/Data/AppDbContext.cs` | EF Core context (no entities yet) |
+| `src/AtelierStore.Web/Data/` | EF Core context, catalog entities (categories, products, product stock) and seed data |
+| `src/AtelierStore.Web/Migrations/` | EF Core migrations; `InitialCatalog` creates and seeds the catalog tables |
+| `src/AtelierStore.Web/Catalog/ProductCatalog.cs` | Storefront product queries used by the pages |
 | `src/AtelierStore.Web/Styles/app.css` | Tailwind entry point, compiled to `wwwroot/app.css` on build |
 
 ## Endpoints

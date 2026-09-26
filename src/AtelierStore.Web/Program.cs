@@ -62,7 +62,7 @@ app.MapRazorComponents<App>()
 app.MapGet("/account/login", async (HttpContext context, string? returnUrl) =>
 {
     var properties = new LoginAuthenticationPropertiesBuilder()
-        .WithRedirectUri(string.IsNullOrEmpty(returnUrl) || !Uri.IsWellFormedUriString(returnUrl, UriKind.Relative) ? "/" : returnUrl)
+        .WithRedirectUri(IsLocalUrl(returnUrl) ? returnUrl : "/")
         .Build();
     await context.ChallengeAsync(Auth0Constants.AuthenticationScheme, properties);
 });
@@ -79,3 +79,7 @@ app.MapGet("/account/logout", async (HttpContext context) =>
 app.MapHealthChecks("/health");
 
 app.Run();
+
+// Root-relative paths only: "//host" and "/\host" are scheme-relative to browsers, so they would redirect off-site.
+static bool IsLocalUrl([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] string? url) =>
+    url is ['/', ..] && (url.Length == 1 || (url[1] != '/' && url[1] != '\\'));
