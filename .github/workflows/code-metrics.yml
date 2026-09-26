@@ -1,0 +1,72 @@
+---
+name: ".NET code metrics"
+
+"on":
+  push:
+    branches:
+      - main
+    paths-ignore:
+      - "CODE_METRICS.md"
+
+  pull_request:
+    branches:
+      - "**"
+    paths-ignore:
+      - "CODE_METRICS.md"
+
+  workflow_dispatch:
+    inputs:
+      reason:
+        description: "The reason for running the workflow"
+        required: true
+        default: "Manual run"
+
+# Read-only on purpose: pull_request runs execute the unpinned metrics action
+# and must not get a write-capable token. The main-only PR step below pushes
+# and opens the PR with RELEASE_PR_PAT instead.
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    env:
+      HAS_RELEASE_PR_PAT: ${{ secrets.RELEASE_PR_PAT != '' }}
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: "Print manual run reason"
+        if: ${{ github.event_name == 'workflow_dispatch' }}
+        run: |
+          echo 'Reason: ${{ github.event.inputs.reason }}'
+      - name: .NET code metrics
+        id: dotnet-code-metrics
+        uses: dotnet/samples/github-actions/DotNet.GitHubAction@main
+        env:
+          GREETINGS: "Hello, .NET developers!"  # ${{ secrets.GITHUB_TOKEN }}
+        with:
+          owner: ${{ github.repository_owner }}
+          name: ${{ github.repository }}
+          branch: ${{ github.ref }}
+          dir: ${{ './' }}
+
+      # Only open a metrics PR from main. Pull request runs check out a detached
+      # merge commit (refs/pull/N/merge), which create-pull-request can't use as a
+      # base, and a manual run from another branch must not publish metrics either.
+      - name: Create pull request
+        uses: peter-evans/create-pull-request@v8.1.1
+        if: ${{ github.ref == 'refs/heads/main' && steps.dotnet-code-metrics.outputs.updated-metrics == 'true' && env.HAS_RELEASE_PR_PAT == 'true' }}
+        with:
+          title: "${{ steps.dotnet-code-metrics.outputs.summary-title }}"
+          body: "${{ steps.dotnet-code-metrics.outputs.summary-details }}"
+          commit-message: ".NET code metrics, automated pull request."
+          branch: chore/code-metrics
+          # A PAT, not GITHUB_TOKEN: the workflow token is read-only, Actions
+          # may not create PRs in this repository, and a PR opened with
+          # GITHUB_TOKEN wouldn't trigger the checks main requires.
+          token: ${{ secrets.RELEASE_PR_PAT }}
+
+      - name: Report skipped metrics pull request
+        if: ${{ github.ref == 'refs/heads/main' && steps.dotnet-code-metrics.outputs.updated-metrics == 'true' && env.HAS_RELEASE_PR_PAT != 'true' }}
+        run: echo "::notice::RELEASE_PR_PAT is not set, so the updated CODE_METRICS.md wasn't opened as a pull request."

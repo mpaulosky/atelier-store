@@ -4,9 +4,14 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project
 
-Atelier Store: a .NET 10 Blazor Web App with Tailwind CSS v4, Auth0 login, and PostgreSQL via EF Core (Npgsql). The SDK is pinned in `global.json`. `AtelierStore.slnx` currently holds one project, `src/AtelierStore.Web`, which has its own `CLAUDE.md` covering the web project. The repo is at an early scaffold stage, and there is no test project.
+Atelier Store: a .NET 10 Blazor Web App with Tailwind CSS v4, Auth0 login, and PostgreSQL via EF Core (Npgsql).
+The SDK is pinned in `global.json`. `AtelierStore.slnx` currently holds one project, `src/AtelierStore.Web`, which has its own `CLAUDE.md` covering the web project.
+The repo is at an early scaffold stage, and there is no test project.
 
-**Catalog data** lives in Postgres: `categories` 1─< `products` 1─1 `product_stock` (entities in `src/AtelierStore.Web/Data/`, snake_case names via `EFCore.NamingConventions`). The starter catalog is seeded through `HasData` in `Data/CatalogSeedData.cs`, so changing it means adding a migration. Pages read products only through `Catalog/ProductCatalog.cs`, which projects into the `Catalog.Product` view record that the components render. Featured collections are editorial content and are still hard-coded in `Catalog/CatalogModels.cs`.
+**Catalog data** lives in Postgres: `categories` 1─< `products` 1─1 `product_stock` (entities in `src/AtelierStore.Web/Data/`, snake_case names via `EFCore.NamingConventions`).
+The starter catalog is seeded through `HasData` in `Data/CatalogSeedData.cs`, so changing it means adding a migration.
+Pages read products only through `Catalog/ProductCatalog.cs`, which projects into the `Catalog.Product` view record that the components render.
+Featured collections are editorial content and are still hard-coded in `Catalog/CatalogModels.cs`.
 
 ## Commands
 
@@ -24,6 +29,12 @@ dotnet ef database update --project src/AtelierStore.Web
 
 ## Solution-wide conventions
 
-- **NuGet versions are centrally managed** in `Directory.Packages.props` (with transitive pinning on). A `<PackageReference>` in a csproj must not have a `Version`. Add a `<PackageVersion>` entry to `Directory.Packages.props` instead. `dotnet add package` does this automatically. Tool versions (`dotnet-ef`) live separately in `dotnet-tools.json`.
+- **NuGet versions are centrally managed** in `Directory.Packages.props` (with transitive pinning on).
+  A `<PackageReference>` in a csproj must not have a `Version`.
+  Add a `<PackageVersion>` entry to `Directory.Packages.props` instead.
+  `dotnet add package` does this automatically.
+  Tool versions (`dotnet-ef`) live separately in `dotnet-tools.json`.
 - **Configuration** comes from `.env` at the repo root (see `.env.example`) plus real environment variables. Keys use `__` for nesting (`Auth0__Domain` → `Auth0:Domain`).
-- **Code style**: `.editorconfig` asks for **tabs (width 2)** in C#, Razor, CSS, JSON, and JS, plus LF line endings and `System` usings sorted first. Explicit types are preferred over `var` (`csharp_style_var_* = false`). The scaffolded files currently use spaces; follow `.editorconfig` for new code.
+- **Code style**: `.editorconfig` asks for **tabs (width 2)** in C#, Razor, CSS, JSON, and JS, plus LF line endings and `System` usings sorted first.
+  Explicit types are preferred over `var` (`csharp_style_var_* = false`).
+  The scaffolded files currently use spaces; follow `.editorconfig` for new code.
