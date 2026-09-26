@@ -72,8 +72,16 @@ else
   check_branch_name "$(git symbolic-ref --short HEAD 2>/dev/null || echo "")"
 fi
 
-# Every pushed branch is the checked-out commit (checked above), so the
-# working tree is what gets pushed.
+# Every pushed branch is the checked-out commit (checked above). The gate
+# tests the working tree, so it must match that commit exactly: uncommitted
+# or untracked files (an untracked .cs file still compiles) could pass the
+# gate for code that isn't in the push. Ignored files don't count.
+if [[ -n "$(git status --porcelain --untracked-files=all)" ]]; then
+  echo -e "${RED}❌ The working tree has uncommitted or untracked changes, so the gate can't vouch for the pushed commit.${RESET}"
+  echo -e "   Commit them, or set them aside with ${YELLOW}git stash --include-untracked${RESET}, then push again."
+  git status --short | head -n 20
+  exit 1
+fi
 "$ROOT/scripts/gate.sh"
 
 echo -e "\n${GREEN}━━━ All gates passed — pushing ✅ ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${RESET}\n"

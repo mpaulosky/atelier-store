@@ -177,6 +177,17 @@ expect "a lint error in the first of two unpushed commits refuses the push" refu
 FAIL='dotnet build*' run_hook feature/1-x "refs/heads/feature/1-x @HEAD@ refs/heads/feature/1-x $ZERO"
 expect "a failing build refuses the push" refused any
 
+echo 'uncommitted' > "$REPO/stray.cs"
+run_hook feature/1-x "refs/heads/feature/1-x @HEAD@ refs/heads/feature/1-x $ZERO"
+expect "an untracked file refuses the push before the gates" refused tests-skipped "uncommitted or untracked changes"
+rm "$REPO/stray.cs"
+
+switch_to feature/1-x
+echo '<!-- edited -->' >> "$REPO/tests/Fake.Tests/Fake.Tests.csproj"
+run_hook feature/1-x "refs/heads/feature/1-x @HEAD@ refs/heads/feature/1-x $ZERO"
+expect "an unstaged edit refuses the push before the gates" refused tests-skipped "uncommitted or untracked changes"
+git -C "$REPO" checkout -q -- tests/Fake.Tests/Fake.Tests.csproj
+
 echo
 echo "$PASSED passed, $FAILED failed"
 [[ $FAILED -eq 0 ]]
