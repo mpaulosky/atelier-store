@@ -38,8 +38,11 @@ jobs:
 
       - name: "Print manual run reason"
         if: ${{ github.event_name == 'workflow_dispatch' }}
+        # Free text from the dispatcher: read from env, never interpolated.
+        env:
+          REASON: ${{ github.event.inputs.reason }}
         run: |
-          echo 'Reason: ${{ github.event.inputs.reason }}'
+          echo "Reason: $REASON"
       - name: .NET code metrics
         id: dotnet-code-metrics
         # Pinned to an audited commit: pull request runs execute this external

@@ -70,7 +70,11 @@ jobs:
           REPOSITORY: ${{ github.repository }}
         run: |
           if [ -n "$INPUT_PR_NUMBER" ]; then
-            PR_NUMBER="$INPUT_PR_NUMBER"
+            PR_NUMBER="${INPUT_PR_NUMBER#\#}"
+            if ! [[ "$PR_NUMBER" =~ ^[0-9]+$ ]]; then
+              echo "::error::pr_number must be a PR number, got '${INPUT_PR_NUMBER}'."
+              exit 1
+            fi
             PR_JSON=$(gh api \
               "repos/${REPOSITORY}/pulls/${PR_NUMBER}" \
               --jq '{
@@ -78,6 +82,7 @@ jobs:
                 title: .title,
                 html_url: .html_url,
                 merged: .merged,
+                base_ref: .base.ref,
                 merge_commit_sha: (.merge_commit_sha // ""),
                 labels: [.labels[].name]
               }')
@@ -85,6 +90,15 @@ jobs:
             MERGED=$(echo "$PR_JSON" | jq -r '.merged')
             if [ "$MERGED" != "true" ]; then
               echo "PR #${PR_NUMBER} is not merged; skipping."
+              echo "skip=true" >> "$GITHUB_OUTPUT"
+              exit 0
+            fi
+
+            # The automatic path only runs for PRs merged into main; hold a
+            # manual run to the same rule.
+            BASE_REF=$(echo "$PR_JSON" | jq -r '.base_ref')
+            if [ "$BASE_REF" != "main" ]; then
+              echo "PR #${PR_NUMBER} was merged into '${BASE_REF}', not main; skipping."
               echo "skip=true" >> "$GITHUB_OUTPUT"
               exit 0
             fi
