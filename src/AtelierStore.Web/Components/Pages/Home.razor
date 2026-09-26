@@ -1,0 +1,200 @@
+@page "/"
+@using System.ComponentModel.DataAnnotations
+
+<PageTitle>Atelier | Autumn Collection</PageTitle>
+
+@* Campaign hero: one portrait image on phones, a two-image diptych from md up. *@
+<section class="hero hero-split" aria-labelledby="hero-title">
+	<div class="hero-media">
+		<img src="@UnsplashImage.Url(HeroLeftId, 1200)"
+			srcset="@UnsplashImage.SrcSet(HeroLeftId, 640, 960, 1200, 1600)"
+			sizes="(min-width: 48rem) 50vw, 100vw"
+			alt="A woman in a pale blue wool coat in a cathedral square" fetchpriority="high" />
+		<img class="hidden md:block" src="@UnsplashImage.Url(HeroRightId, 1200)"
+			srcset="@UnsplashImage.SrcSet(HeroRightId, 640, 960, 1200, 1600)"
+			sizes="50vw"
+			alt="A woman in a tartan coat walking down a city street" />
+	</div>
+	<div class="hero-content">
+		<p class="eyebrow">Autumn–Winter 2026</p>
+		<h1 id="hero-title" class="display">The Quiet Season</h1>
+		<div class="flex flex-wrap justify-center gap-x-8 gap-y-3">
+			<a class="link-cta" href="women">Shop women</a>
+			<a class="link-cta" href="men">Shop men</a>
+		</div>
+	</div>
+</section>
+
+@* Featured collections: 2x2 editorial tiles with a label overlay. *@
+<section class="section" aria-labelledby="collections-title">
+	<div class="container-page">
+		<header class="section-header">
+			<h2 id="collections-title" class="headline">Explore the collections</h2>
+		</header>
+	</div>
+	<div class="editorial-grid">
+		@foreach (Collection collection in SampleCatalog.FeaturedCollections)
+		{
+			<a class="collection-tile" href="@collection.Slug">
+				<div class="media aspect-[4/5] lg:aspect-[3/2]">
+					<img src="@UnsplashImage.Url(collection.ImageId, 1000)"
+						srcset="@UnsplashImage.SrcSet(collection.ImageId, 600, 1000, 1400)"
+						sizes="(min-width: 48rem) 50vw, 100vw"
+						alt="" loading="lazy" decoding="async" />
+				</div>
+				<div class="collection-tile-label">
+					<p class="caption text-paper/80">@collection.Kicker</p>
+					<h3 class="headline normal-case tracking-normal font-light text-paper">@collection.Title</h3>
+					<span class="link-cta mt-3 text-paper">Discover</span>
+				</div>
+			</a>
+		}
+	</div>
+</section>
+
+@* New arrivals: product grid. *@
+<section class="section pt-0" aria-labelledby="new-in-title">
+	<div class="container-page">
+		<header class="section-header section-header-split">
+			<div>
+				<p class="eyebrow text-muted">Just arrived</p>
+				<h2 id="new-in-title" class="headline mt-3">New in</h2>
+			</div>
+			<a class="link-cta" href="new-in">View all</a>
+		</header>
+
+		<div class="product-grid">
+			@foreach (Product product in SampleCatalog.NewArrivals)
+			{
+				<ProductCard Product="product" />
+			}
+		</div>
+	</div>
+</section>
+
+@* Editorial story: image and copy side by side from lg up. *@
+<section class="bg-stone" aria-labelledby="story-title">
+	<div class="grid lg:grid-cols-2">
+		<div class="media aspect-[4/5] lg:aspect-auto lg:min-h-[44rem]">
+			<img src="@UnsplashImage.Url(StoryImageId, 1200)"
+				srcset="@UnsplashImage.SrcSet(StoryImageId, 640, 960, 1400)"
+				sizes="(min-width: 64rem) 50vw, 100vw"
+				alt="Knitwear in natural tones hanging on a rail beside dried pampas grass" loading="lazy" decoding="async" />
+		</div>
+		<div class="flex items-center">
+			<div class="container-prose stack-lg section items-start">
+				<p class="eyebrow text-muted">The atelier</p>
+				<h2 id="story-title" class="headline">
+					Made slowly, <span class="editorial">meant to last</span>
+				</h2>
+				<p class="lead">
+					Every piece begins at a cutting table, not a trend report. Natural fibres, hand-finished seams
+					and patterns refined over seasons, so what you buy today still feels right years from now.
+				</p>
+				<a class="btn btn-secondary" href="craftsmanship">Discover our craft</a>
+			</div>
+		</div>
+	</div>
+</section>
+
+@* Campaign diptych: two full-height tiles with centered overlay CTAs. *@
+<section class="section" aria-label="Campaigns">
+	<div class="editorial-grid">
+		@foreach (Campaign campaign in Campaigns)
+		{
+			<a class="collection-tile collection-tile-center" href="@campaign.Href">
+				<div class="media aspect-[4/5]">
+					<img src="@UnsplashImage.Url(campaign.ImageId, 1000)"
+						srcset="@UnsplashImage.SrcSet(campaign.ImageId, 600, 1000, 1400)"
+						sizes="(min-width: 48rem) 50vw, 100vw"
+						alt="" loading="lazy" decoding="async" />
+				</div>
+				<div class="collection-tile-label">
+					<p class="eyebrow text-paper">@campaign.Kicker</p>
+					<h3 class="display text-paper text-[clamp(2rem,1.2rem+3vw,4rem)]">@campaign.Title</h3>
+					<span class="btn btn-inverse mt-4">@campaign.Cta</span>
+				</div>
+			</a>
+		}
+	</div>
+</section>
+
+@* Services: three short promises separated by hairlines. *@
+<section class="section-sm pt-0" aria-label="Client services">
+	<div class="container-page">
+		<ul class="services">
+			@foreach (Service service in Services)
+			{
+				<li class="stack items-center gap-2 px-6 py-8 text-center">
+					<h3>@service.Title</h3>
+					<p class="caption max-w-xs">@service.Body</p>
+				</li>
+			}
+		</ul>
+	</div>
+</section>
+
+@* Newsletter: static SSR form. Sign-ups are acknowledged but not stored yet. *@
+<section id="newsletter" class="section border-t border-line" aria-labelledby="newsletter-title">
+	<div class="container-prose stack-lg items-center text-center">
+		<p class="eyebrow text-muted">Newsletter</p>
+		<h2 id="newsletter-title" class="headline">First to know</h2>
+		@if (subscribed)
+		{
+			<p class="lead" role="status">Thank you. You're on the list.</p>
+		}
+		else
+		{
+			<p class="lead">New collections, private sales and stories from the atelier, a few times a season.</p>
+			<EditForm class="newsletter-form" Model="Newsletter!" FormName="newsletter" OnValidSubmit="Subscribe" Enhance>
+				<DataAnnotationsValidator />
+				<div class="w-full text-left">
+					<label class="sr-only" for="newsletter-email">Email address</label>
+					<InputText id="newsletter-email" class="field" type="email" @bind-Value="Newsletter!.Email" placeholder="Email address" autocomplete="email" />
+					<ValidationMessage For="() => Newsletter!.Email" class="caption mt-2 text-danger" />
+				</div>
+				<button class="btn btn-primary btn-block shrink-0" type="submit">Subscribe</button>
+			</EditForm>
+			<p class="caption">By subscribing you agree to our privacy policy. Unsubscribe at any time.</p>
+		}
+	</div>
+</section>
+
+@code {
+	private const string HeroLeftId = "1539109136881-3be0616acf4b";
+	private const string HeroRightId = "1485968579580-b6d095142e6e";
+	private const string StoryImageId = "1558769132-cb1aea458c5e";
+
+	[SupplyParameterFromForm(FormName = "newsletter")]
+	private NewsletterSignup? Newsletter { get; set; }
+
+	private bool subscribed;
+
+	protected override void OnInitialized() => Newsletter ??= new();
+
+	private void Subscribe() => subscribed = true;
+
+	private sealed class NewsletterSignup
+	{
+		[Required(ErrorMessage = "Enter your email address.")]
+		[EmailAddress(ErrorMessage = "Enter a valid email address.")]
+		public string? Email { get; set; }
+	}
+
+	private sealed record Campaign(string Kicker, string Title, string Cta, string Href, string ImageId);
+
+	private sealed record Service(string Title, string Body);
+
+	private static readonly Campaign[] Campaigns =
+	[
+		new("Men", "Outerwear", "Shop the edit", "men/outerwear", "1487222477894-8943e31ef7b2"),
+		new("Women", "The Dress", "Shop the edit", "women/dresses", "1496747611176-843222e1e57c"),
+	];
+
+	private static readonly Service[] Services =
+	[
+		new("Complimentary shipping", "Free express delivery and returns on every order, in signature packaging."),
+		new("Book an appointment", "Shop in store or by video call with a client advisor who knows the collection."),
+		new("Lifetime care", "Repairs, re-soling and cleaning for every piece, for as long as you own it."),
+	];
+}
