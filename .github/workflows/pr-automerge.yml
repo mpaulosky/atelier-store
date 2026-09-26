@@ -14,18 +14,15 @@ name: PR Auto-Merge
   pull_request_target:
     types: [opened, ready_for_review, reopened, edited, synchronize]
     branches: [main]
-  # pull_request_review has no _target variant and runs the PR's copy of
-  # this file, so those runs get only GITHUB_TOKEN (see github-token below).
-  pull_request_review:
-    types: [submitted]
   # GitHub sends no check_suite events for suites created by Actions, and
   # every required check comes from one of these workflows, so their
   # completion is the signal that the checks may have gone green.
   workflow_run:
     workflows: ["Build and Test Suite", "Lint Markdown", "Lint YAML", "CodeQL"]
     types: [completed]
-  # Resolving a review thread has no Actions trigger, so a PR whose last
-  # blocker was an open thread is picked up by this sweep instead.
+  # Resolving a review thread has no Actions trigger, and pull_request_review
+  # would run the PR's own copy of this file with write access, so a PR whose
+  # last blocker was a review or an open thread is picked up by this sweep.
   schedule:
     - cron: "*/15 * * * *"
   workflow_dispatch:
@@ -44,14 +41,13 @@ jobs:
       - name: Squash-merge when ready
         uses: actions/github-script@v9
         env:
-          HAS_RELEASE_PR_PAT: ${{ github.event_name != 'pull_request_review' && secrets.RELEASE_PR_PAT != '' }}
+          HAS_RELEASE_PR_PAT: ${{ secrets.RELEASE_PR_PAT != '' }}
         with:
           # A merge made with GITHUB_TOKEN starts no workflows, so release.yml
           # (on: pull_request closed) would never run for it. Merge with the
-          # PAT when it's set, the same fallback the release workflow uses,
-          # except on pull_request_review, whose runs execute PR-controlled
-          # code. The next scheduled sweep merges those with the PAT instead.
-          github-token: ${{ github.event_name != 'pull_request_review' && secrets.RELEASE_PR_PAT || secrets.GITHUB_TOKEN }}
+          # PAT when it's set, the same fallback the release workflow uses.
+          # Every trigger runs main's copy of this file, never a PR's.
+          github-token: ${{ secrets.RELEASE_PR_PAT || secrets.GITHUB_TOKEN }}
           script: |
             const { owner, repo } = context.repo;
 
@@ -171,7 +167,7 @@ jobs:
               core.info(`Squash-merged PR #${pullNumber} at ${pr.headRefOid}.`);
             }
 
-            // pull_request and pull_request_review events carry the PR;
+            // pull_request_target events carry the PR;
             // workflow_run carries only a commit; schedule and
             // workflow_dispatch sweep every open PR into main.
             let pullNumbers = [];
