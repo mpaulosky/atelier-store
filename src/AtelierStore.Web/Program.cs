@@ -1,4 +1,5 @@
 using Auth0.AspNetCore.Authentication;
+using AtelierStore.Web.Account;
 using AtelierStore.Web.Catalog;
 using AtelierStore.Web.Components;
 using AtelierStore.Web.Data;
@@ -35,7 +36,7 @@ builder.Services.AddCascadingAuthenticationState();
 builder.Services.AddDbContextFactory<AppDbContext>(options =>
     options.UseNpgsql(RequiredSetting("ConnectionStrings:Default"))
         .UseSnakeCaseNamingConvention());
-builder.Services.AddSingleton<ProductCatalog>();
+builder.Services.AddSingleton<IProductCatalog, ProductCatalog>();
 
 builder.Services.AddHealthChecks()
     .AddDbContextCheck<AppDbContext>("postgres");
@@ -62,7 +63,7 @@ app.MapRazorComponents<App>()
 app.MapGet("/account/login", async (HttpContext context, string? returnUrl) =>
 {
     var properties = new LoginAuthenticationPropertiesBuilder()
-        .WithRedirectUri(IsLocalUrl(returnUrl) ? returnUrl : "/")
+        .WithRedirectUri(ReturnUrl.IsLocal(returnUrl) ? returnUrl : "/")
         .Build();
     await context.ChallengeAsync(Auth0Constants.AuthenticationScheme, properties);
 });
@@ -79,7 +80,3 @@ app.MapGet("/account/logout", async (HttpContext context) =>
 app.MapHealthChecks("/health");
 
 app.Run();
-
-// Root-relative paths only: "//host" and "/\host" are scheme-relative to browsers, so they would redirect off-site.
-static bool IsLocalUrl([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] string? url) =>
-    url is ['/', ..] && (url.Length == 1 || (url[1] != '/' && url[1] != '\\'));

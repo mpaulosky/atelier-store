@@ -20,7 +20,7 @@ pnpm run css:watch
   `appsettings.json` keeps those keys deliberately blank.
 - **Auth**: Auth0 OIDC plus a cookie session (`AddAuth0WebAppAuthentication`).
   Login/logout are plain HTTP endpoints, not Blazor pages, because they must issue challenges and redirects.
-  `login` only accepts relative `returnUrl`s (open-redirect guard).
+  `login` only accepts relative `returnUrl`s (open-redirect guard in `Account/ReturnUrl.cs`).
   The Blazor side uses `AddCascadingAuthenticationState` and `AuthorizeRouteView` in `Components/Routes.razor`, so pages can use `[Authorize]` and `<AuthorizeView>`.
   The Auth0 callback URL is `https://localhost:7207/callback`.
 - **Tailwind build is part of MSBuild**: the csproj runs `pnpm install --frozen-lockfile` if `node_modules` is missing, then `pnpm run css:build` before every build.

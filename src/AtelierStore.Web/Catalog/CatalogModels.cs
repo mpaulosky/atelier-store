@@ -32,7 +32,7 @@ public enum StockState
 public sealed record Collection(string Slug, string Title, string Kicker, string ImageId);
 
 /// <summary>
-/// Hard-coded editorial content. Products live in the database; read them through <see cref="ProductCatalog"/>.
+/// Hard-coded editorial content. Products live in the database; read them through <see cref="IProductCatalog"/>.
 /// Image IDs are Unsplash photo IDs; build URLs with <see cref="UnsplashImage"/>.
 /// </summary>
 public static class EditorialContent

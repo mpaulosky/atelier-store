@@ -9,6 +9,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <InternalsVisibleTo Include="AtelierStore.Web.Tests.Unit" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Auth0.AspNetCore.Authentication" />
     <PackageReference Include="DotNetEnv" />
     <PackageReference Include="EFCore.NamingConventions" />
