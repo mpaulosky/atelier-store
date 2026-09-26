@@ -1,0 +1,15 @@
+# Local development database only.
+services:
+  postgres:
+    image: postgres:17
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-atelier}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-atelier}
+      POSTGRES_DB: ${POSTGRES_DB:-atelier_store}
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+volumes:
+  pgdata:
