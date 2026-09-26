@@ -14,7 +14,8 @@ public sealed class ProductCatalog(IDbContextFactory<AppDbContext> dbFactory)
 		p.Price,
 		p.ImageId,
 		p.Description,
-		p.Stock.Quantity,
+		// The stock row is an optional dependent; a product without one reads as sold out.
+		p.Stock == null ? 0 : p.Stock.Quantity,
 		p.Badge,
 		p.WasPrice);
 
