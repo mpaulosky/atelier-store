@@ -16,6 +16,10 @@ updates:
       day: "sunday"
       time: "16:00"
     open-pull-requests-limit: 10
+    # Wait a week before proposing a new release, so a compromised or broken
+    # one is usually caught upstream before it reaches a PR here.
+    cooldown:
+      default-days: 7
     labels:
       - "github-actions"
       - "dependencies"
@@ -33,6 +37,10 @@ updates:
       day: "sunday"
       time: "16:00"
     open-pull-requests-limit: 10
+    # Wait a week before proposing a new release, so a compromised or broken
+    # one is usually caught upstream before it reaches a PR here.
+    cooldown:
+      default-days: 7
     labels:
       - "nuget"
       - "dependencies"
@@ -50,6 +58,10 @@ updates:
       day: "sunday"
       time: "16:00"
     open-pull-requests-limit: 10
+    # Wait a week before proposing a new release, so a compromised or broken
+    # one is usually caught upstream before it reaches a PR here.
+    cooldown:
+      default-days: 7
     labels:
       - "dotnet-sdk"
       - "dependencies"
@@ -67,6 +79,10 @@ updates:
       day: "sunday"
       time: "16:00"
     open-pull-requests-limit: 10
+    # Wait a week before proposing a new release, so a compromised or broken
+    # one is usually caught upstream before it reaches a PR here.
+    cooldown:
+      default-days: 7
     labels:
       - "npm"
       - "dependencies"

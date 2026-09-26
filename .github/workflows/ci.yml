@@ -61,31 +61,32 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
+          persist-credentials: false
           fetch-depth: 0
 
       - name: Setup .NET
-        uses: actions/setup-dotnet@v6
+        uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6
         with:
           global-json-file: global.json
 
       # The web project's build runs pnpm (Tailwind CSS); the pnpm version
       # comes from "packageManager" in its package.json.
       - name: Setup pnpm
-        uses: pnpm/action-setup@v6
+        uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86 # v6
         with:
           package_json_file: src/AtelierStore.Web/package.json
 
       - name: Setup Node.js
-        uses: actions/setup-node@v7
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
         with:
           node-version: 24
           cache: pnpm
           cache-dependency-path: src/AtelierStore.Web/pnpm-lock.yaml
 
       - name: Cache NuGet packages
-        uses: actions/cache@v6
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6
         with:
           path: ${{ github.workspace }}/.nuget/packages
           key: >-
@@ -118,7 +119,7 @@ jobs:
           --no-restore -warnaserror
 
       - name: Cache build artifacts
-        uses: actions/cache@v6
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6
         with:
           path: |
             **/bin/Release/
@@ -138,10 +139,12 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
 
       - name: Setup Python
-        uses: actions/setup-python@v7
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7
         with:
           python-version: "3.12"
 
@@ -160,7 +163,9 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
 
       - name: Run pre-push hook tests
         run: bash .github/hooks/tests/pre-push.test.sh
@@ -178,7 +183,9 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
 
       - name: Discover test projects
         id: discover
@@ -252,29 +259,31 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
 
       - name: Setup .NET
-        uses: actions/setup-dotnet@v6
+        uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6
         with:
           global-json-file: global.json
 
       # The web project's build runs pnpm (Tailwind CSS); the pnpm version
       # comes from "packageManager" in its package.json.
       - name: Setup pnpm
-        uses: pnpm/action-setup@v6
+        uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86 # v6
         with:
           package_json_file: src/AtelierStore.Web/package.json
 
       - name: Setup Node.js
-        uses: actions/setup-node@v7
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
         with:
           node-version: 24
           cache: pnpm
           cache-dependency-path: src/AtelierStore.Web/pnpm-lock.yaml
 
       - name: Cache NuGet packages
-        uses: actions/cache@v6
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6
         with:
           path: ${{ github.workspace }}/.nuget/packages
           key: >-
@@ -352,7 +361,7 @@ jobs:
           exit $exit_code
 
       - name: Upload test results
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         if: always()
         with:
           name: test-results-${{ matrix.test_id }}
@@ -366,7 +375,7 @@ jobs:
         run: echo "dir=$(dirname "$PROJECT_PATH")" >> "$GITHUB_OUTPUT"
 
       - name: Upload Playwright diagnostics
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         if: ${{ always() && matrix.requires_playwright }}
         with:
           name: playwright-artifacts-${{ matrix.test_id }}
@@ -386,15 +395,17 @@ jobs:
       - test
     steps:
       - name: Checkout code
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
 
       - name: Setup .NET
-        uses: actions/setup-dotnet@v6
+        uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6
         with:
           global-json-file: global.json
 
       - name: Download coverage reports
-        uses: actions/download-artifact@v8
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
         with:
           path: coverage-reports
 
@@ -443,14 +454,14 @@ jobs:
           fi
 
       - name: Upload coverage reports
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         if: always()
         with:
           name: coverage-reports
           path: coverage-output
 
       - name: Publish to Codecov
-        uses: codecov/codecov-action@v7
+        uses: codecov/codecov-action@303a32d7a59b442fa8d48b6a1cc6825c09c847a5 # v7
         if: always()
         with:
           files: ./coverage-output/Cobertura.xml
@@ -475,15 +486,17 @@ jobs:
       - test
     steps:
       - name: Checkout code
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
 
       - name: Download all test results
-        uses: actions/download-artifact@v8
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
         with:
           path: all-test-results
 
       - name: Publish test results
-        uses: EnricoMi/publish-unit-test-result-action@v2.24.0
+        uses: EnricoMi/publish-unit-test-result-action@d0a4676d0e0b938bc201470d88276b7c74c712b3 # v2.24.0
         if: ${{ always() && needs.discover-tests.outputs.has_tests == 'true' }}
         with:
           files: |
@@ -498,39 +511,36 @@ jobs:
           # PR-controlled project paths: read from the environment, not
           # interpolated into the script.
           TEST_MATRIX: ${{ needs.discover-tests.outputs.matrix }}
+          BUILD_STATUS: ${{ needs.build.result }}
+          DISCOVER_STATUS: ${{ needs.discover-tests.result }}
+          TEST_STATUS: ${{ needs.test.result }}
         run: |
-          summary="$GITHUB_STEP_SUMMARY"
-          echo "## Test Execution Summary" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "### Job Status" >> $GITHUB_STEP_SUMMARY
-          echo "- **Build:** ${{ needs.build.result }}" >> $GITHUB_STEP_SUMMARY
-          echo "- **Discovered Tests:**" \
-            "${{ needs.discover-tests.result }}" >> "$summary"
-          echo "- **Test Matrix:** ${{ needs.test.result }}" >> "$summary"
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "### Artifacts" >> $GITHUB_STEP_SUMMARY
-          echo "- Test and coverage reports are in" \
-            "Actions artifacts" >> "$summary"
-          echo "- Coverage report: \`coverage-reports\`" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "### Discovered Test Projects" >> $GITHUB_STEP_SUMMARY
-          printf '%s' "$TEST_MATRIX" \
-            | jq -r '(.include // [])[].project_path | "- " + .' >> "$summary"
-          echo "" >> $GITHUB_STEP_SUMMARY
-
-          # Set overall status
-          build_status="${{ needs.build.result }}"
-          discover_status="${{ needs.discover-tests.result }}"
-          test_status="${{ needs.test.result }}"
+          {
+            echo "## Test Execution Summary"
+            echo ""
+            echo "### Job Status"
+            echo "- **Build:** ${BUILD_STATUS}"
+            echo "- **Discovered Tests:** ${DISCOVER_STATUS}"
+            echo "- **Test Matrix:** ${TEST_STATUS}"
+            echo ""
+            echo "### Artifacts"
+            echo "- Test and coverage reports are in Actions artifacts"
+            echo "- Coverage report: \`coverage-reports\`"
+            echo ""
+            echo "### Discovered Test Projects"
+            printf '%s' "$TEST_MATRIX" \
+              | jq -r '(.include // [])[].project_path | "- " + .'
+            echo ""
+          } >> "$GITHUB_STEP_SUMMARY"
 
           # This job is the required status check that stands in for the
           # dynamically named "Tests: …" matrix jobs, so it must fail when
           # they do. A skipped test matrix (no test projects) still passes.
-          if [[ "$build_status" =~ ^(failure|cancelled)$ \
-            || "$discover_status" =~ ^(failure|cancelled)$ \
-            || "$test_status" =~ ^(failure|cancelled)$ ]]; then
-            echo "❌ **Overall Status:** FAILED" >> $GITHUB_STEP_SUMMARY
+          if [[ "$BUILD_STATUS" =~ ^(failure|cancelled)$ \
+            || "$DISCOVER_STATUS" =~ ^(failure|cancelled)$ \
+            || "$TEST_STATUS" =~ ^(failure|cancelled)$ ]]; then
+            echo "❌ **Overall Status:** FAILED" >> "$GITHUB_STEP_SUMMARY"
             exit 1
           else
-            echo "✅ **Overall Status:** PASSED" >> $GITHUB_STEP_SUMMARY
+            echo "✅ **Overall Status:** PASSED" >> "$GITHUB_STEP_SUMMARY"
           fi

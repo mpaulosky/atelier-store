@@ -35,6 +35,10 @@ dotnet ef database update --project src/AtelierStore.Web
   Add a `<PackageVersion>` entry to `Directory.Packages.props` instead.
   `dotnet add package` does this automatically.
   Tool versions (`dotnet-ef`) live separately in `dotnet-tools.json`.
+- **Node packages use pnpm, never npm or npx.**
+  The only Node project is `src/AtelierStore.Web` (the Tailwind CLI), pinned via `packageManager` in its `package.json`.
+  Use `pnpm add`, `pnpm install`, `pnpm run`, and `pnpm dlx` (not `npx`), and commit `pnpm-lock.yaml`; never add a `package-lock.json`.
+  `engines.npm` plus `engine-strict=true` in the project's `.npmrc` make `npm install` fail on purpose.
 - **Configuration** comes from `.env` at the repo root (see `.env.example`) plus real environment variables. Keys use `__` for nesting (`Auth0__Domain` → `Auth0:Domain`).
 - **Code style**: `.editorconfig` asks for **tabs (width 2)** in C#, Razor, CSS, JSON, and JS, plus LF line endings and `System` usings sorted first.
   Explicit types are preferred over `var` (`csharp_style_var_* = false`).

@@ -7,7 +7,10 @@ name: PR Auto-Merge
 # require its review, so merging on green alone would usually land a PR
 # before that review arrives. Each trigger below is a moment one of those
 # conditions can become true; the job re-checks all of them every time.
-"on":
+# zizmor flags pull_request_target and workflow_run as dangerous because they
+# run with write access on PR events. That is safe here: neither path checks
+# out or executes PR code, as the comments below explain.
+"on":  # zizmor: ignore[dangerous-triggers]
   # pull_request_target, not pull_request: it runs this file as it is on
   # main, so a PR can't edit the script that decides whether it merges or
   # reach the PAT. The job never checks out PR code.
@@ -18,7 +21,7 @@ name: PR Auto-Merge
   # every required check comes from one of these workflows, so their
   # completion is the signal that the checks may have gone green.
   workflow_run:
-    workflows: ["Build and Test Suite", "Lint Markdown", "Lint YAML", "CodeQL"]
+    workflows: ["Build and Test Suite", "Lint Markdown", "Lint YAML", "Lint Actions", "CodeQL"]
     types: [completed]
   # Resolving a review thread has no Actions trigger, and pull_request_review
   # would run the PR's own copy of this file with write access, so a PR whose
@@ -39,7 +42,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Squash-merge when ready
-        uses: actions/github-script@v9
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9
         env:
           HAS_RELEASE_PR_PAT: ${{ secrets.RELEASE_PR_PAT != '' }}
         with:

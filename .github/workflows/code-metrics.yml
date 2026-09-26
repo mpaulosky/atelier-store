@@ -34,7 +34,9 @@ jobs:
       HAS_RELEASE_PR_PAT: ${{ secrets.RELEASE_PR_PAT != '' }}
 
     steps:
-      - uses: actions/checkout@v7
+      - name: Checkout
+        # zizmor: ignore[artipacked] create-pull-request pushes with the checkout's credential.
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
 
       - name: "Print manual run reason"
         if: ${{ github.event_name == 'workflow_dispatch' }}
@@ -60,7 +62,7 @@ jobs:
       # merge commit (refs/pull/N/merge), which create-pull-request can't use as a
       # base, and a manual run from another branch must not publish metrics either.
       - name: Create pull request
-        uses: peter-evans/create-pull-request@v8.1.1
+        uses: peter-evans/create-pull-request@5f6978faf089d4d20b00c7766989d076bb2fc7f1 # v8.1.1
         if: ${{ github.ref == 'refs/heads/main' && steps.dotnet-code-metrics.outputs.updated-metrics == 'true' && env.HAS_RELEASE_PR_PAT == 'true' }}
         with:
           title: "${{ steps.dotnet-code-metrics.outputs.summary-title }}"

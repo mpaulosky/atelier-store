@@ -5,7 +5,7 @@
 ## Prerequisites
 
 - .NET SDK 10 (pinned in `global.json`)
-- Node.js and pnpm (for the Tailwind CLI; install pnpm with `npm i -g pnpm` or `corepack enable`)
+- Node.js and pnpm (for the Tailwind CLI; install pnpm with `corepack enable` or see <https://pnpm.io/installation>; use pnpm, not npm, which the web project refuses)
 - Docker (for local Postgres)
 
 ## Setup
@@ -33,8 +33,8 @@ The app runs at <https://localhost:7207>. In your Auth0 Regular Web Application,
 | `src/AtelierStore.Web/Migrations/` | EF Core migrations; `InitialCatalog` creates and seeds the catalog tables |
 | `src/AtelierStore.Web/Catalog/ProductCatalog.cs` | Storefront product queries used by the pages |
 | `src/AtelierStore.Web/Styles/app.css` | Tailwind entry point, compiled to `wwwroot/app.css` on build |
-| `.github/workflows/` | CI (build, tests, lint, CodeQL), release tags and blog posts, Dependabot and PR auto-merge |
-| `.github/hooks/`, `scripts/gate.sh` | Git hooks: Markdown lint on commit; branch naming, lint, build and tests on push |
+| `.github/workflows/` | CI (build, tests, lint incl. actionlint/zizmor/shellcheck, CodeQL for C# and Actions), release tags and blog posts, Dependabot and PR auto-merge |
+| `.github/hooks/`, `scripts/gate.sh` | Git hooks: Markdown lint on commit; branch naming, lint (Markdown, YAML, workflows, shell), build and tests on push |
 
 ## Endpoints
 
