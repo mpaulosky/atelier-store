@@ -1,0 +1,27 @@
+<article class="product-card">
+	@if (Product.StockState is StockState.SoldOut)
+	{
+		<span class="badge">Sold out</span>
+	}
+	else if (Product.Badge is not null)
+	{
+		<span class="badge">@Product.Badge</span>
+	}
+	<div class="product-card-media">
+		<img src="@UnsplashImage.Url(Product.ImageId, 600)"
+			srcset="@UnsplashImage.SrcSet(Product.ImageId, 400, 600, 900)"
+			sizes="(min-width: 80rem) 25vw, (min-width: 48rem) 33vw, 50vw"
+			alt="" loading="lazy" decoding="async" width="600" height="800" />
+	</div>
+	<div class="product-card-body">
+		<p class="caption">@Product.Category</p>
+		<h3 class="product-card-name">
+			<a class="product-card-link" href="products/@Product.Slug">@Product.Name</a>
+		</h3>
+		<p class="product-card-price"><ProductPrice Product="Product" /></p>
+	</div>
+</article>
+
+@code {
+	[Parameter, EditorRequired] public Product Product { get; set; } = default!;
+}

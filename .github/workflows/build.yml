@@ -1,0 +1,36 @@
+name: Build
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    # The main branch ruleset requires a check with this exact name.
+    name: Build Solution
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-dotnet@v5
+        with:
+          global-json-file: global.json
+
+      # pnpm version comes from "packageManager" in package.json.
+      - uses: pnpm/action-setup@v4
+        with:
+          package_json_file: src/AtelierStore.Web/package.json
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24
+          cache: pnpm
+          cache-dependency-path: src/AtelierStore.Web/pnpm-lock.yaml
+
+      # The csproj runs pnpm install and the Tailwind build before compiling.
+      - name: Build
+        run: dotnet build AtelierStore.slnx --configuration Release -warnaserror

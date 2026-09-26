@@ -1,0 +1,33 @@
+@* Thin-stroke line icons. Decorative by default; pass Label to expose to assistive tech. *@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="square"
+	aria-hidden="@(Label is null ? "true" : null)" role="@(Label is null ? null : "img")" aria-label="@Label" focusable="false">
+	@switch (Name)
+	{
+		case "menu":
+			<path d="M3 7h18M3 12h18M3 17h18" />
+			break;
+		case "close":
+			<path d="M5 5l14 14M19 5L5 19" />
+			break;
+		case "search":
+			<circle cx="10.5" cy="10.5" r="6.5" />
+			<path d="M15.5 15.5L21 21" />
+			break;
+		case "user":
+			<circle cx="12" cy="8" r="4" />
+			<path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7" />
+			break;
+		case "bag":
+			<path d="M4 8h16l-1 13H5L4 8z" />
+			<path d="M8.5 8V6.5a3.5 3.5 0 0 1 7 0V8" />
+			break;
+		case "arrow-right":
+			<path d="M4 12h16M14 6l6 6-6 6" />
+			break;
+	}
+</svg>
+
+@code {
+	[Parameter, EditorRequired] public string Name { get; set; } = "";
+	[Parameter] public string? Label { get; set; }
+}

@@ -1,0 +1,132 @@
+@page "/products/{Slug}"
+@inject NavigationManager Navigation
+@inject ProductCatalog Catalog
+
+@if (product is not null)
+{
+	<PageTitle>@product.Name | Atelier</PageTitle>
+
+	<div class="container-page">
+		<nav class="breadcrumb" aria-label="Breadcrumb">
+			<ol>
+				<li><a class="link-quiet" href="">Home</a></li>
+				<li><a class="link-quiet" href="new-in">New in</a></li>
+				<li><span aria-current="page">@product.Name</span></li>
+			</ol>
+		</nav>
+	</div>
+
+	@* Large image left, sticky purchase panel right from lg up; stacked on phones. *@
+	<article class="product-detail" aria-labelledby="product-title">
+		<div class="product-detail-media">
+			@if (product.StockState is not StockState.SoldOut && product.Badge is not null)
+			{
+				<span class="badge">@product.Badge</span>
+			}
+			<img src="@UnsplashImage.Url(product.ImageId, 1400)"
+				srcset="@UnsplashImage.SrcSet(product.ImageId, 640, 960, 1400, 1800, 2400)"
+				sizes="(min-width: 64rem) 58vw, 100vw"
+				alt="@product.Name" fetchpriority="high" width="1400" height="1867" />
+		</div>
+
+		<div class="product-detail-info">
+			<div class="stack gap-3">
+				<p class="eyebrow text-muted">@product.Category</p>
+				<h1 id="product-title" class="product-detail-title">@product.Name</h1>
+				<p class="lead text-ink"><ProductPrice Product="product" /></p>
+			</div>
+
+			<p class="stock-status" data-state="@product.StockState">@StockLabel(product)</p>
+
+			<p class="text-ink-soft">@product.Description</p>
+
+			@if (added)
+			{
+				<p class="caption text-success" role="status">Added to your bag.</p>
+			}
+			<form method="post" @formname="add-to-bag" @onsubmit="AddToBag" data-enhance>
+				<AntiforgeryToken />
+				@if (product.StockState is StockState.SoldOut)
+				{
+					<button class="btn btn-primary btn-lg w-full" type="submit" disabled>Sold out</button>
+				}
+				else
+				{
+					<button class="btn btn-primary btn-lg w-full" type="submit">Add to bag</button>
+				}
+			</form>
+			@if (product.StockState is StockState.SoldOut)
+			{
+				<p class="caption -mt-4">This piece may return. A <a class="link" href="services">client advisor</a> can let you know when it does.</p>
+			}
+
+			<div class="disclosures">
+				@foreach (Disclosure disclosure in Disclosures)
+				{
+					<details class="disclosure">
+						<summary>@disclosure.Title</summary>
+						<p class="caption pb-5">@disclosure.Body</p>
+					</details>
+				}
+			</div>
+		</div>
+	</article>
+
+	@* Related pieces: same product grid as the home page and listings, same category first. *@
+	<section class="section" aria-labelledby="related-title">
+		<div class="container-page">
+			<header class="section-header section-header-split">
+				<h2 id="related-title" class="headline">You may also like</h2>
+				<a class="link-cta" href="new-in">View all</a>
+			</header>
+			<div class="product-grid">
+				@foreach (Product related in relatedProducts)
+				{
+					<ProductCard Product="related" />
+				}
+			</div>
+		</div>
+	</section>
+}
+
+@code {
+	private const int RelatedCount = 4;
+
+	[Parameter] public string Slug { get; set; } = "";
+
+	private Product? product;
+	private IReadOnlyList<Product> relatedProducts = [];
+
+	// Acknowledged but not stored yet: there is no bag behind this.
+	private bool added;
+
+	protected override async Task OnParametersSetAsync()
+	{
+		product = await Catalog.FindBySlugAsync(Slug);
+		if (product is null)
+		{
+			Navigation.NotFound();
+			return;
+		}
+
+		relatedProducts = await Catalog.GetRelatedAsync(product.Slug, RelatedCount);
+	}
+
+	private void AddToBag() => added = product?.StockState is not StockState.SoldOut;
+
+	private static string StockLabel(Product product) => product.StockState switch
+	{
+		StockState.SoldOut => "Sold out",
+		StockState.LowStock => $"Only {product.Stock} left",
+		_ => "In stock",
+	};
+
+	private sealed record Disclosure(string Title, string Body);
+
+	private static readonly Disclosure[] Disclosures =
+	[
+		new("Delivery and returns", "Complimentary express delivery in signature packaging. Returns and exchanges are free within 30 days."),
+		new("Care", "Store folded in the dust bag provided. Our atelier offers repairs and cleaning for as long as you own the piece."),
+		new("Book an appointment", "See this piece in store or by video call with a client advisor who knows the collection."),
+	];
+}

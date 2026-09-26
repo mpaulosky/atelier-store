@@ -1,0 +1,62 @@
+@* Three-column bar: navigation left, wordmark centered, actions right. *@
+<div class="announcement-bar">
+	<p>Complimentary shipping and returns on every order</p>
+</div>
+
+<header class="site-header">
+	<div class="flex items-center gap-2 lg:gap-8">
+		<details class="nav-drawer lg:hidden">
+			<summary class="btn-icon -ml-3" aria-label="Menu">
+				<span class="nav-drawer-open-icon"><Icon Name="menu" /></span>
+				<span class="nav-drawer-close-icon"><Icon Name="close" /></span>
+			</summary>
+			<nav class="nav-drawer-panel" aria-label="Main">
+				<ul class="stack">
+					@foreach (NavItem item in PrimaryNav)
+					{
+						<li><a class="headline" href="@item.Href">@item.Label</a></li>
+					}
+				</ul>
+				<ul class="stack mt-12">
+					<li><a class="eyebrow link-quiet" href="stores">Store locator</a></li>
+					<li><a class="eyebrow link-quiet" href="services">Client services</a></li>
+				</ul>
+			</nav>
+		</details>
+
+		<nav class="nav-inline" aria-label="Main">
+			@foreach (NavItem item in PrimaryNav)
+			{
+				<NavLink class="eyebrow link-quiet" href="@item.Href">@item.Label</NavLink>
+			}
+		</nav>
+	</div>
+
+	<a class="wordmark" href="" aria-label="Atelier home">Atelier</a>
+
+	<div class="flex items-center">
+		<a class="btn-icon" href="search"><Icon Name="search" Label="Search" /></a>
+		<AuthorizeView>
+			<Authorized>
+				<a class="btn-icon" href="account/logout"><Icon Name="user" Label="Log out" /></a>
+			</Authorized>
+			<NotAuthorized>
+				<a class="btn-icon" href="account/login"><Icon Name="user" Label="Log in" /></a>
+			</NotAuthorized>
+		</AuthorizeView>
+		<a class="btn-icon -mr-3" href="bag"><Icon Name="bag" Label="Shopping bag" /></a>
+	</div>
+</header>
+
+@code {
+	private sealed record NavItem(string Label, string Href);
+
+	private static readonly NavItem[] PrimaryNav =
+	[
+		new("New In", "new-in"),
+		new("Women", "women"),
+		new("Men", "men"),
+		new("Bags", "bags"),
+		new("Jewelry", "jewelry"),
+	];
+}
