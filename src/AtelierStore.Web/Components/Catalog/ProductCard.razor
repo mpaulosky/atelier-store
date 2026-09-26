@@ -1,7 +1,9 @@
-@using System.Globalization
-
 <article class="product-card">
-	@if (Product.Badge is not null)
+	@if (Product.StockState is StockState.SoldOut)
+	{
+		<span class="badge">Sold out</span>
+	}
+	else if (Product.Badge is not null)
 	{
 		<span class="badge">@Product.Badge</span>
 	}
@@ -16,26 +18,10 @@
 		<h3 class="product-card-name">
 			<a class="product-card-link" href="products/@Product.Slug">@Product.Name</a>
 		</h3>
-		<p class="product-card-price">
-			@if (Product.WasPrice is { } was)
-			{
-				<span class="sr-only">Sale price</span>
-				<span class="price-sale">@Format(Product.Price)</span>
-				<span class="sr-only">, was</span>
-				<s class="price-was ml-2">@Format(was)</s>
-			}
-			else
-			{
-				@Format(Product.Price)
-			}
-		</p>
+		<p class="product-card-price"><ProductPrice Product="Product" /></p>
 	</div>
 </article>
 
 @code {
-	private static readonly CultureInfo PriceCulture = CultureInfo.GetCultureInfo("en-US");
-
 	[Parameter, EditorRequired] public Product Product { get; set; } = default!;
-
-	private static string Format(decimal amount) => amount.ToString("C0", PriceCulture);
 }

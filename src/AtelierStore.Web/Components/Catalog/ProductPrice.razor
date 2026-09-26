@@ -1,0 +1,22 @@
+@using System.Globalization
+
+@* Inline price: the sale price in accent with the original struck through, or the plain price. *@
+@if (Product.WasPrice is { } was)
+{
+	<span class="sr-only">Sale price</span>
+	<span class="price-sale">@Format(Product.Price)</span>
+	<span class="sr-only">, was</span>
+	<s class="price-was ml-2">@Format(was)</s>
+}
+else
+{
+	@Format(Product.Price)
+}
+
+@code {
+	private static readonly CultureInfo PriceCulture = CultureInfo.GetCultureInfo("en-US");
+
+	[Parameter, EditorRequired] public Product Product { get; set; } = default!;
+
+	private static string Format(decimal amount) => amount.ToString("C0", PriceCulture);
+}

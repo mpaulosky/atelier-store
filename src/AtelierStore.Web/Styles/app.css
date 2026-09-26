@@ -751,6 +751,163 @@
 		text-decoration: line-through;
 	}
 
+	/* --- Product detail ---------------------------------------------- */
+
+	/* Slash-separated trail above page content. */
+	.breadcrumb {
+		padding-block: 1rem;
+		font-size: var(--text-caption);
+		line-height: var(--text-caption--line-height);
+		color: var(--color-muted);
+
+		& ol {
+			display: flex;
+			flex-wrap: wrap;
+			gap: 0.5rem;
+		}
+
+		& li + li::before {
+			content: "/";
+			margin-right: 0.5rem;
+			color: var(--color-line-strong);
+		}
+
+		& [aria-current="page"] {
+			color: var(--color-ink);
+		}
+	}
+
+	/*
+	 * Image-led layout: the photograph runs edge to edge on phones and takes
+	 * the wider column from lg, where the purchase panel sticks beside it.
+	 */
+	.product-detail {
+		display: grid;
+		grid-template-columns: minmax(0, 1fr);
+
+		@variant lg {
+			grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+			align-items: start;
+		}
+	}
+
+	.product-detail-media {
+		position: relative;
+		aspect-ratio: var(--aspect-product);
+		overflow: hidden;
+		background-color: var(--color-stone);
+
+		& img {
+			width: 100%;
+			height: 100%;
+			object-fit: cover;
+		}
+
+		& .badge {
+			position: absolute;
+			top: 1rem;
+			left: var(--spacing-gutter);
+			z-index: 1;
+		}
+	}
+
+	.product-detail-info {
+		display: flex;
+		flex-direction: column;
+		gap: 2rem;
+		width: 100%;
+		max-width: 30rem;
+		margin-inline: auto;
+		padding: 2.5rem var(--spacing-gutter) 0;
+
+		@variant lg {
+			position: sticky;
+			top: calc(var(--spacing-header) + 2rem);
+			padding-block: 4rem;
+		}
+	}
+
+	/* Product name: uppercase and widely tracked, quieter than a page headline. */
+	.product-detail-title {
+		font-size: var(--text-title);
+		line-height: var(--text-title--line-height);
+		letter-spacing: var(--tracking-label);
+		text-transform: uppercase;
+		font-weight: 400;
+	}
+
+	/* Availability line with a small status dot; color follows data-state. */
+	.stock-status {
+		display: flex;
+		align-items: center;
+		gap: 0.625rem;
+		font-size: var(--text-caption);
+		line-height: var(--text-caption--line-height);
+		letter-spacing: 0.02em;
+		color: var(--color-ink-soft);
+
+		&::before {
+			content: "";
+			width: 0.4375rem;
+			height: 0.4375rem;
+			border-radius: var(--radius-pill);
+			background-color: var(--color-success);
+		}
+
+		&[data-state="LowStock"] {
+			color: var(--color-accent);
+
+			&::before {
+				background-color: var(--color-accent);
+			}
+		}
+
+		&[data-state="SoldOut"] {
+			color: var(--color-muted);
+
+			&::before {
+				background-color: transparent;
+				border: 1px solid var(--color-muted);
+			}
+		}
+	}
+
+	/* Hairline-separated accordion built on <details>, so it works without interactivity. */
+	.disclosures {
+		border-top: 1px solid var(--color-line);
+	}
+
+	.disclosure {
+		border-bottom: 1px solid var(--color-line);
+
+		& > summary {
+			display: flex;
+			align-items: center;
+			justify-content: space-between;
+			min-height: 3.5rem;
+			list-style: none;
+			cursor: pointer;
+			font-size: var(--text-eyebrow);
+			letter-spacing: var(--tracking-label);
+			text-transform: uppercase;
+			font-weight: 500;
+
+			&::-webkit-details-marker {
+				display: none;
+			}
+
+			&::after {
+				content: "+";
+				font-size: 1rem;
+				font-weight: 300;
+			}
+		}
+
+		&[open] > summary::after {
+			content: "\2212";
+		}
+	}
+
 	/* --- Page sections ------------------------------------------------ */
 
 	.section-header {
