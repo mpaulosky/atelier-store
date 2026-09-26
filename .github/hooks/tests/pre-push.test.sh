@@ -2,8 +2,9 @@
 # Tests for .github/hooks/pre-push.
 # Each case runs the hook in a throwaway repo, holding a copy of
 # scripts/gate.sh, with the refs git would pass on stdin. Stub `dotnet`, `pnpm`,
-# `markdownlint-cli2` and `yamllint` binaries log each call, and fail when the call matches
-# the FAIL glob, so no real build or network access is needed.
+# `markdownlint-cli2`, `yamllint`, `actionlint`, `zizmor` and `shellcheck`
+# binaries log each call, and fail when the call matches the FAIL glob, so no
+# real build or network access is needed.
 # Usage: .github/hooks/tests/pre-push.test.sh
 set -uo pipefail
 
@@ -20,7 +21,7 @@ STUBS="$WORK/bin"
 LOG="$WORK/gates.log"
 
 mkdir -p "$STUBS"
-for tool in dotnet pnpm markdownlint-cli2 yamllint; do
+for tool in dotnet pnpm markdownlint-cli2 yamllint actionlint zizmor shellcheck; do
   cat > "$STUBS/$tool" <<EOF
 #!/usr/bin/env bash
 call="$tool \$*"
@@ -113,6 +114,37 @@ expect() {
   pass "$name"
 }
 
+# expect_log <name> <ran|not-ran> <glob>: whether any logged call matches <glob>.
+expect_log() {
+  local name="$1" want="$2" glob="$3" call found=false
+  while IFS= read -r call; do
+    # shellcheck disable=SC2053 # $glob is a pattern on purpose
+    [[ "$call" == $glob ]] && found=true
+  done < "$LOG"
+  if [[ "$want" == "ran" && "$found" == false ]]; then
+    fail "$name" "expected a call matching '$glob', got: $(tr '\n' ' ' < "$LOG")"
+  elif [[ "$want" == "not-ran" && "$found" == true ]]; then
+    fail "$name" "expected no call matching '$glob', got: $(tr '\n' ' ' < "$LOG")"
+  else
+    pass "$name"
+  fi
+}
+
+# commit_on <branch> <path> <content>: a new branch from origin/main with one
+# commit adding <path>.
+commit_on() {
+  git -C "$REPO" switch -q -c "$1" origin/main
+  mkdir -p "$(dirname "$REPO/$2")"
+  printf '%s\n' "$3" > "$REPO/$2"
+  git -C "$REPO" add "$2"
+  git -C "$REPO" commit -q -m "add $2"
+}
+
+# push_stdin <branch>: the refs line for pushing the checked-out <branch>.
+push_stdin() {
+  echo "refs/heads/$1 @HEAD@ refs/heads/$1 $ZERO"
+}
+
 run_hook main "(delete) $ZERO refs/heads/feature/1-x $SHA"
 expect "deleting a feature branch from main skips the gates" allowed tests-skipped
 
@@ -177,6 +209,46 @@ expect "a lint error in the first of two unpushed commits refuses the push" refu
 FAIL='dotnet build*' run_hook feature/1-x "refs/heads/feature/1-x @HEAD@ refs/heads/feature/1-x $ZERO"
 expect "a failing build refuses the push" refused any
 
+# Workflow and shell linters run only when their files change.
+run_hook feature/1-x "$(push_stdin feature/1-x)"
+expect_log "a push with no workflow or shell changes skips actionlint" not-ran 'actionlint*'
+expect_log "a push with no workflow or shell changes skips zizmor" not-ran 'zizmor*'
+expect_log "a push with no workflow or shell changes skips shellcheck" not-ran 'shellcheck*'
+
+commit_on feature/3-workflow .github/workflows/ci.yml 'name: ci'
+run_hook feature/3-workflow "$(push_stdin feature/3-workflow)"
+expect "a changed workflow is allowed when the linters pass" allowed tests-ran
+expect_log "a changed workflow runs actionlint" ran 'actionlint*'
+expect_log "a changed workflow runs zizmor over the repo" ran 'zizmor *--min-severity medium .'
+expect_log "a changed workflow skips shellcheck" not-ran 'shellcheck*'
+
+FAIL='actionlint*' run_hook feature/3-workflow "$(push_stdin feature/3-workflow)"
+expect "an actionlint failure refuses the push" refused any
+
+FAIL='zizmor*' run_hook feature/3-workflow "$(push_stdin feature/3-workflow)"
+expect "a zizmor failure refuses the push" refused any
+
+commit_on feature/4-dependabot .github/dependabot.yml 'version: 2'
+run_hook feature/4-dependabot "$(push_stdin feature/4-dependabot)"
+expect_log "a changed dependabot.yml runs zizmor" ran 'zizmor*'
+
+commit_on feature/5-hook .github/hooks/pre-rebase '#!/usr/bin/env bash'
+run_hook feature/5-hook "$(push_stdin feature/5-hook)"
+expect_log "a changed git hook runs shellcheck on it" ran 'shellcheck*.github/hooks/pre-rebase*'
+expect_log "a changed git hook skips actionlint" not-ran 'actionlint*'
+
+FAIL='shellcheck*' run_hook feature/5-hook "$(push_stdin feature/5-hook)"
+expect "a shellcheck failure refuses the push" refused any
+
+commit_on feature/6-script scripts/tool.sh '#!/usr/bin/env bash'
+FAIL='shellcheck*scripts/tool.sh*' run_hook feature/6-script "$(push_stdin feature/6-script)"
+expect "a shellcheck failure in a changed script refuses the push" refused any
+
+commit_on feature/7-hook-readme .github/hooks/README.md '# Hooks'
+run_hook feature/7-hook-readme "$(push_stdin feature/7-hook-readme)"
+expect_log "a non-hook file under .github/hooks skips shellcheck" not-ran 'shellcheck*'
+
+switch_to feature/1-x
 echo 'uncommitted' > "$REPO/stray.cs"
 run_hook feature/1-x "refs/heads/feature/1-x @HEAD@ refs/heads/feature/1-x $ZERO"
 expect "an untracked file refuses the push before the gates" refused tests-skipped "uncommitted or untracked changes"

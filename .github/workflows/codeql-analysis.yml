@@ -65,10 +65,10 @@ jobs:
           LANGUAGE: ${{ matrix.language }}
         run: |
           case "$LANGUAGE" in
-            csharp) pattern='*.csproj' ;;
-            actions) pattern='.github/workflows/*.yml' ;;
+            csharp) patterns=('*.csproj') ;;
+            actions) patterns=('.github/workflows/*.yml' '.github/workflows/*.yaml') ;;
           esac
-          if [ -n "$(git ls-files "$pattern")" ]; then
+          if [ -n "$(git ls-files "${patterns[@]}")" ]; then
             echo "has_code=true" >> "$GITHUB_OUTPUT"
           else
             echo "has_code=false" >> "$GITHUB_OUTPUT"
