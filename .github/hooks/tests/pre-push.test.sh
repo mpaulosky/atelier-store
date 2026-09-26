@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 # Tests for .github/hooks/pre-push.
 # Each case runs the hook in a throwaway repo, holding a copy of
-# scripts/gate.sh, with the refs git would pass on stdin. Stub `dotnet`, `npm`,
-# `npx`, `markdownlint-cli2` and `yamllint` binaries log each call, and fail when the call matches
+# scripts/gate.sh, with the refs git would pass on stdin. Stub `dotnet`, `pnpm`,
+# `markdownlint-cli2` and `yamllint` binaries log each call, and fail when the call matches
 # the FAIL glob, so no real build or network access is needed.
 # Usage: .github/hooks/tests/pre-push.test.sh
 set -uo pipefail
@@ -20,7 +20,7 @@ STUBS="$WORK/bin"
 LOG="$WORK/gates.log"
 
 mkdir -p "$STUBS"
-for tool in dotnet npm npx markdownlint-cli2 yamllint; do
+for tool in dotnet pnpm markdownlint-cli2 yamllint; do
   cat > "$STUBS/$tool" <<EOF
 #!/usr/bin/env bash
 call="$tool \$*"

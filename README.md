@@ -5,7 +5,7 @@
 ## Prerequisites
 
 - .NET SDK 10 (pinned in `global.json`)
-- Node.js and pnpm (for the Tailwind CLI; install pnpm with `npm i -g pnpm` or `corepack enable`)
+- Node.js and pnpm (for the Tailwind CLI; install pnpm with `corepack enable` or see <https://pnpm.io/installation>; use pnpm, not npm, which the web project refuses)
 - Docker (for local Postgres)
 
 ## Setup
