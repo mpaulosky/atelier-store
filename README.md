@@ -14,11 +14,12 @@
 cp .env.example .env          # then fill in the Auth0 values
 docker compose up -d          # start Postgres
 dotnet tool restore           # installs dotnet-ef
+git config core.hooksPath .github/hooks  # enable the repo git hooks (one-time, per clone)
 dotnet ef database update --project src/AtelierStore.Web   # create the catalog tables and seed data
 dotnet run --project src/AtelierStore.Web --launch-profile https
 ```
 
-The app runs at https://localhost:7207. In your Auth0 Regular Web Application, set:
+The app runs at <https://localhost:7207>. In your Auth0 Regular Web Application, set:
 
 - Allowed Callback URLs: `https://localhost:7207/callback`
 - Allowed Logout URLs: `https://localhost:7207/`
@@ -32,6 +33,8 @@ The app runs at https://localhost:7207. In your Auth0 Regular Web Application, s
 | `src/AtelierStore.Web/Migrations/` | EF Core migrations; `InitialCatalog` creates and seeds the catalog tables |
 | `src/AtelierStore.Web/Catalog/ProductCatalog.cs` | Storefront product queries used by the pages |
 | `src/AtelierStore.Web/Styles/app.css` | Tailwind entry point, compiled to `wwwroot/app.css` on build |
+| `.github/workflows/` | CI (build, tests, lint, CodeQL), release tags and blog posts, Dependabot and PR auto-merge |
+| `.github/hooks/`, `scripts/gate.sh` | Git hooks: Markdown lint on commit; branch naming, lint, build and tests on push |
 
 ## Endpoints
 

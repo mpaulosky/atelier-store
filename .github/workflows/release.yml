@@ -1,0 +1,390 @@
+# yamllint disable rule:line-length
+---
+name: Release
+
+"on":
+  pull_request:
+    types: [closed]
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      pr_number:
+        description: "Merged PR number to process"
+        required: true
+        type: string
+
+permissions:
+  contents: write
+  pull-requests: write
+
+env:
+  # Model for the AI Summary in release blog posts (used only when the
+  # ANTHROPIC_API_KEY secret is set).
+  ANTHROPIC_MODEL: claude-sonnet-5
+
+# Per PR, so a re-run of one PR's release waits for the first. Different PRs
+# can run at once: the tag push in "Reserve release tag" is the lock that
+# keeps two of them from taking the same version.
+concurrency:
+  group: release-${{ github.event.pull_request.number || inputs.pr_number }}
+  cancel-in-progress: false
+
+jobs:
+  release:
+    # Publishes tags, releases and a docs PR, so a manual run must come from
+    # main, never from a branch's copy of this file.
+    if: >-
+      (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main') ||
+      (github.event.pull_request.merged == true &&
+      github.event.pull_request.base.ref == 'main')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout main
+        uses: actions/checkout@v7
+        with:
+          ref: main
+          fetch-depth: 0
+          # A PAT (not GITHUB_TOKEN) is required here: it's persisted as the
+          # git credential for this checkout, and later used by `git push` to
+          # publish the release-notes branch and by `gh pr create` to open
+          # the PR. GitHub treats PRs authored by github-actions[bot] (i.e.
+          # opened via GITHUB_TOKEN) as untrusted and gates every
+          # pull_request-triggered workflow behind a manual "Approve and run"
+          # click. Authoring as a real collaborator (via RELEASE_PR_PAT)
+          # avoids that approval requirement entirely, so the PR's
+          # pull_request checks (lint, CodeQL) start on their own. Falls back
+          # to GITHUB_TOKEN if the PAT secret isn't configured, in which case
+          # those checks wait for a manual "Approve and run".
+          token: ${{ secrets.RELEASE_PR_PAT || secrets.GITHUB_TOKEN }}
+
+      - name: Resolve PR metadata
+        id: pr
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          INPUT_PR_NUMBER: ${{ inputs.pr_number }}
+          EVENT_PR_NUMBER: ${{ github.event.pull_request.number }}
+          EVENT_TITLE: ${{ github.event.pull_request.title }}
+          EVENT_URL: ${{ github.event.pull_request.html_url }}
+          EVENT_MERGE_SHA: ${{ github.event.pull_request.merge_commit_sha }}
+          # JSON, not a joined string: label names may contain commas.
+          EVENT_LABELS_JSON: ${{ toJSON(github.event.pull_request.labels.*.name) }}
+          REPOSITORY: ${{ github.repository }}
+        run: |
+          if [ -n "$INPUT_PR_NUMBER" ]; then
+            PR_NUMBER="${INPUT_PR_NUMBER#\#}"
+            if ! [[ "$PR_NUMBER" =~ ^[0-9]+$ ]]; then
+              echo "::error::pr_number must be a PR number, got '${INPUT_PR_NUMBER}'."
+              exit 1
+            fi
+            PR_JSON=$(gh api \
+              "repos/${REPOSITORY}/pulls/${PR_NUMBER}" \
+              --jq '{
+                number: .number,
+                title: .title,
+                html_url: .html_url,
+                merged: .merged,
+                base_ref: .base.ref,
+                merge_commit_sha: (.merge_commit_sha // ""),
+                labels: [.labels[].name]
+              }')
+
+            MERGED=$(echo "$PR_JSON" | jq -r '.merged')
+            if [ "$MERGED" != "true" ]; then
+              echo "PR #${PR_NUMBER} is not merged; skipping."
+              echo "skip=true" >> "$GITHUB_OUTPUT"
+              exit 0
+            fi
+
+            # The automatic path only runs for PRs merged into main; hold a
+            # manual run to the same rule.
+            BASE_REF=$(echo "$PR_JSON" | jq -r '.base_ref')
+            if [ "$BASE_REF" != "main" ]; then
+              echo "PR #${PR_NUMBER} was merged into '${BASE_REF}', not main; skipping."
+              echo "skip=true" >> "$GITHUB_OUTPUT"
+              exit 0
+            fi
+
+            TITLE=$(echo "$PR_JSON" | jq -r '.title')
+            URL=$(echo "$PR_JSON" | jq -r '.html_url')
+            MERGE_SHA=$(echo "$PR_JSON" | jq -r '.merge_commit_sha')
+            LABELS=$(echo "$PR_JSON" | jq -c '.labels')
+          else
+            PR_NUMBER="$EVENT_PR_NUMBER"
+            TITLE="$EVENT_TITLE"
+            URL="$EVENT_URL"
+            MERGE_SHA="$EVENT_MERGE_SHA"
+            LABELS=$(printf '%s' "${EVENT_LABELS_JSON:-[]}" | jq -c 'if type == "array" then . else [] end')
+          fi
+
+          if [ -z "$PR_NUMBER" ]; then
+            echo "Unable to resolve PR number."
+            exit 1
+          fi
+
+          LABELS=$(echo "${LABELS:-[]}" | jq -c '.' 2>/dev/null || echo '[]')
+
+          {
+            echo "skip=false"
+            echo "number=$PR_NUMBER"
+            echo "title<<EOF"
+            echo "$TITLE"
+            echo "EOF"
+            echo "url=$URL"
+            echo "merge_sha=$MERGE_SHA"
+            echo "labels=$LABELS"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Mark merged PR as release-eligible
+        if: steps.pr.outputs.skip != 'true'
+        id: files
+        env:
+          PR_TITLE: ${{ steps.pr.outputs.title }}
+        run: |
+          if echo "$PR_TITLE" | grep -q '\[skip-release\]'; then
+            echo "eligible=false" >> "$GITHUB_OUTPUT"
+            echo "reason=automated docs PR opted out via [skip-release] marker" >> "$GITHUB_OUTPUT"
+          else
+            echo "eligible=true" >> "$GITHUB_OUTPUT"
+            echo "reason=merged PR release flow" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Check existing release marker
+        if: steps.pr.outputs.skip != 'true' && steps.files.outputs.eligible == 'true'
+        id: idempotency
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPOSITORY: ${{ github.repository }}
+          PR_NUMBER: ${{ steps.pr.outputs.number }}
+        run: |
+          # Match the whole "Source PR: #n" line, so PR #1 doesn't match a
+          # release for #10.
+          EXISTING_TAG=$(gh api "repos/${REPOSITORY}/releases?per_page=100" --paginate \
+            | jq -rs --arg n "$PR_NUMBER" \
+              '[.[][] | select((.body // "") | test("(^|\\n)\\s*Source PR: #" + $n + "\\s*(\\r?\\n|$)")) | .tag_name] | first // empty')
+
+          if [ -n "$EXISTING_TAG" ]; then
+            echo "already_released=true" >> "$GITHUB_OUTPUT"
+            echo "tag=$EXISTING_TAG" >> "$GITHUB_OUTPUT"
+            echo "Release ${EXISTING_TAG} already exists for PR #${PR_NUMBER}; only the docs PR will be (re)delivered."
+          else
+            echo "already_released=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      # Pushing the tag is the lock: if another release took the version
+      # first, the push is rejected and the next version is tried.
+      - name: Reserve release tag
+        if: steps.files.outputs.eligible == 'true' && steps.idempotency.outputs.already_released != 'true'
+        id: version
+        env:
+          LABELS_JSON: ${{ steps.pr.outputs.labels }}
+          PR_NUMBER: ${{ steps.pr.outputs.number }}
+          MERGE_SHA: ${{ steps.pr.outputs.merge_sha }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          # Tag the PR's merge commit, not whatever main points at by now.
+          TARGET="${MERGE_SHA:-$(git rev-parse HEAD)}"
+
+          # any() is required: with `.[] | test(...)`, jq -e exits on the
+          # last label only, so e.g. ["semver:minor","bug"] would miss minor.
+          BUMP="patch"
+          if echo "$LABELS_JSON" | jq -e 'any(.[]; test("^(semver|release):major$"))' >/dev/null; then
+            BUMP="major"
+          elif echo "$LABELS_JSON" | jq -e 'any(.[]; test("^(semver|release):minor$"))' >/dev/null; then
+            BUMP="minor"
+          fi
+
+          NEXT_TAG=""
+          for attempt in 1 2 3 4 5; do
+            git fetch --quiet --force --tags origin
+
+            # A tag left by an earlier run that failed before its Release was
+            # created is reused rather than orphaned.
+            REUSED=$(git for-each-ref 'refs/tags/v*' --format='%(refname:short)|%(contents:subject)' \
+              | awk -F'|' -v s="from PR #${PR_NUMBER}" 'substr($2, length($2) - length(s) + 1) == s { print $1; exit }')
+            if [ -n "$REUSED" ]; then
+              NEXT_TAG="$REUSED"
+              BASE_VERSION="${REUSED#v}"
+              echo "Reusing tag ${NEXT_TAG} from an earlier run."
+              break
+            fi
+
+            # Base on the highest release tag by version, then bump exactly
+            # once. Not `git describe`: that returns the nearest ancestor tag,
+            # which isn't guaranteed to be the highest version.
+            LAST_TAG=$(git tag --list 'v[0-9]*' --sort=-v:refname \
+              | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' | head -n1 || true)
+            BASE_VERSION="${LAST_TAG#v}"
+            BASE_VERSION="${BASE_VERSION:-0.0.0}"
+            IFS=. read -r MAJOR MINOR PATCH <<< "$BASE_VERSION"
+            case "$BUMP" in
+              major) CANDIDATE="v$((MAJOR+1)).0.0" ;;
+              minor) CANDIDATE="v${MAJOR}.$((MINOR+1)).0" ;;
+              *) CANDIDATE="v${MAJOR}.${MINOR}.$((PATCH+1))" ;;
+            esac
+
+            git tag -a "$CANDIDATE" "$TARGET" -m "Release ${CANDIDATE} from PR #${PR_NUMBER}"
+            if git push origin "refs/tags/${CANDIDATE}"; then
+              NEXT_TAG="$CANDIDATE"
+              break
+            fi
+            echo "::notice::${CANDIDATE} was taken by a concurrent release; retrying (attempt ${attempt})."
+            git tag -d "$CANDIDATE"
+            sleep $((attempt * 3))
+          done
+
+          if [ -z "$NEXT_TAG" ]; then
+            echo "::error::Could not reserve a release tag after 5 attempts."
+            exit 1
+          fi
+
+          {
+            echo "bump=$BUMP"
+            echo "base_version=$BASE_VERSION"
+            echo "tag=$NEXT_TAG"
+          } >> "$GITHUB_OUTPUT"
+
+      # Runs for an existing release too, so a re-run delivers a docs PR that
+      # failed the first time. It's a no-op when main already has the post.
+      - name: Update release blog and README files
+        if: steps.files.outputs.eligible == 'true'
+        id: docs
+        env:
+          PR_NUMBER: ${{ steps.pr.outputs.number }}
+          TAG: ${{ steps.version.outputs.tag || steps.idempotency.outputs.tag }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPOSITORY: ${{ github.repository }}
+          # Optional: without it (or when the API fails) the post is written
+          # without the AI Summary section and the release carries on.
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: |
+          python3 .github/scripts/release_post.py --pr "$PR_NUMBER" --tag "$TAG"
+
+          # git status (not git diff) so brand-new, still-untracked files count.
+          if [ -z "$(git status --porcelain -- docs/blogs README.md docs/README.md docs/index.html)" ]; then
+            echo "docs_changed=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          echo "docs_changed=true" >> "$GITHUB_OUTPUT"
+
+      # continue-on-error lets the tag and GitHub Release below go out even
+      # when the docs PR can't be delivered. The "Report docs PR failure"
+      # step at the end then fails the run, so the problem isn't hidden.
+      - name: Commit and push docs updates
+        if: steps.files.outputs.eligible == 'true' && steps.docs.outputs.docs_changed == 'true'
+        id: commit
+        continue-on-error: true
+        env:
+          # Same PAT-with-fallback as the checkout step (see comment there);
+          # gh pr create authors the PR as whichever identity this token
+          # belongs to.
+          GH_TOKEN: ${{ secrets.RELEASE_PR_PAT || secrets.GITHUB_TOKEN }}
+          HAS_RELEASE_PR_PAT: ${{ secrets.RELEASE_PR_PAT != '' }}
+          PR_NUMBER: ${{ steps.pr.outputs.number }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          # Stage only paths that exist; git add fails on a missing pathspec
+          # (e.g. docs/index.html in a repo that has removed it).
+          for path in docs/blogs README.md docs/README.md docs/index.html; do
+            if [ -e "$path" ]; then
+              git add -- "$path"
+            fi
+          done
+
+          if git diff --cached --quiet; then
+            echo "committed=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          # main is rules-protected and requires a pull request, so the docs
+          # update goes out on its own branch/PR rather than a direct push.
+          # The [skip-release] marker keeps this PR's own merge from
+          # triggering another run of this workflow.
+          BRANCH="docs/release-notes-pr-${PR_NUMBER}"
+          TITLE="docs: add release blog for PR #${PR_NUMBER} [skip-release]"
+          # Return to main even if a later command fails.
+          trap 'git checkout --quiet main' EXIT
+          git checkout -B "$BRANCH"
+          git commit -m "$TITLE"
+          # The branch is rebuilt from main on every run, so a re-run updates
+          # the branch (and its open PR) instead of being rejected.
+          git push --force origin "$BRANCH"
+          git checkout main
+
+          if [ "$HAS_RELEASE_PR_PAT" != "true" ]; then
+            echo "::notice::RELEASE_PR_PAT is not set, so $BRANCH is pushed and opened with GITHUB_TOKEN. Its pull_request workflow runs (lint, CodeQL) need a manual \"Approve and run\" before they start, and auto-merge waits on them. Set RELEASE_PR_PAT to avoid this."
+          fi
+
+          EXISTING=$(gh pr list --head "$BRANCH" --base main --state open --json number --jq '.[0].number // empty')
+          if [ -n "$EXISTING" ]; then
+            echo "Updated the open release-notes PR #${EXISTING}."
+          else
+            gh pr create \
+              --base main \
+              --head "$BRANCH" \
+              --title "$TITLE" \
+              --body "Automated release-notes update generated for #${PR_NUMBER}. Opened by the release workflow; the [skip-release] title marker keeps its own merge from starting another release."
+          fi
+
+          gh pr merge "$BRANCH" --auto --squash
+
+          echo "committed=true" >> "$GITHUB_OUTPUT"
+
+      - name: Create release
+        if: steps.files.outputs.eligible == 'true' && steps.idempotency.outputs.already_released != 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ steps.version.outputs.tag }}
+          PR_NUMBER: ${{ steps.pr.outputs.number }}
+          PR_URL: ${{ steps.pr.outputs.url }}
+          MERGE_SHA: ${{ steps.pr.outputs.merge_sha }}
+          BUMP: ${{ steps.version.outputs.bump }}
+          BASE_VERSION: ${{ steps.version.outputs.base_version }}
+        run: |
+          # "Reserve release tag" already pushed the tag at the merge commit.
+          EXTRA_NOTES=$(cat <<EOF
+          Source PR: #${PR_NUMBER}
+          Source PR URL: ${PR_URL}
+          Merge commit: ${MERGE_SHA}
+          Bump policy: ${BUMP} (base ${BASE_VERSION})
+          EOF
+          )
+
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            echo "Release ${TAG} already exists."
+          else
+            gh release create "$TAG" \
+              --title "Release ${TAG}" \
+              --generate-notes \
+              --notes "$EXTRA_NOTES" \
+              --verify-tag
+          fi
+
+      - name: Report docs PR failure
+        if: always() && steps.commit.outcome == 'failure'
+        env:
+          PR_NUMBER: ${{ steps.pr.outputs.number }}
+          TAG: ${{ steps.version.outputs.tag || steps.idempotency.outputs.tag }}
+        run: |
+          MESSAGE="The release-notes PR for #${PR_NUMBER} (branch docs/release-notes-pr-${PR_NUMBER}) was not delivered. See the \"Commit and push docs updates\" step. If gh pr create was refused, add the RELEASE_PR_PAT secret or allow GitHub Actions to create pull requests in the repository settings."
+          echo "::error title=Release-notes PR not delivered::${MESSAGE}"
+          {
+            echo "### :x: Release-notes PR not delivered"
+            echo ""
+            echo "${MESSAGE}"
+            echo ""
+            echo "The tag and GitHub Release steps for ${TAG:-n/a} still ran. Re-run this workflow for the PR (workflow_dispatch from main) to retry the docs PR; it skips the Release that already exists."
+          } >> "$GITHUB_STEP_SUMMARY"
+          exit 1
+
+      - name: Summary
+        if: always()
+        run: |
+          echo "PR: #${{ steps.pr.outputs.number || 'n/a' }}"
+          echo "Eligible: ${{ steps.files.outputs.eligible || 'n/a' }}"
+          echo "Already released: ${{ steps.idempotency.outputs.already_released || 'n/a' }}"
+          echo "Tag: ${{ steps.version.outputs.tag || steps.idempotency.outputs.tag || 'n/a' }}"
+          echo "Docs PR step: ${{ steps.commit.outcome || 'n/a' }}"

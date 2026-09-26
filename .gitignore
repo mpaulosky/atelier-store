@@ -488,3 +488,6 @@ $RECYCLE.BIN/
 node_modules/
 src/AtelierStore.Web/wwwroot/app.css
 .directory
+
+# Local build-repair log written by the review-changes skill
+build-log.txt
