@@ -2,7 +2,7 @@
 # Tests for .github/hooks/pre-push.
 # Each case runs the hook in a throwaway repo, holding a copy of
 # scripts/gate.sh, with the refs git would pass on stdin. Stub `dotnet`, `npm`,
-# `npx` and `yamllint` binaries log each call, and fail when the call matches
+# `npx`, `markdownlint-cli2` and `yamllint` binaries log each call, and fail when the call matches
 # the FAIL glob, so no real build or network access is needed.
 # Usage: .github/hooks/tests/pre-push.test.sh
 set -uo pipefail
@@ -20,7 +20,7 @@ STUBS="$WORK/bin"
 LOG="$WORK/gates.log"
 
 mkdir -p "$STUBS"
-for tool in dotnet npm npx yamllint; do
+for tool in dotnet npm npx markdownlint-cli2 yamllint; do
   cat > "$STUBS/$tool" <<EOF
 #!/usr/bin/env bash
 call="$tool \$*"
@@ -170,7 +170,7 @@ git -C "$REPO" commit -q -m first
 echo 'second' > "$REPO/second.txt"
 git -C "$REPO" add second.txt
 git -C "$REPO" commit -q -m second
-FAIL='npx*first.md*' run_hook feature/2-two-commits \
+FAIL='markdownlint-cli2*first.md*' run_hook feature/2-two-commits \
   "refs/heads/feature/2-two-commits @HEAD@ refs/heads/feature/2-two-commits $ZERO"
 expect "a lint error in the first of two unpushed commits refuses the push" refused any
 

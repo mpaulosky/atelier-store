@@ -23,9 +23,19 @@ fi
 mapfile -t MD_FILES < <(grep -E '\.md$' <<< "$CHANGED" | grep -Ev '^docs/blogs/' || true)
 mapfile -t YAML_FILES < <(grep -E '\.ya?ml$' <<< "$CHANGED" | grep -Ev 'pnpm-lock\.yaml$' || true)
 
+# An installed markdownlint-cli2 (as the pre-commit hook uses) when there is
+# one; otherwise this pinned version, never whatever npm serves at push time.
+MARKDOWNLINT_CLI2_VERSION="0.23.3"
+
 step "Markdown lint (${#MD_FILES[@]} changed file(s))"
 if [[ ${#MD_FILES[@]} -gt 0 ]]; then
-  npx --yes markdownlint-cli2 "${MD_FILES[@]}"
+  if [[ -x "$ROOT/node_modules/.bin/markdownlint-cli2" ]]; then
+    "$ROOT/node_modules/.bin/markdownlint-cli2" "${MD_FILES[@]}"
+  elif command -v markdownlint-cli2 &>/dev/null; then
+    markdownlint-cli2 "${MD_FILES[@]}"
+  else
+    npx --yes "markdownlint-cli2@${MARKDOWNLINT_CLI2_VERSION}" "${MD_FILES[@]}"
+  fi
 fi
 
 step "YAML lint (${#YAML_FILES[@]} changed file(s))"
