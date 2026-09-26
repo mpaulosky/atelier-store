@@ -491,3 +491,6 @@ src/AtelierStore.Web/wwwroot/app.css
 
 # Local build-repair log written by the review-changes skill
 build-log.txt
+
+# Git worktrees created by Claude Code sessions
+.claude/worktrees/
