@@ -14,6 +14,7 @@
 cp .env.example .env          # then fill in the Auth0 values
 docker compose up -d          # start Postgres
 dotnet tool restore           # installs dotnet-ef
+git config core.hooksPath .github/hooks  # enable the repo git hooks (one-time, per clone)
 dotnet ef database update --project src/AtelierStore.Web   # create the catalog tables and seed data
 dotnet run --project src/AtelierStore.Web --launch-profile https
 ```

@@ -6,11 +6,10 @@ name: Build and Test Suite
 # This was updated to fix issues with direct executable execution that were
 # causing "No such file or directory" errors in CI.
 
+# Read-only by default: build and test jobs run pull-request code. Only the
+# report job, which runs no PR code, gets write access.
 permissions:
-  issues: write
-  checks: write
   contents: read
-  pull-requests: write
 
 "on":
   workflow_call:
@@ -53,12 +52,6 @@ env:
   NUGET_PACKAGES: ${{ github.workspace }}/.nuget/packages
   DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
   DOTNET_CLI_TELEMETRY_OPTOUT: true
-
-  # The app's required Auth0 settings, for tests that start it. Empty until
-  # the secrets are added; building doesn't need them.
-  Auth0__Domain: ${{ secrets.AUTH0_DOMAIN }}
-  Auth0__ClientId: ${{ secrets.AUTH0_CLIENT_ID }}
-  Auth0__ClientSecret: ${{ secrets.AUTH0_CLIENT_SECRET }}
 
 jobs:
   build:
@@ -122,7 +115,7 @@ jobs:
       - name: Build solution
         run: >-
           dotnet build "$SOLUTION_FILE" --configuration Release
-          --no-restore
+          --no-restore -warnaserror
 
       - name: Cache build artifacts
         uses: actions/cache@v6
@@ -295,30 +288,45 @@ jobs:
 
       - name: Build test project
         if: ${{ matrix.build_before_test }}
+        env:
+          PROJECT_PATH: ${{ matrix.project_path }}
         run: >-
-          dotnet build "${{ matrix.project_path }}" --configuration Release
+          dotnet build "$PROJECT_PATH" --configuration Release
           --no-restore
 
       - name: Install Playwright browsers
         if: ${{ matrix.requires_playwright }}
+        env:
+          PROJECT_PATH: ${{ matrix.project_path }}
         run: |
-          project_dir="$(dirname "${{ matrix.project_path }}")"
+          project_dir="$(dirname "$PROJECT_PATH")"
           playwright_script=$(find "$project_dir/bin/Release" \
             -type f -name "playwright.ps1" | head -n 1)
           if [ -z "$playwright_script" ]; then
-            echo "::error::Unable to locate playwright.ps1 \
-              for ${{ matrix.project_path }}"
+            echo "::error::Unable to locate playwright.ps1 for $PROJECT_PATH"
             exit 1
           fi
           pwsh "$playwright_script" install chromium --with-deps
 
       - name: Run tests
         id: run-tests
+        # Matrix values come from PR-controlled file names, so they reach the
+        # shell as quoted environment variables, never as interpolated text.
+        # The Auth0 secrets are scoped to this step, for tests that start the
+        # app; nothing else in the workflow sees them.
+        env:
+          PROJECT_PATH: ${{ matrix.project_path }}
+          TEST_ID: ${{ matrix.test_id }}
+          VERBOSITY: ${{ matrix.verbosity }}
+          NO_BUILD: ${{ matrix.no_build }}
+          Auth0__Domain: ${{ secrets.AUTH0_DOMAIN }}
+          Auth0__ClientId: ${{ secrets.AUTH0_CLIENT_ID }}
+          Auth0__ClientSecret: ${{ secrets.AUTH0_CLIENT_SECRET }}
         run: |
           mkdir -p test-results
 
           no_build_arg=""
-          if [ "${{ matrix.no_build }}" = "true" ]; then
+          if [ "$NO_BUILD" = "true" ]; then
             no_build_arg="--no-build"
           fi
 
@@ -327,19 +335,19 @@ jobs:
           # instead of the legacy VSTest collector/Logger syntax.
           # .NET 10 uses Microsoft Testing Platform (MTP), which accepts the
           # xUnit TRX report option but not the legacy VSTest coverage flags.
-          dotnet test "${{ matrix.project_path }}" \
+          dotnet test "$PROJECT_PATH" \
             --configuration Release \
             $no_build_arg \
-            --verbosity "${{ matrix.verbosity }}" \
+            --verbosity "$VERBOSITY" \
             --results-directory "$GITHUB_WORKSPACE/test-results" \
             --report-xunit-trx \
-            --report-xunit-trx-filename "${{ matrix.test_id }}.trx" \
+            --report-xunit-trx-filename "${TEST_ID}.trx" \
             --coverage \
             --coverage-output-format cobertura \
-            --coverage-output "${{ matrix.test_id }}.cobertura.xml"
+            --coverage-output "${TEST_ID}.cobertura.xml"
           exit_code=$?
           if [ $exit_code -ne 0 ]; then
-            echo "::error::Test project failed: ${{ matrix.project_path }}"
+            echo "::error::Test project failed: $PROJECT_PATH"
           fi
           exit $exit_code
 
@@ -455,6 +463,12 @@ jobs:
     name: Test Report Summary
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    # publish-unit-test-result-action writes a check run and a PR comment.
+    permissions:
+      contents: read
+      checks: write
+      pull-requests: write
+      issues: read
     needs:
       - build
       - discover-tests
@@ -480,6 +494,10 @@ jobs:
 
       - name: Generate job summary
         if: always()
+        env:
+          # PR-controlled project paths: read from the environment, not
+          # interpolated into the script.
+          TEST_MATRIX: ${{ needs.discover-tests.outputs.matrix }}
         run: |
           summary="$GITHUB_STEP_SUMMARY"
           echo "## Test Execution Summary" >> $GITHUB_STEP_SUMMARY
@@ -496,8 +514,8 @@ jobs:
           echo "- Coverage report: \`coverage-reports\`" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "### Discovered Test Projects" >> $GITHUB_STEP_SUMMARY
-          echo '${{ needs.discover-tests.outputs.matrix }}' \
-            | jq -r '.include[].project_path | "- " + .' >> "$summary"
+          printf '%s' "$TEST_MATRIX" \
+            | jq -r '(.include // [])[].project_path | "- " + .' >> "$summary"
           echo "" >> $GITHUB_STEP_SUMMARY
 
           # Set overall status

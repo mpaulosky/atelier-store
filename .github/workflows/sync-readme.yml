@@ -24,6 +24,9 @@ env:
 
 jobs:
   sync:
+    # Publishes a PR into main, so a manual run from a branch (which would
+    # read that branch's README) doesn't sync anything.
+    if: ${{ github.ref == 'refs/heads/main' }}
     runs-on: ubuntu-latest
     timeout-minutes: 5
 
@@ -75,7 +78,7 @@ jobs:
           fi
 
           git add docs/README.md
-          git commit -m "docs: sync README.md -> docs/README.md [skip ci]"
+          git commit -m "docs: sync README.md -> docs/README.md [skip ci] [skip-release]"
           git push --force-with-lease origin HEAD
           echo "committed=true" >> "$GITHUB_OUTPUT"
 
@@ -110,7 +113,9 @@ jobs:
               repo,
               base: mainBranch,
               head: 'automation/sync-readme',
-              title: 'docs: sync README.md -> docs/README.md',
+              // [skip-release] keeps release.yml from tagging a release
+              // for this automated sync when it merges.
+              title: 'docs: sync README.md -> docs/README.md [skip-release]',
               body: [
                 'Automated README sync PR for protected main.',
                 '',

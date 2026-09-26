@@ -42,7 +42,7 @@ fi
 
 step "Build"
 mapfile -t SOLUTIONS < <(find . -maxdepth 1 -name '*.slnx')
-dotnet build "${SOLUTIONS[@]}" --configuration Release
+dotnet build "${SOLUTIONS[@]}" --configuration Release -warnaserror
 
 step "Tests"
 mapfile -t TEST_PROJECTS < <(find tests -mindepth 2 -maxdepth 2 -name '*.csproj' 2>/dev/null | sort)

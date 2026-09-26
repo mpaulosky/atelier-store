@@ -42,7 +42,9 @@ jobs:
           echo 'Reason: ${{ github.event.inputs.reason }}'
       - name: .NET code metrics
         id: dotnet-code-metrics
-        uses: dotnet/samples/github-actions/DotNet.GitHubAction@main
+        # Pinned to an audited commit: pull request runs execute this external
+        # action, so an upstream change mustn't reach them unreviewed.
+        uses: dotnet/samples/github-actions/DotNet.GitHubAction@acb39ceb13f910ae0f8f6298059c59102b749c41  # main as of 2026-09-26
         env:
           GREETINGS: "Hello, .NET developers!"  # ${{ secrets.GITHUB_TOKEN }}
         with:

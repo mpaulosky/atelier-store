@@ -99,6 +99,11 @@ def test_slugify_matches_the_workflow_slug():
     assert rp.slugify("!!!") == "pr-update"
 
 
+def test_post_title_is_a_valid_yaml_double_quoted_scalar():
+    post = rp.render_post({"number": 7}, 'Fix "quotes" and a trailing \\', "v1.2.3", "2026-09-26", [], [], None, "m")
+    assert 'post_title: "Fix \\"quotes\\" and a trailing \\\\"\n' in post
+
+
 def test_commits_section_lists_subjects_only():
     section = rp.render_commits(FakeGitHub().commits(42))
     assert section == (

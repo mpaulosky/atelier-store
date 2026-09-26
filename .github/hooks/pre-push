@@ -50,6 +50,16 @@ if [[ -n "$PUSH_REFS" ]]; then
     fi
 
     check_branch_name "$branch"
+
+    # The gate runs against the working tree, so it only vouches for the
+    # commit that is checked out. Refuse a push of anything else (another
+    # branch, or a tag pushed to a branch) rather than gate the wrong code.
+    pushed_commit="$(git rev-parse --verify --quiet "${local_sha}^{commit}" || echo "$local_sha")"
+    if [[ "$pushed_commit" != "$(git rev-parse HEAD)" ]]; then
+      echo -e "${RED}❌ '${branch}' is not the checked-out commit, so the gate can't test it.${RESET}"
+      echo -e "   Check it out first: ${YELLOW}git switch ${branch}${RESET}, then push again."
+      exit 1
+    fi
     UPDATES_BRANCH=true
   done <<< "$PUSH_REFS"
 
@@ -62,8 +72,8 @@ else
   check_branch_name "$(git symbolic-ref --short HEAD 2>/dev/null || echo "")"
 fi
 
-# The gate runs against the working tree, so push from a checkout of the
-# branch being pushed.
+# Every pushed branch is the checked-out commit (checked above), so the
+# working tree is what gets pushed.
 "$ROOT/scripts/gate.sh"
 
 echo -e "\n${GREEN}━━━ All gates passed — pushing ✅ ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${RESET}\n"

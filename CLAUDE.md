@@ -19,6 +19,7 @@ Featured collections are editorial content and are still hard-coded in `Catalog/
 cp .env.example .env                  # fill in Auth0 values
 docker compose up -d                  # local Postgres 17 on :5432
 dotnet tool restore                   # installs dotnet-ef (tool manifest: dotnet-tools.json)
+git config core.hooksPath .github/hooks  # enable the repo git hooks (one-time, per clone)
 dotnet build AtelierStore.slnx
 dotnet run --project src/AtelierStore.Web --launch-profile https   # https://localhost:7207
 

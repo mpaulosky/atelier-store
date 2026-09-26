@@ -8,9 +8,14 @@ name: PR Auto-Merge
 # before that review arrives. Each trigger below is a moment one of those
 # conditions can become true; the job re-checks all of them every time.
 "on":
-  pull_request:
+  # pull_request_target, not pull_request: it runs this file as it is on
+  # main, so a PR can't edit the script that decides whether it merges or
+  # reach the PAT. The job never checks out PR code.
+  pull_request_target:
     types: [opened, ready_for_review, reopened, edited, synchronize]
     branches: [main]
+  # pull_request_review has no _target variant and runs the PR's copy of
+  # this file, so those runs get only GITHUB_TOKEN (see github-token below).
   pull_request_review:
     types: [submitted]
   # GitHub sends no check_suite events for suites created by Actions, and
@@ -32,17 +37,21 @@ permissions:
 jobs:
   merge-when-ready:
     name: Merge same-repo PRs when ready
+    # A manual sweep can merge every ready PR, so it runs only from main.
+    if: ${{ github.event_name != 'workflow_dispatch' || github.ref == 'refs/heads/main' }}
     runs-on: ubuntu-latest
     steps:
       - name: Squash-merge when ready
         uses: actions/github-script@v9
         env:
-          HAS_RELEASE_PR_PAT: ${{ secrets.RELEASE_PR_PAT != '' }}
+          HAS_RELEASE_PR_PAT: ${{ github.event_name != 'pull_request_review' && secrets.RELEASE_PR_PAT != '' }}
         with:
           # A merge made with GITHUB_TOKEN starts no workflows, so release.yml
           # (on: pull_request closed) would never run for it. Merge with the
-          # PAT when it's set, the same fallback the release workflow uses.
-          github-token: ${{ secrets.RELEASE_PR_PAT || secrets.GITHUB_TOKEN }}
+          # PAT when it's set, the same fallback the release workflow uses,
+          # except on pull_request_review, whose runs execute PR-controlled
+          # code. The next scheduled sweep merges those with the PAT instead.
+          github-token: ${{ github.event_name != 'pull_request_review' && secrets.RELEASE_PR_PAT || secrets.GITHUB_TOKEN }}
           script: |
             const { owner, repo } = context.repo;
 

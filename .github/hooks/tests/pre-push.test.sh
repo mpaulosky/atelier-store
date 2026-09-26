@@ -41,6 +41,8 @@ cp "$GATE" "$REPO/scripts/gate.sh"
 git -C "$REPO" add .
 git -C "$REPO" commit -q -m init
 git -C "$REPO" update-ref refs/remotes/origin/main main
+# An annotated tag, so a tag pushed to a branch has a tag object to peel.
+git -C "$REPO" tag -a v1.0.0 -m v1.0.0
 
 PASSED=0
 FAILED=0
@@ -54,10 +56,14 @@ switch_to() {
 }
 
 # run_hook <checked-out branch> <stdin>
+# In <stdin>, @HEAD@ becomes the checked-out commit and @TAG@ the v1.0.0 tag
+# object, so a case can push exactly what is checked out.
 run_hook() {
   switch_to "$1"
   : > "$LOG"
-  OUTPUT="$(cd "$REPO" && PATH="$STUBS:$PATH" bash "$HOOK" <<< "$2" 2>&1)"
+  local stdin="${2//@HEAD@/$(git -C "$REPO" rev-parse HEAD)}"
+  stdin="${stdin//@TAG@/$(git -C "$REPO" rev-parse v1.0.0)}"
+  OUTPUT="$(cd "$REPO" && PATH="$STUBS:$PATH" bash "$HOOK" <<< "$stdin" 2>&1)"
   STATUS=$?
 }
 
@@ -119,11 +125,11 @@ expect "deleting preview is refused" refused tests-skipped "Deleting 'preview' i
 run_hook main "refs/heads/main $SHA refs/heads/main $ZERO"
 expect "pushing main is refused" refused tests-skipped "Direct pushes to 'main' are not allowed."
 
-run_hook feature/1-x "refs/heads/feature/1-x $SHA refs/heads/feature/1-x $ZERO"
+run_hook feature/1-x "refs/heads/feature/1-x @HEAD@ refs/heads/feature/1-x $ZERO"
 expect "pushing a feature branch runs the gates" allowed tests-ran
 
 run_hook main "refs/heads/feature/1-x $SHA refs/heads/feature/1-x $ZERO"
-expect "pushing a feature branch from main runs the gates" allowed tests-ran
+expect "pushing a branch that isn't checked out is refused" refused tests-skipped "is not the checked-out commit"
 
 run_hook feature/1-x "HEAD $SHA refs/heads/bad-name $ZERO"
 expect "pushing to a badly named branch is refused" refused tests-skipped "Branch name 'bad-name' does not match"
@@ -134,8 +140,8 @@ expect "pushing to dev from a feature branch is refused" refused tests-skipped "
 run_hook feature/1-x "refs/tags/v1.0.0 $SHA refs/tags/v1.0.0 $ZERO"
 expect "a tag-only push skips the gates" allowed tests-skipped "No branch updates"
 
-run_hook main "refs/tags/v1.0.0 $SHA refs/tags/v1.0.0 $ZERO
-refs/heads/feature/1-x $SHA refs/heads/feature/1-x $ZERO"
+run_hook feature/1-x "refs/tags/v1.0.0 $SHA refs/tags/v1.0.0 $ZERO
+refs/heads/feature/1-x @HEAD@ refs/heads/feature/1-x $ZERO"
 expect "a mixed tag and branch push gates the branch" allowed tests-ran
 
 run_hook feature/1-x "refs/tags/v1.0.0 $SHA refs/tags/v1.0.0 $ZERO
@@ -145,8 +151,8 @@ expect "a mixed tag and badly named branch push is refused" refused tests-skippe
 run_hook feature/1-x "refs/tags/v1.0.0 $SHA refs/heads/main $ZERO"
 expect "pushing a tag to main is refused" refused tests-skipped "Direct pushes to 'main' are not allowed."
 
-run_hook main "refs/tags/v1.0.0 $SHA refs/heads/feature/1-x $ZERO"
-expect "pushing a tag to a feature branch runs the gates" allowed tests-ran
+run_hook feature/1-x "refs/tags/v1.0.0 @TAG@ refs/heads/feature/1-x $ZERO"
+expect "pushing a tag of the checked-out commit to a feature branch runs the gates" allowed tests-ran
 
 run_hook main "(delete) $ZERO refs/tags/v1.0.0 $SHA"
 expect "deleting a tag skips the gates" allowed tests-skipped
@@ -165,10 +171,10 @@ echo 'second' > "$REPO/second.txt"
 git -C "$REPO" add second.txt
 git -C "$REPO" commit -q -m second
 FAIL='npx*first.md*' run_hook feature/2-two-commits \
-  "refs/heads/feature/2-two-commits $SHA refs/heads/feature/2-two-commits $ZERO"
+  "refs/heads/feature/2-two-commits @HEAD@ refs/heads/feature/2-two-commits $ZERO"
 expect "a lint error in the first of two unpushed commits refuses the push" refused any
 
-FAIL='dotnet build*' run_hook feature/1-x "refs/heads/feature/1-x $SHA refs/heads/feature/1-x $ZERO"
+FAIL='dotnet build*' run_hook feature/1-x "refs/heads/feature/1-x @HEAD@ refs/heads/feature/1-x $ZERO"
 expect "a failing build refuses the push" refused any
 
 echo
