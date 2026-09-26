@@ -29,8 +29,9 @@ applyTo: "**"
 - Use TDD (Test-Driven Development) approach for new features and bug fixes.
 - Every test method must have `// Arrange`, `// Act`, `// Assert` comment markers.
 - During iteration, run the smallest targeted tests that cover the change.
-- Use `dotnet test --filter FullyQualifiedName~{Namespace}.{ClassName}.{MethodName}` to run a single test method.
-- Use `dotnet test --filter FullyQualifiedName~{Namespace}.{ClassName}` to run all tests in a class.
+- Tests run on Microsoft Testing Platform (opted in via `global.json`), so filters use xUnit v3's MTP options, not VSTest's `--filter`.
+- Use `dotnet test --project tests/{Project} --filter-method {Namespace}.{ClassName}.{MethodName}` to run a single test method.
+- Use `dotnet test --project tests/{Project} --filter-class {Namespace}.{ClassName}` to run all tests in a class.
 - Before push or PR-ready handoff, run all enforced repository validation gates (including required full test runs).
 
 ## Security

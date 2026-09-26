@@ -4,8 +4,8 @@ using Microsoft.EntityFrameworkCore;
 
 namespace AtelierStore.Web.Catalog;
 
-/// <summary>Read-only storefront queries over the catalog tables, returning the <see cref="Product"/> view record.</summary>
-public sealed class ProductCatalog(IDbContextFactory<AppDbContext> dbFactory)
+/// <summary>EF Core implementation of <see cref="IProductCatalog"/> over the catalog tables.</summary>
+public sealed class ProductCatalog(IDbContextFactory<AppDbContext> dbFactory) : IProductCatalog
 {
 	private static readonly Expression<Func<Data.Product, Product>> ToView = p => new Product(
 		p.Slug,

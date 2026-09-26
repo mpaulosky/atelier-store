@@ -1,0 +1,31 @@
+<Project>
+	<!-- Shared settings for every project under tests/. Package versions live in the root Directory.Packages.props. -->
+	<PropertyGroup>
+		<TargetFramework>net10.0</TargetFramework>
+		<Nullable>enable</Nullable>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<IsPackable>false</IsPackable>
+		<IsTestProject>true</IsTestProject>
+		<!-- xUnit v3 test projects are executables that run on Microsoft Testing Platform (see global.json). -->
+		<OutputType>Exe</OutputType>
+		<UseMicrosoftTestingPlatformRunner>true</UseMicrosoftTestingPlatformRunner>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<PackageReference Include="xunit.v3" />
+		<PackageReference Include="FluentAssertions" />
+		<PackageReference Include="NSubstitute" />
+		<PackageReference Include="NSubstitute.Analyzers.CSharp">
+			<PrivateAssets>all</PrivateAssets>
+			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+		</PackageReference>
+		<!-- Enables the MTP coverage switch that CI passes to dotnet test. -->
+		<PackageReference Include="Microsoft.Testing.Extensions.CodeCoverage" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<Using Include="FluentAssertions" />
+		<Using Include="NSubstitute" />
+		<Using Include="Xunit" />
+	</ItemGroup>
+</Project>
