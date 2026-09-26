@@ -1,5 +1,6 @@
 @page "/products/{Slug}"
 @inject NavigationManager Navigation
+@inject ProductCatalog Catalog
 
 @if (product is not null)
 {
@@ -99,20 +100,16 @@
 	// Acknowledged but not stored yet: there is no bag behind this.
 	private bool added;
 
-	protected override void OnParametersSet()
+	protected override async Task OnParametersSetAsync()
 	{
-		product = SampleCatalog.FindProduct(Slug);
+		product = await Catalog.FindBySlugAsync(Slug);
 		if (product is null)
 		{
 			Navigation.NotFound();
 			return;
 		}
 
-		relatedProducts = SampleCatalog.NewArrivals
-			.Where(candidate => candidate != product)
-			.OrderByDescending(candidate => candidate.Category == product.Category)
-			.Take(RelatedCount)
-			.ToList();
+		relatedProducts = await Catalog.GetRelatedAsync(product.Slug, RelatedCount);
 	}
 
 	private void AddToBag() => added = product?.StockState is not StockState.SoldOut;

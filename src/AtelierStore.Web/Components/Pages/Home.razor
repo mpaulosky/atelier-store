@@ -1,5 +1,6 @@
 @page "/"
 @using System.ComponentModel.DataAnnotations
+@inject ProductCatalog Catalog
 
 <PageTitle>Atelier | Autumn Collection</PageTitle>
 
@@ -33,7 +34,7 @@
 		</header>
 	</div>
 	<div class="editorial-grid">
-		@foreach (Collection collection in SampleCatalog.FeaturedCollections)
+		@foreach (Collection collection in EditorialContent.FeaturedCollections)
 		{
 			<a class="collection-tile" href="@collection.Slug">
 				<div class="media aspect-[4/5] lg:aspect-[3/2]">
@@ -64,7 +65,7 @@
 		</header>
 
 		<div class="product-grid">
-			@foreach (Product product in SampleCatalog.NewArrivals)
+			@foreach (Product product in newArrivals)
 			{
 				<ProductCard Product="product" />
 			}
@@ -164,13 +165,19 @@
 	private const string HeroLeftId = "1539109136881-3be0616acf4b";
 	private const string HeroRightId = "1485968579580-b6d095142e6e";
 	private const string StoryImageId = "1558769132-cb1aea458c5e";
+	private const int NewArrivalsCount = 8;
 
 	[SupplyParameterFromForm(FormName = "newsletter")]
 	private NewsletterSignup? Newsletter { get; set; }
 
+	private IReadOnlyList<Product> newArrivals = [];
 	private bool subscribed;
 
-	protected override void OnInitialized() => Newsletter ??= new();
+	protected override async Task OnInitializedAsync()
+	{
+		Newsletter ??= new();
+		newArrivals = await Catalog.GetNewArrivalsAsync(NewArrivalsCount);
+	}
 
 	private void Subscribe() => subscribed = true;
 
