@@ -1,4 +1,5 @@
 using Auth0.AspNetCore.Authentication;
+using AtelierStore.Web.Catalog;
 using AtelierStore.Web.Components;
 using AtelierStore.Web.Data;
 using Microsoft.AspNetCore.Authentication;
@@ -29,9 +30,12 @@ builder.Services.AddAuth0WebAppAuthentication(options =>
 builder.Services.AddAuthorization();
 builder.Services.AddCascadingAuthenticationState();
 
-// PostgreSQL
-builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseNpgsql(RequiredSetting("ConnectionStrings:Default")));
+// PostgreSQL. The factory suits Blazor Server (one short-lived context per query) and
+// also registers a scoped AppDbContext, which the health check uses.
+builder.Services.AddDbContextFactory<AppDbContext>(options =>
+    options.UseNpgsql(RequiredSetting("ConnectionStrings:Default"))
+        .UseSnakeCaseNamingConvention());
+builder.Services.AddSingleton<ProductCatalog>();
 
 builder.Services.AddHealthChecks()
     .AddDbContextCheck<AppDbContext>("postgres");
