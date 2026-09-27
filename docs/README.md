@@ -58,6 +58,7 @@ The app fails at startup if `Auth0:Domain`, `Auth0:ClientId`, or `ConnectionStri
 
 | Version | Date | Title | Blog post |
 | ------- | ---- | ----- | --------- |
+| [v0.0.16](https://github.com/mpaulosky/atelier-store/releases/tag/v0.0.16) | 2026-09-27 | feat(docs): Add a GitHub Pages site in docs/index.html | [Post](https://github.com/mpaulosky/atelier-store/blob/main/docs/blogs/2026-09-27-pr-40-feat-docs-add-a-github-pages-site-in-docs-index-html.md) |
 | [v0.0.15](https://github.com/mpaulosky/atelier-store/releases/tag/v0.0.15) | 2026-09-27 | docs: Add contributing guide, security policy, references, and code of conduct | [Post](https://github.com/mpaulosky/atelier-store/blob/main/docs/blogs/2026-09-27-pr-35-docs-add-contributing-guide-security-policy-references-and-code-of-conduct.md) |
 | [v0.0.14](https://github.com/mpaulosky/atelier-store/releases/tag/v0.0.14) | 2026-09-27 | fix(Web): Expose the mobile menu toggle as a button | [Post](https://github.com/mpaulosky/atelier-store/blob/main/docs/blogs/2026-09-27-pr-36-fix-web-expose-the-mobile-menu-toggle-as-a-button.md) |
 | [v0.0.13](https://github.com/mpaulosky/atelier-store/releases/tag/v0.0.13) | 2026-09-27 | fix(Web): Require lowercase product and category slugs | [Post](https://github.com/mpaulosky/atelier-store/blob/main/docs/blogs/2026-09-27-pr-33-fix-web-require-lowercase-product-and-category-slugs.md) |
@@ -67,7 +68,6 @@ The app fails at startup if `Auth0:Domain`, `Auth0:ClientId`, or `ConnectionStri
 | [v0.0.9](https://github.com/mpaulosky/atelier-store/releases/tag/v0.0.9) | 2026-09-27 | chore(agents): Add Beast Mode custom agent without gate-bypassing tools | — |
 | [v0.0.8](https://github.com/mpaulosky/atelier-store/releases/tag/v0.0.8) | 2026-09-27 | chore(vscode): Auto-approve agent git add/commit but not --no-verify | — |
 | [v0.0.7](https://github.com/mpaulosky/atelier-store/releases/tag/v0.0.7) | 2026-09-27 | test(Web): Add Playwright E2E tests for storefront flows | [Post](https://github.com/mpaulosky/atelier-store/blob/main/docs/blogs/2026-09-27-pr-19-test-web-add-playwright-e2e-tests-for-storefront-flows.md) |
-| [v0.0.6](https://github.com/mpaulosky/atelier-store/releases/tag/v0.0.6) | 2026-09-27 | chore: Ignore Claude Code worktrees | — |
 
 <!-- RELEASES_END -->
 

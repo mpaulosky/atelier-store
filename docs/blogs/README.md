@@ -4,6 +4,7 @@ This directory contains concise release-review posts for merged PR releases.
 
 | Date | Title | Tags |
 | ---- | ----- | ---- |
+| 2026-09-27 | [feat(docs): Add a GitHub Pages site in docs/index.html](2026-09-27-pr-40-feat-docs-add-a-github-pages-site-in-docs-index-html.md) | release,automation |
 | 2026-09-27 | [docs: Add contributing guide, security policy, references, and code of conduct](2026-09-27-pr-35-docs-add-contributing-guide-security-policy-references-and-code-of-conduct.md) | release,automation |
 | 2026-09-27 | [fix(Web): Expose the mobile menu toggle as a button](2026-09-27-pr-36-fix-web-expose-the-mobile-menu-toggle-as-a-button.md) | release,automation |
 | 2026-09-27 | [fix(Web): Require lowercase product and category slugs](2026-09-27-pr-33-fix-web-require-lowercase-product-and-category-slugs.md) | release,automation |
