@@ -1,0 +1,1172 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<title>Atelier Store</title>
+		<meta name="description" content="Atelier Store: an open-source .NET 10 Blazor storefront with Tailwind CSS, Auth0, and PostgreSQL. Release notes, blog posts, and setup guide." />
+		<meta name="color-scheme" content="light dark" />
+		<meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)" />
+		<meta name="theme-color" content="#121110" media="(prefers-color-scheme: dark)" />
+		<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%23111111'/%3E%3Ctext x='16' y='22' font-family='Futura,sans-serif' font-size='17' font-weight='500' fill='%23ffffff' text-anchor='middle'%3EA%3C/text%3E%3C/svg%3E" />
+		<link rel="preconnect" href="https://fonts.googleapis.com" />
+		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+		<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;1,400&family=Jost:wght@300;400;500&display=swap" />
+		<!--
+			GitHub Pages site for Atelier Store, served from main:/docs (with .nojekyll, so no Jekyll build).
+
+			Two sections are generated. .github/scripts/release_post.py rewrites everything between the
+			RELEASES_HTML and BLOGS_HTML START/END markers on every release, so don't edit inside them.
+
+			Everything else is hand-written. The hero, "Get started", "Project layout" and "Endpoints"
+			sections mirror docs/README.md: update them here when the README's setup steps, layout
+			table or endpoints change.
+
+			Colors and fonts follow the store's design tokens in src/AtelierStore.Web/Styles/app.css.
+		-->
+		<style>
+			:root {
+				--font-sans: "Jost", "Futura", "Century Gothic", ui-sans-serif, system-ui, sans-serif;
+				--font-serif: "Cormorant Garamond", "Garamond", "Times New Roman", ui-serif, serif;
+				--font-mono: ui-monospace, "SFMono-Regular", "Cascadia Code", Menlo, Consolas, monospace;
+
+				--color-paper: #ffffff;
+				--color-ink: #111111;
+				--color-ink-soft: #3d3b39;
+				--color-muted: #6f6b66;
+				--color-line: #e4e1dc;
+				--color-line-strong: #c9c5bf;
+				--color-stone: #f4f2ef;
+				--color-stone-deep: #e9e6e1;
+				--color-accent: #5b1a20;
+				--color-accent-soft: #f3e9e8;
+				--color-code-bg: #111111;
+				--color-code-ink: #f4f2ef;
+
+				--tracking-label: 0.14em;
+				--tracking-wide-label: 0.24em;
+				--gutter: 1rem;
+				--header: 3.5rem;
+				--content: 80rem;
+				--ease-soft: cubic-bezier(0.2, 0, 0, 1);
+				--duration-quick: 150ms;
+				--duration-calm: 400ms;
+			}
+
+			@media (prefers-color-scheme: dark) {
+				:root {
+					--color-paper: #121110;
+					--color-ink: #f2efea;
+					--color-ink-soft: #cdc8c1;
+					--color-muted: #a19b94;
+					--color-line: #2c2a27;
+					--color-line-strong: #46433f;
+					--color-stone: #1b1a18;
+					--color-stone-deep: #24221f;
+					--color-accent: #e3aab0;
+					--color-accent-soft: #2e1c1e;
+					--color-code-bg: #1b1a18;
+					--color-code-ink: #f2efea;
+				}
+			}
+
+			@media (min-width: 48rem) {
+				:root {
+					--gutter: 2rem;
+					--header: 4.5rem;
+				}
+			}
+
+			*,
+			*::before,
+			*::after {
+				box-sizing: border-box;
+			}
+
+			html {
+				scroll-behavior: smooth;
+				scroll-padding-top: calc(var(--header) + 1rem);
+				-webkit-text-size-adjust: 100%;
+			}
+
+			@media (prefers-reduced-motion: reduce) {
+				html {
+					scroll-behavior: auto;
+				}
+
+				*,
+				*::before,
+				*::after {
+					transition-duration: 0s !important;
+				}
+			}
+
+			body {
+				margin: 0;
+				background-color: var(--color-paper);
+				color: var(--color-ink);
+				font-family: var(--font-sans);
+				font-size: 0.9375rem;
+				font-weight: 300;
+				line-height: 1.65;
+				-webkit-font-smoothing: antialiased;
+			}
+
+			a {
+				color: inherit;
+				text-decoration-color: var(--color-line-strong);
+				text-underline-offset: 0.2em;
+				transition: text-decoration-color var(--duration-quick) var(--ease-soft), color var(--duration-quick) var(--ease-soft);
+			}
+
+			a:hover {
+				text-decoration-color: currentColor;
+			}
+
+			:focus-visible {
+				outline: 2px solid var(--color-accent);
+				outline-offset: 3px;
+			}
+
+			h1,
+			h2,
+			h3 {
+				margin: 0;
+				font-weight: 400;
+				text-wrap: balance;
+			}
+
+			p {
+				margin: 0;
+			}
+
+			code {
+				font-family: var(--font-mono);
+				font-size: 0.85em;
+				padding: 0.1em 0.35em;
+				background-color: var(--color-stone);
+				border: 1px solid var(--color-line);
+			}
+
+			.container {
+				width: 100%;
+				max-width: var(--content);
+				margin-inline: auto;
+				padding-inline: var(--gutter);
+			}
+
+			.eyebrow {
+				font-size: 0.6875rem;
+				font-weight: 500;
+				line-height: 1.4;
+				letter-spacing: var(--tracking-label);
+				text-transform: uppercase;
+			}
+
+			.muted {
+				color: var(--color-muted);
+			}
+
+			.skip-link {
+				position: absolute;
+				left: var(--gutter);
+				top: -4rem;
+				z-index: 100;
+				padding: 0.75rem 1.25rem;
+				background-color: var(--color-ink);
+				color: var(--color-paper);
+			}
+
+			.skip-link:focus {
+				top: 0.75rem;
+			}
+
+			/* Announcement bar and header */
+
+			.announcement-bar {
+				padding: 0.5rem var(--gutter);
+				background-color: var(--color-ink);
+				color: var(--color-paper);
+				font-size: 0.625rem;
+				font-weight: 400;
+				letter-spacing: var(--tracking-label);
+				text-align: center;
+				text-transform: uppercase;
+			}
+
+			.site-header {
+				position: sticky;
+				top: 0;
+				z-index: 40;
+				background-color: color-mix(in srgb, var(--color-paper) 92%, transparent);
+				border-bottom: 1px solid var(--color-line);
+				backdrop-filter: saturate(1.4) blur(10px);
+				-webkit-backdrop-filter: saturate(1.4) blur(10px);
+			}
+
+			.site-header .container {
+				display: flex;
+				align-items: center;
+				justify-content: space-between;
+				height: var(--header);
+			}
+
+			.wordmark {
+				font-size: 1.125rem;
+				font-weight: 500;
+				line-height: 1;
+				letter-spacing: var(--tracking-wide-label);
+				text-decoration: none;
+				text-transform: uppercase;
+			}
+
+			@media (min-width: 64rem) {
+				.wordmark {
+					font-size: 1.5rem;
+				}
+			}
+
+			.nav-inline {
+				display: none;
+				gap: 2rem;
+			}
+
+			.nav-inline a,
+			.nav-drawer-panel a {
+				text-decoration: none;
+			}
+
+			.nav-inline a:hover {
+				color: var(--color-accent);
+			}
+
+			@media (min-width: 48rem) {
+				.nav-inline {
+					display: flex;
+				}
+
+				.nav-drawer {
+					display: none;
+				}
+			}
+
+			.nav-drawer > summary {
+				display: grid;
+				place-items: center;
+				width: 2.75rem;
+				height: 2.75rem;
+				margin-right: -0.75rem;
+				cursor: pointer;
+				list-style: none;
+			}
+
+			.nav-drawer > summary::-webkit-details-marker {
+				display: none;
+			}
+
+			.nav-drawer .icon-close,
+			.nav-drawer[open] .icon-menu {
+				display: none;
+			}
+
+			.nav-drawer[open] .icon-close {
+				display: block;
+			}
+
+			.nav-drawer-panel {
+				position: absolute;
+				inset-inline: 0;
+				top: 100%;
+				padding: 1.5rem var(--gutter) 2rem;
+				background-color: var(--color-paper);
+				border-bottom: 1px solid var(--color-line);
+			}
+
+			.nav-drawer-panel ul {
+				display: grid;
+				gap: 1.25rem;
+				margin: 0;
+				padding: 0;
+				list-style: none;
+			}
+
+			.nav-drawer-panel a {
+				font-size: 1.5rem;
+				font-weight: 400;
+			}
+
+			.icon {
+				width: 1.25rem;
+				height: 1.25rem;
+				fill: none;
+				stroke: currentColor;
+				stroke-width: 1.25;
+				stroke-linecap: square;
+			}
+
+			/* Hero */
+
+			.hero {
+				padding-block: 4.5rem 4rem;
+				border-bottom: 1px solid var(--color-line);
+			}
+
+			@media (min-width: 48rem) {
+				.hero {
+					padding-block: 7rem 6rem;
+				}
+			}
+
+			.hero .eyebrow {
+				color: var(--color-accent);
+			}
+
+			.hero h1 {
+				margin-top: 1.25rem;
+				font-family: var(--font-serif);
+				font-size: clamp(3rem, 1.75rem + 6vw, 7rem);
+				font-weight: 400;
+				line-height: 0.95;
+				letter-spacing: -0.015em;
+			}
+
+			.hero h1 em {
+				font-style: italic;
+				color: var(--color-ink-soft);
+			}
+
+			.hero-lead {
+				max-width: 36rem;
+				margin-top: 1.75rem;
+				color: var(--color-ink-soft);
+				font-size: clamp(1rem, 0.95rem + 0.3vw, 1.125rem);
+				line-height: 1.7;
+			}
+
+			.stack-list {
+				display: flex;
+				flex-wrap: wrap;
+				gap: 0.5rem;
+				margin: 2rem 0 0;
+				padding: 0;
+				list-style: none;
+			}
+
+			.stack-list li {
+				padding: 0.4rem 0.75rem;
+				border: 1px solid var(--color-line-strong);
+				color: var(--color-ink-soft);
+			}
+
+			.actions {
+				display: flex;
+				flex-wrap: wrap;
+				gap: 0.75rem;
+				margin-top: 2.5rem;
+			}
+
+			.btn {
+				display: inline-flex;
+				align-items: center;
+				justify-content: center;
+				gap: 0.5rem;
+				min-height: 3rem;
+				padding-inline: 2rem;
+				border: 1px solid var(--color-ink);
+				background-color: transparent;
+				color: var(--color-ink);
+				text-decoration: none;
+				transition: background-color var(--duration-quick) var(--ease-soft), color var(--duration-quick) var(--ease-soft);
+			}
+
+			.btn-primary,
+			.btn-secondary:hover {
+				background-color: var(--color-ink);
+				color: var(--color-paper);
+			}
+
+			.btn-primary:hover {
+				background-color: var(--color-paper);
+				color: var(--color-ink);
+			}
+
+			/* Sections */
+
+			.section {
+				padding-block: 4rem;
+				border-bottom: 1px solid var(--color-line);
+			}
+
+			@media (min-width: 48rem) {
+				.section {
+					padding-block: 6rem;
+				}
+			}
+
+			.section-head {
+				display: flex;
+				flex-wrap: wrap;
+				align-items: end;
+				justify-content: space-between;
+				gap: 1rem 2rem;
+				margin-bottom: 2.5rem;
+			}
+
+			.section-head .eyebrow {
+				color: var(--color-muted);
+			}
+
+			.section-head h2 {
+				margin-top: 0.75rem;
+				font-size: clamp(1.75rem, 1.2rem + 2vw, 3rem);
+				line-height: 1.1;
+				letter-spacing: -0.01em;
+			}
+
+			.more-link {
+				text-decoration: none;
+				border-bottom: 1px solid var(--color-ink);
+				padding-bottom: 0.2rem;
+			}
+
+			.more-link:hover {
+				color: var(--color-accent);
+				border-color: var(--color-accent);
+			}
+
+			/* Blog cards (written by release_post.py) */
+
+			/* Hairlines come from each card's right and bottom borders, so a part-filled last row leaves blank cells. */
+			.post-grid {
+				display: grid;
+				grid-template-columns: 1fr;
+				margin: 0;
+				padding: 0;
+				list-style: none;
+				border-top: 1px solid var(--color-line);
+				border-left: 1px solid var(--color-line);
+			}
+
+			@media (min-width: 40rem) {
+				.post-grid {
+					grid-template-columns: repeat(2, 1fr);
+				}
+			}
+
+			@media (min-width: 64rem) {
+				.post-grid {
+					grid-template-columns: repeat(3, 1fr);
+				}
+			}
+
+			.post-card {
+				position: relative;
+				display: flex;
+				background-color: var(--color-paper);
+				border-right: 1px solid var(--color-line);
+				border-bottom: 1px solid var(--color-line);
+				transition: background-color var(--duration-calm) var(--ease-soft);
+			}
+
+			.post-card:hover {
+				background-color: var(--color-stone);
+			}
+
+			.post-card article {
+				display: flex;
+				flex-direction: column;
+				gap: 0.9rem;
+				width: 100%;
+				padding: 1.75rem 1.5rem;
+			}
+
+			@media (min-width: 48rem) {
+				.post-card article {
+					padding: 2.25rem 2rem;
+				}
+			}
+
+			.post-meta {
+				display: flex;
+				flex-wrap: wrap;
+				align-items: center;
+				gap: 0.5rem 0.75rem;
+				color: var(--color-muted);
+				font-size: 0.6875rem;
+				font-weight: 500;
+				letter-spacing: var(--tracking-label);
+				text-transform: uppercase;
+			}
+
+			.post-tag {
+				padding: 0.2rem 0.5rem;
+				text-transform: none;
+				background-color: var(--color-accent-soft);
+				color: var(--color-accent);
+			}
+
+			.post-title {
+				font-family: var(--font-serif);
+				font-size: clamp(1.375rem, 1.2rem + 0.6vw, 1.75rem);
+				line-height: 1.2;
+			}
+
+			.post-title a {
+				text-decoration: none;
+			}
+
+			/* The title link covers the whole card; the PR link sits above it. */
+			.post-title a::after {
+				content: "";
+				position: absolute;
+				inset: 0;
+			}
+
+			.post-card:hover .post-title a {
+				color: var(--color-accent);
+			}
+
+			.post-excerpt {
+				color: var(--color-ink-soft);
+				font-size: 0.875rem;
+				line-height: 1.65;
+			}
+
+			.post-source {
+				margin-top: auto;
+				padding-top: 0.5rem;
+				font-size: 0.6875rem;
+				font-weight: 500;
+				letter-spacing: var(--tracking-label);
+				text-transform: uppercase;
+			}
+
+			.post-source a {
+				position: relative;
+				z-index: 1;
+				color: var(--color-muted);
+			}
+
+			.post-source a:hover {
+				color: var(--color-ink);
+			}
+
+			.post-empty {
+				padding: 2rem;
+				border: 1px dashed var(--color-line-strong);
+				color: var(--color-muted);
+				text-align: center;
+			}
+
+			/* Tables: releases (written by release_post.py) and the project layout */
+
+			.table-wrap {
+				overflow-x: auto;
+				border-top: 1px solid var(--color-ink);
+			}
+
+			table {
+				width: 100%;
+				border-collapse: collapse;
+				font-size: 0.875rem;
+			}
+
+			th {
+				padding: 0.9rem 1rem 0.9rem 0;
+				color: var(--color-muted);
+				font-size: 0.6875rem;
+				font-weight: 500;
+				letter-spacing: var(--tracking-label);
+				text-align: left;
+				text-transform: uppercase;
+				white-space: nowrap;
+				border-bottom: 1px solid var(--color-line);
+			}
+
+			td {
+				padding: 1rem 1rem 1rem 0;
+				vertical-align: top;
+				border-bottom: 1px solid var(--color-line);
+			}
+
+			tbody tr {
+				transition: background-color var(--duration-quick) var(--ease-soft);
+			}
+
+			tbody tr:hover {
+				background-color: var(--color-stone);
+			}
+
+			#releases td:first-child,
+			#releases td:nth-child(2) {
+				white-space: nowrap;
+			}
+
+			#releases td:first-child a {
+				font-weight: 500;
+			}
+
+			#releases table {
+				min-width: 40rem;
+			}
+
+			.layout-table td:first-child {
+				width: 38%;
+			}
+
+			.layout-table table {
+				min-width: 36rem;
+			}
+
+			.after-table {
+				margin-top: 1.75rem;
+			}
+
+			/* Get started */
+
+			.setup-grid {
+				display: grid;
+				gap: 3rem;
+			}
+
+			@media (min-width: 64rem) {
+				.setup-grid {
+					grid-template-columns: 20rem 1fr;
+					gap: 5rem;
+				}
+			}
+
+			/* Let the code block scroll inside its column instead of widening the page. */
+			.setup-grid > * {
+				min-width: 0;
+			}
+
+			.setup-grid h3 {
+				margin-bottom: 1.25rem;
+				color: var(--color-muted);
+			}
+
+			.check-list {
+				display: grid;
+				gap: 1rem;
+				margin: 0;
+				padding: 0;
+				list-style: none;
+			}
+
+			.check-list li {
+				padding-left: 1.5rem;
+				position: relative;
+				color: var(--color-ink-soft);
+			}
+
+			.check-list li::before {
+				content: "";
+				position: absolute;
+				left: 0;
+				top: 0.7em;
+				width: 0.6rem;
+				border-top: 1px solid var(--color-accent);
+			}
+
+			.code-block {
+				position: relative;
+				margin: 0;
+				background-color: var(--color-code-bg);
+				color: var(--color-code-ink);
+				border: 1px solid var(--color-line);
+			}
+
+			.code-block pre {
+				margin: 0;
+				padding: 1.5rem;
+				overflow-x: auto;
+				font-family: var(--font-mono);
+				font-size: 0.8125rem;
+				line-height: 1.8;
+			}
+
+			.code-block code {
+				padding: 0;
+				background: none;
+				border: 0;
+				color: inherit;
+				font-size: inherit;
+			}
+
+			.code-block .comment {
+				color: #9d978f;
+			}
+
+			.copy-button {
+				position: absolute;
+				top: 0.75rem;
+				right: 0.75rem;
+				padding: 0.4rem 0.75rem;
+				border: 1px solid #4a4743;
+				background-color: #1f1e1c;
+				color: #f4f2ef;
+				font-family: var(--font-sans);
+				font-size: 0.625rem;
+				font-weight: 500;
+				letter-spacing: var(--tracking-label);
+				text-transform: uppercase;
+				cursor: pointer;
+			}
+
+			.copy-button:hover {
+				background-color: #f4f2ef;
+				color: #111111;
+			}
+
+			.copy-button[hidden] {
+				display: none;
+			}
+
+			.note {
+				margin-top: 1.5rem;
+				color: var(--color-ink-soft);
+			}
+
+			.note ul {
+				margin: 0.75rem 0 0;
+				padding-left: 1.25rem;
+			}
+
+			.endpoint-list {
+				display: grid;
+				gap: 1px;
+				margin: 0;
+				padding: 0;
+				list-style: none;
+				background-color: var(--color-line);
+				border: 1px solid var(--color-line);
+			}
+
+			@media (min-width: 48rem) {
+				.endpoint-list {
+					grid-template-columns: repeat(3, 1fr);
+				}
+			}
+
+			.endpoint-list li {
+				display: grid;
+				gap: 0.5rem;
+				padding: 1.5rem;
+				background-color: var(--color-paper);
+			}
+
+			.endpoint-list code {
+				justify-self: start;
+			}
+
+			.subsection {
+				margin-top: 4rem;
+			}
+
+			.subsection h3 {
+				margin-bottom: 1.5rem;
+				color: var(--color-muted);
+			}
+
+			/* Footer */
+
+			.site-footer {
+				padding-block: 3.5rem;
+				background-color: var(--color-stone);
+			}
+
+			.footer-grid {
+				display: grid;
+				gap: 2rem;
+			}
+
+			@media (min-width: 48rem) {
+				.footer-grid {
+					grid-template-columns: 1fr auto;
+					align-items: end;
+				}
+			}
+
+			.footer-grid nav ul {
+				display: flex;
+				flex-wrap: wrap;
+				gap: 0.75rem 1.75rem;
+				margin: 0;
+				padding: 0;
+				list-style: none;
+			}
+
+			.footer-grid nav a {
+				text-decoration: none;
+			}
+
+			.footer-grid nav a:hover {
+				color: var(--color-accent);
+			}
+
+			.footer-note {
+				margin-top: 0.75rem;
+				color: var(--color-muted);
+				font-size: 0.8125rem;
+			}
+		</style>
+	</head>
+	<body>
+		<a class="skip-link eyebrow" href="#main">Skip to content</a>
+
+		<div class="announcement-bar">Open source · Released automatically with every merge to main</div>
+
+		<header class="site-header">
+			<div class="container">
+				<a class="wordmark" href="#top" aria-label="Atelier Store, back to top">Atelier</a>
+
+				<nav class="nav-inline eyebrow" aria-label="Main">
+					<a href="#blog">Blog</a>
+					<a href="#releases">Releases</a>
+					<a href="#setup">Setup</a>
+					<a href="https://github.com/mpaulosky/atelier-store">GitHub</a>
+				</nav>
+
+				<details class="nav-drawer">
+					<summary role="button" aria-label="Menu">
+						<svg class="icon icon-menu" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 7h18M3 12h18M3 17h18" /></svg>
+						<svg class="icon icon-close" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 5l14 14M19 5L5 19" /></svg>
+					</summary>
+					<nav class="nav-drawer-panel" aria-label="Main">
+						<ul>
+							<li><a href="#blog">Blog</a></li>
+							<li><a href="#releases">Releases</a></li>
+							<li><a href="#setup">Setup</a></li>
+							<li><a href="https://github.com/mpaulosky/atelier-store">GitHub</a></li>
+						</ul>
+					</nav>
+				</details>
+			</div>
+		</header>
+
+		<main id="main">
+			<section class="hero" id="top" aria-labelledby="hero-title">
+				<div class="container">
+					<p class="eyebrow">An open-source storefront</p>
+					<h1 id="hero-title">Atelier <em>Store</em></h1>
+					<p class="hero-lead">A .NET 10 Blazor Server app with Tailwind CSS, Auth0, and PostgreSQL. Every merged pull request ships as a tagged release with its own blog post.</p>
+					<ul class="stack-list eyebrow" aria-label="Built with">
+						<li>.NET 10</li>
+						<li>Blazor Server</li>
+						<li>Tailwind CSS v4</li>
+						<li>Auth0</li>
+						<li>PostgreSQL 17</li>
+						<li>EF Core</li>
+					</ul>
+					<div class="actions eyebrow">
+						<a class="btn btn-primary" href="https://github.com/mpaulosky/atelier-store">View on GitHub</a>
+						<a class="btn btn-secondary" href="#setup">Setup guide</a>
+					</div>
+				</div>
+			</section>
+
+			<section class="section" id="blog" aria-labelledby="blog-title">
+				<div class="container">
+					<div class="section-head">
+						<div>
+							<p class="eyebrow">Journal</p>
+							<h2 id="blog-title">Latest from the blog</h2>
+						</div>
+						<a class="more-link eyebrow" href="https://github.com/mpaulosky/atelier-store/tree/main/docs/blogs">All posts →</a>
+					</div>
+					<!-- BLOGS_HTML_START -->
+					<ul class="post-grid">
+					  <li class="post-card">
+					    <article>
+					      <p class="post-meta"><time datetime="2026-09-27">27 Sep 2026</time><span class="post-tag">v0.0.15</span></p>
+					      <h3 class="post-title"><a href="https://github.com/mpaulosky/atelier-store/blob/main/docs/blogs/2026-09-27-pr-35-docs-add-contributing-guide-security-policy-references-and-code-of-conduct.md">docs: Add contributing guide, security policy, references, and code of conduct</a></h3>
+					      <p class="post-excerpt">Adds the four community health files under docs/, where GitHub picks them up for the repository&#x27;s community profile. They describe this repository; nothing is left over from other projects.</p>
+					      <p class="post-source"><a href="https://github.com/mpaulosky/atelier-store/pull/35">PR #35</a></p>
+					    </article>
+					  </li>
+					  <li class="post-card">
+					    <article>
+					      <p class="post-meta"><time datetime="2026-09-27">27 Sep 2026</time><span class="post-tag">v0.0.14</span></p>
+					      <h3 class="post-title"><a href="https://github.com/mpaulosky/atelier-store/blob/main/docs/blogs/2026-09-27-pr-36-fix-web-expose-the-mobile-menu-toggle-as-a-button.md">fix(Web): Expose the mobile menu toggle as a button</a></h3>
+					      <p class="post-excerpt">The mobile nav drawer&#x27;s toggle is &lt;summary aria-label=&quot;Menu&quot;&gt;. ARIA in HTML gives &lt;summary&gt; no implicit role, so the element reached assistive tech with no role, and the aria-label had nothing to…</p>
+					      <p class="post-source"><a href="https://github.com/mpaulosky/atelier-store/pull/36">PR #36</a></p>
+					    </article>
+					  </li>
+					  <li class="post-card">
+					    <article>
+					      <p class="post-meta"><time datetime="2026-09-27">27 Sep 2026</time><span class="post-tag">v0.0.13</span></p>
+					      <h3 class="post-title"><a href="https://github.com/mpaulosky/atelier-store/blob/main/docs/blogs/2026-09-27-pr-33-fix-web-require-lowercase-product-and-category-slugs.md">fix(Web): Require lowercase product and category slugs</a></h3>
+					      <p class="post-excerpt">ProductCatalog.FindBySlugAsync and GetRelatedAsync lowercase the slug they look up, but nothing stopped a row being stored with uppercase letters. A product saved as Mixed-Case could never be found…</p>
+					      <p class="post-source"><a href="https://github.com/mpaulosky/atelier-store/pull/33">PR #33</a></p>
+					    </article>
+					  </li>
+					  <li class="post-card">
+					    <article>
+					      <p class="post-meta"><time datetime="2026-09-27">27 Sep 2026</time><span class="post-tag">v0.0.12</span></p>
+					      <h3 class="post-title"><a href="https://github.com/mpaulosky/atelier-store/blob/main/docs/blogs/2026-09-27-pr-25-test-web-add-postgres-integration-tests-for-catalog-and-endpoints.md">test(Web): Add Postgres integration tests for catalog and endpoints</a></h3>
+					      <p class="post-excerpt">Adds tests/AtelierStore.Web.Tests.Integration: a Testcontainers postgres:17 fixture, one container per assembly, real Database.MigrateAsync() schema, Respawn reset between tests, per-test data via…</p>
+					      <p class="post-source"><a href="https://github.com/mpaulosky/atelier-store/pull/25">PR #25</a></p>
+					    </article>
+					  </li>
+					  <li class="post-card">
+					    <article>
+					      <p class="post-meta"><time datetime="2026-09-27">27 Sep 2026</time><span class="post-tag">v0.0.11</span></p>
+					      <h3 class="post-title"><a href="https://github.com/mpaulosky/atelier-store/blob/main/docs/blogs/2026-09-27-pr-27-chore-ci-run-code-metrics-on-manual-dispatch-only.md">chore(ci): Run code metrics on manual dispatch only</a></h3>
+					      <p class="post-excerpt">Removes the push and pull_request triggers from .github/workflows/code-metrics.yml. The workflow can still be run by hand through workflow_dispatch. Adds a comment explaining why the triggers were…</p>
+					      <p class="post-source"><a href="https://github.com/mpaulosky/atelier-store/pull/27">PR #27</a></p>
+					    </article>
+					  </li>
+					  <li class="post-card">
+					    <article>
+					      <p class="post-meta"><time datetime="2026-09-27">27 Sep 2026</time><span class="post-tag">v0.0.10</span></p>
+					      <h3 class="post-title"><a href="https://github.com/mpaulosky/atelier-store/blob/main/docs/blogs/2026-09-27-pr-28-fix-ci-write-markdownlint-clean-table-separators-in-release-tables.md">fix(ci): Write markdownlint-clean table separators in release tables</a></h3>
+					      <p class="post-excerpt">Fixes the releases table separator row (line 59) in README.md and docs/README.md, which has failed the markdownlint check (MD060, table column style) on main since #23. Fixes…</p>
+					      <p class="post-source"><a href="https://github.com/mpaulosky/atelier-store/pull/28">PR #28</a></p>
+					    </article>
+					  </li>
+					  <li class="post-card">
+					    <article>
+					      <p class="post-meta"><time datetime="2026-09-27">27 Sep 2026</time><span class="post-tag">v0.0.7</span></p>
+					      <h3 class="post-title"><a href="https://github.com/mpaulosky/atelier-store/blob/main/docs/blogs/2026-09-27-pr-19-test-web-add-playwright-e2e-tests-for-storefront-flows.md">test(Web): Add Playwright E2E tests for storefront flows</a></h3>
+					      <p class="post-excerpt">Slice 5 of 6 of the test plan. Closes #7.</p>
+					      <p class="post-source"><a href="https://github.com/mpaulosky/atelier-store/pull/19">PR #19</a></p>
+					    </article>
+					  </li>
+					</ul>
+					<!-- BLOGS_HTML_END -->
+				</div>
+			</section>
+
+			<section class="section" id="releases" aria-labelledby="releases-title">
+				<div class="container">
+					<div class="section-head">
+						<div>
+							<p class="eyebrow">Changelog</p>
+							<h2 id="releases-title">Releases</h2>
+						</div>
+						<a class="more-link eyebrow" href="https://github.com/mpaulosky/atelier-store/releases">All releases →</a>
+					</div>
+					<!-- RELEASES_HTML_START -->
+					<div class="table-wrap">
+					  <table>
+					    <thead>
+					      <tr>
+					        <th>Version</th>
+					        <th>Date</th>
+					        <th>Title</th>
+					        <th>Blog post</th>
+					      </tr>
+					    </thead>
+					    <tbody>
+					      <tr>
+					        <td><a href="https://github.com/mpaulosky/atelier-store/releases/tag/v0.0.15">v0.0.15</a></td>
+					        <td>2026-09-27</td>
+					        <td>docs: Add contributing guide, security policy, references, and code of conduct</td>
+					        <td><a href="https://github.com/mpaulosky/atelier-store/blob/main/docs/blogs/2026-09-27-pr-35-docs-add-contributing-guide-security-policy-references-and-code-of-conduct.md">Post</a></td>
+					      </tr>
+					      <tr>
+					        <td><a href="https://github.com/mpaulosky/atelier-store/releases/tag/v0.0.14">v0.0.14</a></td>
+					        <td>2026-09-27</td>
+					        <td>fix(Web): Expose the mobile menu toggle as a button</td>
+					        <td><a href="https://github.com/mpaulosky/atelier-store/blob/main/docs/blogs/2026-09-27-pr-36-fix-web-expose-the-mobile-menu-toggle-as-a-button.md">Post</a></td>
+					      </tr>
+					      <tr>
+					        <td><a href="https://github.com/mpaulosky/atelier-store/releases/tag/v0.0.13">v0.0.13</a></td>
+					        <td>2026-09-27</td>
+					        <td>fix(Web): Require lowercase product and category slugs</td>
+					        <td><a href="https://github.com/mpaulosky/atelier-store/blob/main/docs/blogs/2026-09-27-pr-33-fix-web-require-lowercase-product-and-category-slugs.md">Post</a></td>
+					      </tr>
+					      <tr>
+					        <td><a href="https://github.com/mpaulosky/atelier-store/releases/tag/v0.0.12">v0.0.12</a></td>
+					        <td>2026-09-27</td>
+					        <td>test(Web): Add Postgres integration tests for catalog and endpoints</td>
+					        <td><a href="https://github.com/mpaulosky/atelier-store/blob/main/docs/blogs/2026-09-27-pr-25-test-web-add-postgres-integration-tests-for-catalog-and-endpoints.md">Post</a></td>
+					      </tr>
+					      <tr>
+					        <td><a href="https://github.com/mpaulosky/atelier-store/releases/tag/v0.0.11">v0.0.11</a></td>
+					        <td>2026-09-27</td>
+					        <td>chore(ci): Run code metrics on manual dispatch only</td>
+					        <td><a href="https://github.com/mpaulosky/atelier-store/blob/main/docs/blogs/2026-09-27-pr-27-chore-ci-run-code-metrics-on-manual-dispatch-only.md">Post</a></td>
+					      </tr>
+					      <tr>
+					        <td><a href="https://github.com/mpaulosky/atelier-store/releases/tag/v0.0.10">v0.0.10</a></td>
+					        <td>2026-09-27</td>
+					        <td>fix(ci): Write markdownlint-clean table separators in release tables</td>
+					        <td><a href="https://github.com/mpaulosky/atelier-store/blob/main/docs/blogs/2026-09-27-pr-28-fix-ci-write-markdownlint-clean-table-separators-in-release-tables.md">Post</a></td>
+					      </tr>
+					      <tr>
+					        <td><a href="https://github.com/mpaulosky/atelier-store/releases/tag/v0.0.9">v0.0.9</a></td>
+					        <td>2026-09-27</td>
+					        <td>chore(agents): Add Beast Mode custom agent without gate-bypassing tools</td>
+					        <td>—</td>
+					      </tr>
+					      <tr>
+					        <td><a href="https://github.com/mpaulosky/atelier-store/releases/tag/v0.0.8">v0.0.8</a></td>
+					        <td>2026-09-27</td>
+					        <td>chore(vscode): Auto-approve agent git add/commit but not --no-verify</td>
+					        <td>—</td>
+					      </tr>
+					      <tr>
+					        <td><a href="https://github.com/mpaulosky/atelier-store/releases/tag/v0.0.7">v0.0.7</a></td>
+					        <td>2026-09-27</td>
+					        <td>test(Web): Add Playwright E2E tests for storefront flows</td>
+					        <td><a href="https://github.com/mpaulosky/atelier-store/blob/main/docs/blogs/2026-09-27-pr-19-test-web-add-playwright-e2e-tests-for-storefront-flows.md">Post</a></td>
+					      </tr>
+					      <tr>
+					        <td><a href="https://github.com/mpaulosky/atelier-store/releases/tag/v0.0.6">v0.0.6</a></td>
+					        <td>2026-09-27</td>
+					        <td>chore: Ignore Claude Code worktrees</td>
+					        <td>—</td>
+					      </tr>
+					    </tbody>
+					  </table>
+					</div>
+					<!-- RELEASES_HTML_END -->
+				</div>
+			</section>
+
+			<section class="section" id="setup" aria-labelledby="setup-title">
+				<div class="container">
+					<div class="section-head">
+						<div>
+							<p class="eyebrow">Get started</p>
+							<h2 id="setup-title">Run it locally</h2>
+						</div>
+						<a class="more-link eyebrow" href="https://github.com/mpaulosky/atelier-store/blob/main/docs/CONTRIBUTING.md">Contributing guide →</a>
+					</div>
+
+					<div class="setup-grid">
+						<div>
+							<h3 class="eyebrow">Prerequisites</h3>
+							<ul class="check-list">
+								<li>.NET SDK 10, pinned in <code>global.json</code></li>
+								<li>Node.js and pnpm, for the Tailwind CLI. Install pnpm with <code>corepack enable</code>. The web project refuses npm.</li>
+								<li>Docker, for the local Postgres database</li>
+							</ul>
+						</div>
+
+						<div>
+							<h3 class="eyebrow">Setup</h3>
+							<div class="code-block">
+								<button class="copy-button" type="button" data-copy="setup-commands" hidden>Copy</button>
+								<pre id="setup-commands"><code>cp .env.example .env                     <span class="comment"># then fill in the Auth0 values</span>
+docker compose up -d                     <span class="comment"># start Postgres</span>
+dotnet tool restore                      <span class="comment"># installs dotnet-ef</span>
+git config core.hooksPath .github/hooks  <span class="comment"># enable the git hooks, once per clone</span>
+dotnet ef database update --project src/AtelierStore.Web
+dotnet run --project src/AtelierStore.Web --launch-profile https</code></pre>
+							</div>
+							<div class="note">
+								<p>The app runs at <code>https://localhost:7207</code>. In your Auth0 Regular Web Application, set:</p>
+								<ul>
+									<li>Allowed Callback URLs: <code>https://localhost:7207/callback</code></li>
+									<li>Allowed Logout URLs: <code>https://localhost:7207/</code></li>
+								</ul>
+							</div>
+						</div>
+					</div>
+
+					<div class="subsection" id="layout">
+						<h3 class="eyebrow">Project layout</h3>
+						<div class="table-wrap layout-table">
+							<table>
+								<thead>
+									<tr>
+										<th>Path</th>
+										<th>Purpose</th>
+									</tr>
+								</thead>
+								<tbody>
+									<tr>
+										<td><code>src/AtelierStore.Web/Program.cs</code></td>
+										<td>Service wiring: Auth0, EF Core and Npgsql, health checks</td>
+									</tr>
+									<tr>
+										<td><code>src/AtelierStore.Web/Data/</code></td>
+										<td>EF Core context, catalog entities (categories, products, product stock) and seed data</td>
+									</tr>
+									<tr>
+										<td><code>src/AtelierStore.Web/Migrations/</code></td>
+										<td>EF Core migrations. <code>InitialCatalog</code> creates and seeds the catalog tables.</td>
+									</tr>
+									<tr>
+										<td><code>src/AtelierStore.Web/Catalog/ProductCatalog.cs</code></td>
+										<td>Storefront product queries used by the pages</td>
+									</tr>
+									<tr>
+										<td><code>src/AtelierStore.Web/Styles/app.css</code></td>
+										<td>Tailwind entry point, compiled to <code>wwwroot/app.css</code> on build</td>
+									</tr>
+									<tr>
+										<td><code>.github/workflows/</code></td>
+										<td>CI (build, tests, lint including actionlint, zizmor and shellcheck, CodeQL for C# and Actions), release tags and blog posts, Dependabot and pull request auto-merge</td>
+									</tr>
+									<tr>
+										<td><code>.github/hooks/</code>, <code>scripts/gate.sh</code></td>
+										<td>Git hooks: Markdown lint on commit; branch naming, lint (Markdown, YAML, workflows, shell), build and tests on push</td>
+									</tr>
+									<tr>
+										<td><code>docs/index.html</code></td>
+										<td>GitHub Pages site; its blog cards and releases table are refreshed by the release workflow</td>
+									</tr>
+								</tbody>
+							</table>
+						</div>
+						<p class="after-table muted">Tailwind and configuration details are in the <a href="https://github.com/mpaulosky/atelier-store#readme">README</a>.</p>
+					</div>
+
+					<div class="subsection" id="endpoints">
+						<h3 class="eyebrow">Endpoints</h3>
+						<ul class="endpoint-list">
+							<li><code>/account/login</code><span class="muted">Auth0 sign-in</span></li>
+							<li><code>/account/logout</code><span class="muted">Auth0 sign-out</span></li>
+							<li><code>/health</code><span class="muted">Checks the Postgres connection</span></li>
+						</ul>
+					</div>
+				</div>
+			</section>
+		</main>
+
+		<footer class="site-footer">
+			<div class="container footer-grid">
+				<div>
+					<a class="wordmark" href="#top">Atelier</a>
+					<p class="footer-note">Released under the <a href="https://github.com/mpaulosky/atelier-store/blob/main/LICENSE">license in the repository</a>.</p>
+				</div>
+				<nav class="eyebrow" aria-label="Project">
+					<ul>
+						<li><a href="https://github.com/mpaulosky/atelier-store/blob/main/docs/CONTRIBUTING.md">Contributing</a></li>
+						<li><a href="https://github.com/mpaulosky/atelier-store/blob/main/docs/SECURITY.md">Security</a></li>
+						<li><a href="https://github.com/mpaulosky/atelier-store/blob/main/docs/CODE_OF_CONDUCT.md">Code of conduct</a></li>
+						<li><a href="https://github.com/mpaulosky/atelier-store/blob/main/docs/REFERENCES.md">References</a></li>
+						<li><a href="https://github.com/mpaulosky/atelier-store">GitHub</a></li>
+					</ul>
+				</nav>
+			</div>
+		</footer>
+
+		<script>
+			// Progressive enhancement: the Copy button only appears when the clipboard is available.
+			for (const button of document.querySelectorAll("[data-copy]")) {
+				if (!navigator.clipboard) continue;
+				button.hidden = false;
+				button.addEventListener("click", async () => {
+					const text = document.getElementById(button.dataset.copy).innerText.replace(/\s+#.*$/gm, "");
+					try {
+						await navigator.clipboard.writeText(text);
+						button.textContent = "Copied";
+					} catch {
+						button.textContent = "Copy failed";
+					}
+					setTimeout(() => (button.textContent = "Copy"), 2000);
+				});
+			}
+			// Close the phone menu after choosing a section.
+			const drawer = document.querySelector(".nav-drawer");
+			drawer?.addEventListener("click", (event) => {
+				if (event.target.closest("a")) drawer.open = false;
+			});
+		</script>
+	</body>
+</html>

@@ -8,7 +8,8 @@ past Release/PR pair:
 
 It writes docs/blogs/{merged-date}-pr-{n}-{slug}.md, updates the
 docs/blogs/README.md index, the RELEASES_START/END table in README.md (copied
-to docs/README.md), and the RELEASES_HTML/BLOGS_HTML tables in docs/index.html.
+to docs/README.md), and in the GitHub Pages site docs/index.html the
+RELEASES_HTML releases table and the BLOGS_HTML blog post cards.
 
 GitHub data comes from the gh CLI (GH_TOKEN). When ANTHROPIC_API_KEY is set,
 the post opens with a short summary written by Claude (model from
@@ -306,6 +307,7 @@ def read_blog_posts(blog_dir):
         title = re.search(r'^post_title: "(.*)"$', front, flags=re.MULTILINE)
         date = re.search(r'^post_date: "(.*)"$', front, flags=re.MULTILINE)
         tag = re.search(r"^\s*- release:(\S+)$", front, flags=re.MULTILINE)
+        summary = re.search(r'^summary: "(.*)"$', front, flags=re.MULTILINE)
         posts.append(
             {
                 "file": path.name,
@@ -313,9 +315,76 @@ def read_blog_posts(blog_dir):
                 "title": title.group(1).replace('\\"', '"') if title else path.stem,
                 "date": date.group(1) if date else path.name[:10],
                 "tag": tag.group(1) if tag else "",
+                "excerpt": post_excerpt(text, summary.group(1).replace('\\"', '"') if summary else ""),
             }
         )
     return posts
+
+
+# Blog card excerpts
+
+EXCERPT_LENGTH = 200
+SEED_SUMMARY = re.compile(r"^Release notes seed for ")
+# Paragraphs that only point at an issue ("Fixes #16.") say nothing on a card.
+ISSUE_REFERENCE = re.compile(r"^(?:(?:fixes|closes|resolves|refs|part of)\s+#\d+[\s,.]*)+$", flags=re.IGNORECASE)
+
+
+def post_excerpt(text, summary=""):
+    """A card's excerpt: the AI summary section, a real front matter summary, else the PR description.
+
+    render_post writes the AI summary into a "### Summary" section and a
+    "Release notes seed" line into the front matter, so the seed line is skipped.
+    """
+    ai_summary = first_paragraph(section(text, "Summary"))
+    if ai_summary:
+        return shorten(ai_summary)
+    if summary and not SEED_SUMMARY.match(summary):
+        return shorten(plain_text(summary))
+    description = first_paragraph(section(text, "PR description"))
+    if description and description != "No PR description was provided.":
+        return shorten(description)
+    return ""
+
+
+def section(text, heading):
+    """The body of the post's "### {heading}" section, up to the next "### " heading."""
+    match = re.search(rf"^### {re.escape(heading)}\n(.*?)(?=^### |\Z)", text, flags=re.DOTALL | re.MULTILINE)
+    return match.group(1) if match else ""
+
+
+def first_paragraph(markdown):
+    """The first paragraph of prose or list text, as plain text."""
+    for block in re.split(r"\n\s*\n", strip_fences(markdown)):
+        lines = [line.strip() for line in block.strip().splitlines()]
+        if not lines or lines[0].startswith(("#", "|", "<!--", ">")):
+            continue
+        # Join list items and wrapped lines into one line of text.
+        plain = plain_text(" ".join(re.sub(r"^(?:[-*+]|\d+[.)])\s+", "", line) for line in lines))
+        if plain and not ISSUE_REFERENCE.match(plain):
+            return plain
+    return ""
+
+
+def strip_fences(markdown):
+    return re.sub(r"^(```|~~~).*?^\1[^\n]*$", "", markdown, flags=re.DOTALL | re.MULTILINE)
+
+
+def plain_text(markdown):
+    """Drop Markdown link, code and emphasis markup, keeping the words."""
+    text = re.sub(r"!?\[([^\]]*)\]\([^)]*\)", r"\1", markdown)
+    text = re.sub(r"`([^`]*)`", r"\1", text)
+    text = re.sub(r"(\*\*|\*)(\S(?:.*?\S)?)\1", r"\2", text)
+    # Underscores only mark emphasis at word edges, so snake_case names keep theirs.
+    text = re.sub(r"(?<!\w)(__|_)(\S(?:.*?\S)?)\1(?!\w)", r"\2", text)
+    return re.sub(r"\s+", " ", text).strip()
+
+
+def shorten(text, limit=EXCERPT_LENGTH):
+    """Cut text to at most limit characters at a word boundary, marking the cut with an ellipsis."""
+    if len(text) <= limit:
+        return text
+    cut = text[: limit - 1].rsplit(" ", 1)[0].rstrip(" ,;:.-–—")
+    return cut + "…"
 
 
 def newest_first(items):
@@ -432,17 +501,36 @@ def render_releases_html(entries):
     return render_table(["Version", "Date", "Title", "Blog post"], rows, "No releases yet.")
 
 
+def display_date(iso_date):
+    """"2026-09-27" as "27 Sep 2026", or the text unchanged when it isn't an ISO date."""
+    try:
+        return datetime.date.fromisoformat(iso_date).strftime("%d %b %Y").lstrip("0")
+    except ValueError:
+        return iso_date
+
+
 def render_blogs_html(posts, repository):
-    rows = [
-        [
-            html.escape(p["date"]),
-            link(post_url(repository, p["file"]), p["title"]),
-            html.escape(p["tag"]) if p["tag"] else "—",
-            link(f"https://github.com/{repository}/pull/{p['pr']}", f"#{p['pr']}"),
+    """The newest posts as cards: date, release, linked title, excerpt and source PR."""
+    newest = newest_first(posts)[:TABLE_SIZE]
+    if not newest:
+        return ['<p class="post-empty">No blog posts yet.</p>']
+    lines = ['<ul class="post-grid">']
+    for p in newest:
+        meta = f'<time datetime="{html.escape(p["date"])}">{html.escape(display_date(p["date"]))}</time>'
+        if p["tag"]:
+            meta += f'<span class="post-tag">{html.escape(p["tag"])}</span>'
+        lines += [
+            '  <li class="post-card">',
+            "    <article>",
+            f'      <p class="post-meta">{meta}</p>',
+            f'      <h3 class="post-title">{link(post_url(repository, p["file"]), p["title"])}</h3>',
         ]
-        for p in newest_first(posts)[:TABLE_SIZE]
-    ]
-    return render_table(["Date", "Title", "Release", "Source PR"], rows, "No blog posts yet.")
+        if p.get("excerpt"):
+            lines.append(f'      <p class="post-excerpt">{html.escape(p["excerpt"])}</p>')
+        pr_link = link(f"https://github.com/{repository}/pull/{p['pr']}", f"PR #{p['pr']}")
+        lines += [f'      <p class="post-source">{pr_link}</p>', "    </article>", "  </li>"]
+    lines.append("</ul>")
+    return lines
 
 
 def replace_between(text, name, lines):

@@ -151,6 +151,13 @@ dotnet ef migrations add <Name> --project src/AtelierStore.Web
 The EF tools run `Program.cs` at design time, so they need your `.env`.
 Commit the migration, its `.Designer.cs` file, and the updated model snapshot together.
 
+### The project site
+
+`docs/index.html` is the GitHub Pages site, served from `main` under `/docs`.
+The release workflow rewrites its blog cards and releases table on every release, between the `BLOGS_HTML` and `RELEASES_HTML` markers, so don't edit inside them.
+The rest of the page is hand-written, and its hero, setup steps, project layout, and endpoints repeat the README.
+When you change those parts of the README, update the page to match.
+
 ## Tests
 
 Every code change needs tests, and a bug fix should include a test that fails without the fix.
