@@ -4,6 +4,7 @@ This directory contains concise release-review posts for merged PR releases.
 
 | Date | Title | Tags |
 | ---- | ----- | ---- |
+| 2026-09-27 | [docs(readme): Add a Statuses badge section](2026-09-27-pr-44-docs-readme-add-a-statuses-badge-section.md) | release,automation |
 | 2026-09-27 | [ci: Enforce the 80% coverage gate and drop unused Auth0 secrets](2026-09-27-pr-41-ci-enforce-the-80-coverage-gate-and-drop-unused-auth0-secrets.md) | release,automation |
 | 2026-09-27 | [feat(docs): Add a GitHub Pages site in docs/index.html](2026-09-27-pr-40-feat-docs-add-a-github-pages-site-in-docs-index-html.md) | release,automation |
 | 2026-09-27 | [docs: Add contributing guide, security policy, references, and code of conduct](2026-09-27-pr-35-docs-add-contributing-guide-security-policy-references-and-code-of-conduct.md) | release,automation |
