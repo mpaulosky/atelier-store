@@ -16,9 +16,13 @@ public sealed class SeedDataTests(PostgresContainerFixture fixture)
 		// Arrange
 		SeedSnapshot seed = fixture.Seed;
 
-		// Act & Assert
-		seed.CategoryCount.Should().Be(7);
-		seed.ProductCount.Should().Be(8);
+		// Act
+		int categoryCount = seed.CategoryCount;
+		int productCount = seed.ProductCount;
+
+		// Assert
+		categoryCount.Should().Be(7);
+		productCount.Should().Be(8);
 	}
 
 	[Fact]
@@ -48,7 +52,10 @@ public sealed class SeedDataTests(PostgresContainerFixture fixture)
 		// Arrange
 		SeedSnapshot seed = fixture.Seed;
 
-		// Act & Assert
-		seed.SoldOutProductSlugs.Should().ContainSingle().Which.Should().Be("botanical-tote");
+		// Act
+		IReadOnlyList<string> soldOut = seed.SoldOutProductSlugs;
+
+		// Assert
+		soldOut.Should().ContainSingle().Which.Should().Be("botanical-tote");
 	}
 }
