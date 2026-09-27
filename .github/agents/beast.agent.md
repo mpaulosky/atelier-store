@@ -77,7 +77,6 @@ tools:
     "file_search",
     "grep_search",
     "validate_cves",
-    "run_subagent",
   ]
 ---
 
