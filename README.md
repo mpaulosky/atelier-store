@@ -57,6 +57,7 @@ The app fails at startup if `Auth0:Domain`, `Auth0:ClientId`, or `ConnectionStri
 
 | Version | Date | Title | Blog post |
 | ------- | ---- | ----- | --------- |
+| [v0.0.10](https://github.com/mpaulosky/atelier-store/releases/tag/v0.0.10) | 2026-09-27 | fix(ci): Write markdownlint-clean table separators in release tables | [Post](https://github.com/mpaulosky/atelier-store/blob/main/docs/blogs/2026-09-27-pr-28-fix-ci-write-markdownlint-clean-table-separators-in-release-tables.md) |
 | [v0.0.9](https://github.com/mpaulosky/atelier-store/releases/tag/v0.0.9) | 2026-09-27 | chore(agents): Add Beast Mode custom agent without gate-bypassing tools | — |
 | [v0.0.8](https://github.com/mpaulosky/atelier-store/releases/tag/v0.0.8) | 2026-09-27 | chore(vscode): Auto-approve agent git add/commit but not --no-verify | — |
 | [v0.0.7](https://github.com/mpaulosky/atelier-store/releases/tag/v0.0.7) | 2026-09-27 | test(Web): Add Playwright E2E tests for storefront flows | [Post](https://github.com/mpaulosky/atelier-store/blob/main/docs/blogs/2026-09-27-pr-19-test-web-add-playwright-e2e-tests-for-storefront-flows.md) |
