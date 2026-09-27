@@ -57,6 +57,7 @@ The app fails at startup if `Auth0:Domain`, `Auth0:ClientId`, or `ConnectionStri
 
 | Version | Date | Title | Blog post |
 | ------- | ---- | ----- | --------- |
+| [v0.0.11](https://github.com/mpaulosky/atelier-store/releases/tag/v0.0.11) | 2026-09-27 | chore(ci): Run code metrics on manual dispatch only | [Post](https://github.com/mpaulosky/atelier-store/blob/main/docs/blogs/2026-09-27-pr-27-chore-ci-run-code-metrics-on-manual-dispatch-only.md) |
 | [v0.0.10](https://github.com/mpaulosky/atelier-store/releases/tag/v0.0.10) | 2026-09-27 | fix(ci): Write markdownlint-clean table separators in release tables | [Post](https://github.com/mpaulosky/atelier-store/blob/main/docs/blogs/2026-09-27-pr-28-fix-ci-write-markdownlint-clean-table-separators-in-release-tables.md) |
 | [v0.0.9](https://github.com/mpaulosky/atelier-store/releases/tag/v0.0.9) | 2026-09-27 | chore(agents): Add Beast Mode custom agent without gate-bypassing tools | — |
 | [v0.0.8](https://github.com/mpaulosky/atelier-store/releases/tag/v0.0.8) | 2026-09-27 | chore(vscode): Auto-approve agent git add/commit but not --no-verify | — |
@@ -66,7 +67,6 @@ The app fails at startup if `Auth0:Domain`, `Auth0:ClientId`, or `ConnectionStri
 | [v0.0.4](https://github.com/mpaulosky/atelier-store/releases/tag/v0.0.4) | 2026-09-26 | test(Web): Add unit tests for stock state, image URLs and return URLs | — |
 | [v0.0.3](https://github.com/mpaulosky/atelier-store/releases/tag/v0.0.3) | 2026-09-26 | build(tests): Add test foundation and catalog/return-URL seams | — |
 | [v0.0.2](https://github.com/mpaulosky/atelier-store/releases/tag/v0.0.2) | 2026-09-26 | ci: Lint workflows and shell scripts before push and in CI | — |
-| [v0.0.1](https://github.com/mpaulosky/atelier-store/releases/tag/v0.0.1) | 2026-09-26 | ci: Add CI, lint, release automation, and git hooks | — |
 
 <!-- RELEASES_END -->
 

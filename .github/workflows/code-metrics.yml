@@ -1,19 +1,12 @@
 ---
 name: ".NET code metrics"
 
+# Manual runs only, for now. The pinned metrics action does not count the
+# members of classes declared with a primary constructor, so it reports
+# ProductCatalog, AppDbContext and every E2E scenario class as empty (see
+# PR #24). Restore the push and pull_request triggers once the action
+# handles primary constructors.
 "on":
-  push:
-    branches:
-      - main
-    paths-ignore:
-      - "CODE_METRICS.md"
-
-  pull_request:
-    branches:
-      - "**"
-    paths-ignore:
-      - "CODE_METRICS.md"
-
   workflow_dispatch:
     inputs:
       reason:
