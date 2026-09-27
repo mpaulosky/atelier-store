@@ -35,4 +35,20 @@ public sealed class SiteHeaderTests : BunitContext
 		cut.Find("a[href='account/logout'] svg").GetAttribute("aria-label").Should().Be("Log out");
 		cut.FindAll("a[href='account/login']").Should().BeEmpty();
 	}
+
+	[Fact]
+	public void SiteHeader_MobileMenuToggle_IsANamedButton()
+	{
+		// Arrange
+		BunitAuthorizationContext authContext = AddAuthorization();
+		authContext.SetNotAuthorized();
+
+		// Act
+		IRenderedComponent<SiteHeader> cut = Render<SiteHeader>();
+
+		// Assert: <summary> has no implicit ARIA role, so the toggle needs an explicit one for its label to be announced (#18).
+		AngleSharp.Dom.IElement toggle = cut.Find("details.nav-drawer > summary");
+		toggle.GetAttribute("role").Should().Be("button");
+		toggle.GetAttribute("aria-label").Should().Be("Menu");
+	}
 }

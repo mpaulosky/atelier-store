@@ -18,11 +18,7 @@ public sealed class MobileNavTests(E2EFixture fixture) : PlaywrightTestBase(fixt
 		ILocator drawer = Page.Locator("nav.nav-drawer-panel");
 
 		// Act
-		// BUG: #18 - the mobile menu toggle is a bare `<summary aria-label="Menu">` with no exposed
-		// accessible role in Chromium's accessibility tree (confirmed via AriaSnapshotAsync: it reports no
-		// role and no name), so it can't be reached with GetByRole like a real button. Falling back to its
-		// one distinguishing production attribute until that's fixed.
-		await Page.Locator("summary[aria-label='Menu']").ClickAsync();
+		await Page.GetByRole(AriaRole.Button, new PageGetByRoleOptions { Name = "Menu", Exact = true }).ClickAsync();
 
 		// Assert
 		foreach (string label in PrimaryNavLabels)
