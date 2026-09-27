@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace AtelierStore.Web.Tests.Integration;
 
-/// <summary>Check constraints from the InitialCatalog migration, verified against real Postgres.</summary>
+/// <summary>The catalog's check constraints, verified against real Postgres.</summary>
 public sealed class DatabaseConstraintTests(PostgresContainerFixture fixture) : DatabaseTestBase(fixture)
 {
 	[Fact]
@@ -62,6 +62,40 @@ public sealed class DatabaseConstraintTests(PostgresContainerFixture fixture) : 
 		await db.SaveChangesAsync(TestContext.Current.CancellationToken);
 		ProductStock stock = new ProductStockBuilder().ForProduct(product.Id).WithQuantity(-1).Build();
 		db.ProductStock.Add(stock);
+
+		// Act
+		Func<Task> act = async () => await db.SaveChangesAsync(TestContext.Current.CancellationToken);
+
+		// Assert
+		await act.Should().ThrowAsync<DbUpdateException>();
+	}
+
+	[Fact]
+	public async Task SaveChangesAsync_ProductSlugWithUppercase_ThrowsDbUpdateException()
+	{
+		// Arrange
+		await using AppDbContext db = await Fixture.CreateDbContextFactory().CreateDbContextAsync(TestContext.Current.CancellationToken);
+		Category category = new CategoryBuilder().Build();
+		db.Categories.Add(category);
+		await db.SaveChangesAsync(TestContext.Current.CancellationToken);
+		// FindBySlugAsync lowercases the search term, so a stored uppercase slug could never be found (#16).
+		Product product = new ProductBuilder().WithSlug("Mixed-Case").InCategory(category.Id).Build();
+		db.Products.Add(product);
+
+		// Act
+		Func<Task> act = async () => await db.SaveChangesAsync(TestContext.Current.CancellationToken);
+
+		// Assert
+		await act.Should().ThrowAsync<DbUpdateException>();
+	}
+
+	[Fact]
+	public async Task SaveChangesAsync_CategorySlugWithUppercase_ThrowsDbUpdateException()
+	{
+		// Arrange
+		await using AppDbContext db = await Fixture.CreateDbContextFactory().CreateDbContextAsync(TestContext.Current.CancellationToken);
+		Category category = new CategoryBuilder().WithSlug("Mixed-Case").Build();
+		db.Categories.Add(category);
 
 		// Act
 		Func<Task> act = async () => await db.SaveChangesAsync(TestContext.Current.CancellationToken);

@@ -11,6 +11,7 @@ The repo is at an early scaffold stage, and there is no test project.
 **Catalog data** lives in Postgres: `categories` 1─< `products` 1─1 `product_stock` (entities in `src/AtelierStore.Web/Data/`, snake_case names via `EFCore.NamingConventions`).
 The starter catalog is seeded through `HasData` in `Data/CatalogSeedData.cs`, so changing it means adding a migration.
 Pages read products only through `Catalog/ProductCatalog.cs`, which projects into the `Catalog.Product` view record that the components render.
+Product and category slugs must be lowercase: check constraints reject anything else, because `ProductCatalog` lowercases the slug it looks up.
 Featured collections are editorial content and are still hard-coded in `Catalog/CatalogModels.cs`.
 
 ## Commands
