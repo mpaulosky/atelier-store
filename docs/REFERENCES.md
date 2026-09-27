@@ -35,7 +35,7 @@ Exact NuGet versions are in `Directory.Packages.props`, the .NET SDK is pinned i
 - [FluentAssertions](https://fluentassertions.com/) – Assertions
 - [NSubstitute](https://nsubstitute.github.io/) – Test doubles, with [NSubstitute.Analyzers](https://github.com/nsubstitute/NSubstitute.Analyzers) to catch misuse
 - [bUnit](https://bunit.dev/) – Blazor component tests
-- [Microsoft.AspNetCore.Mvc.Testing](https://learn.microsoft.com/aspnet/core/test/integration-tests) – Hosts the app in memory with `WebApplicationFactory` for integration and E2E tests
+- [Microsoft.AspNetCore.Mvc.Testing](https://learn.microsoft.com/aspnet/core/test/integration-tests) – `WebApplicationFactory`: in memory for integration tests, on real Kestrel for E2E
 - [Testcontainers for .NET](https://dotnet.testcontainers.org/) – Starts a throwaway PostgreSQL container for the integration and E2E tests
 - [Respawn](https://github.com/jbogard/Respawn) – Resets the test database between integration tests
 - [Playwright for .NET](https://playwright.dev/dotnet/) – Drives a real browser in the E2E tests
@@ -60,7 +60,7 @@ Exact NuGet versions are in `Directory.Packages.props`, the .NET SDK is pinned i
 - [actionlint](https://github.com/rhysd/actionlint) – GitHub Actions workflow linting
 - [zizmor](https://docs.zizmor.sh/) – Security linting for GitHub Actions workflows
 - [ShellCheck](https://www.shellcheck.net/) – Shell script linting
-- [create-pull-request](https://github.com/peter-evans/create-pull-request) – Opens the automated release blog pull requests
+- [create-pull-request](https://github.com/peter-evans/create-pull-request) – Opens the code metrics pull request when the metrics workflow is run by hand
 
 ## Guides
 
