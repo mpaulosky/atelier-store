@@ -285,7 +285,8 @@ def update_blog_index(blog_dir, merged_date, title_line, post_name):
                 "This directory contains concise release-review posts for merged PR releases.",
                 "",
                 "| Date | Title | Tags |",
-                "|------|-------|------|",
+                # Spaced delimiter row: markdownlint's MD060 (compact style) rejects "|---|".
+                "| --- | --- | --- |",
                 *rows,
                 "",
             ]
@@ -393,7 +394,8 @@ def render_releases_markdown(entries):
             "<!-- RELEASES_START -->",
             "",
             "| Version | Date | Title | Blog post |",
-            "|---------|------|-------|-----------|",
+            # Spaced delimiter row: markdownlint's MD060 (compact style) rejects "|---|".
+            "| --- | --- | --- | --- |",
             *rows,
             "",
             "<!-- RELEASES_END -->",
