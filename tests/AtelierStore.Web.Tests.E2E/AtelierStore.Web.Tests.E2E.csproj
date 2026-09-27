@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+	<ItemGroup>
+		<PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" />
+		<PackageReference Include="Microsoft.Playwright" />
+		<PackageReference Include="Testcontainers.PostgreSql" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<Using Include="Microsoft.Playwright" />
+		<Using Include="static Microsoft.Playwright.Assertions" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\..\src\AtelierStore.Web\AtelierStore.Web.csproj" />
+	</ItemGroup>
+
+</Project>
