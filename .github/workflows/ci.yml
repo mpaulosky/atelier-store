@@ -321,16 +321,13 @@ jobs:
         id: run-tests
         # Matrix values come from PR-controlled file names, so they reach the
         # shell as quoted environment variables, never as interpolated text.
-        # The Auth0 secrets are scoped to this step, for tests that start the
-        # app; nothing else in the workflow sees them.
+        # No Auth0 secrets: the integration and E2E fixtures set fake Auth0
+        # settings and swap in a fake auth scheme, so tests never need them.
         env:
           PROJECT_PATH: ${{ matrix.project_path }}
           TEST_ID: ${{ matrix.test_id }}
           VERBOSITY: ${{ matrix.verbosity }}
           NO_BUILD: ${{ matrix.no_build }}
-          Auth0__Domain: ${{ secrets.AUTH0_DOMAIN }}
-          Auth0__ClientId: ${{ secrets.AUTH0_CLIENT_ID }}
-          Auth0__ClientSecret: ${{ secrets.AUTH0_CLIENT_SECRET }}
         run: |
           mkdir -p test-results
 
@@ -421,37 +418,35 @@ jobs:
             -filefilters:"-**/obj/**/*.cs;-**/*.generated.cs" \
             -verbosity:verbose || echo "::warning::No coverage files found"
 
+      # This job only runs when test projects exist, so a missing or empty
+      # report is a failure too, not a reason to skip the gate.
       - name: Check coverage threshold
         run: |
           summary_json="./coverage-output/Summary.json"
-          if [ -f "./coverage-output/Summary.json" ]; then
-            echo "=== Summary.json raw ==="
-            cat "$summary_json" | jq . || true
-            coverable_expr='.summary.coverablelines // '
-            coverable_expr+='.summary.coverableLines // '
-            coverable_expr+='.coverablelines // .coverableLines // 0'
-            coverable_lines=$(jq -r "$coverable_expr" \
-              "$summary_json" 2>/dev/null || echo "0")
-            coverage_expr='.summary.linecoverage // .lineCoverage // 0'
-            coverage=$(jq -r "$coverage_expr" \
-              "$summary_json" 2>/dev/null || echo "0")
-            echo "Line Coverage: $coverage%"
-            if [ "$coverable_lines" = "0" ]; then
-              echo "::warning::No coverable lines found in Summary.json"
-              echo "::warning::Skipping threshold check"
-            else
-              if (( $(echo "$coverage < 80" | bc -l) )); then
-                echo "::warning::Code coverage is below 80% threshold"
-                echo "::warning::$coverage% (required: 80%)"
-                echo "::warning::Continuing without failing the workflow"
-              else
-                echo "::notice::Coverage gate passed: $coverage% >= 80%"
-              fi
-            fi
-          else
-            echo "::warning::Coverage report not available"
-            echo "::warning::Skipping threshold check"
+          if [ ! -f "$summary_json" ]; then
+            echo "::error::Coverage report not available: $summary_json"
+            exit 1
           fi
+          echo "=== Summary.json raw ==="
+          jq . "$summary_json" || true
+          coverable_expr='.summary.coverablelines // '
+          coverable_expr+='.summary.coverableLines // '
+          coverable_expr+='.coverablelines // .coverableLines // 0'
+          coverable_lines=$(jq -r "$coverable_expr" \
+            "$summary_json" 2>/dev/null || echo "0")
+          coverage_expr='.summary.linecoverage // .lineCoverage // 0'
+          coverage=$(jq -r "$coverage_expr" \
+            "$summary_json" 2>/dev/null || echo "0")
+          echo "Line Coverage: $coverage%"
+          if [ "$coverable_lines" = "0" ]; then
+            echo "::error::No coverable lines found in Summary.json"
+            exit 1
+          fi
+          if (( $(echo "$coverage < 80" | bc -l) )); then
+            echo "::error::Code coverage $coverage% is below the 80% threshold"
+            exit 1
+          fi
+          echo "::notice::Coverage gate passed: $coverage% >= 80%"
 
       - name: Upload coverage reports
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
