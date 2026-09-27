@@ -35,6 +35,7 @@ The app runs at <https://localhost:7207>. In your Auth0 Regular Web Application,
 | `src/AtelierStore.Web/Styles/app.css` | Tailwind entry point, compiled to `wwwroot/app.css` on build |
 | `.github/workflows/` | CI (build, tests, lint incl. actionlint/zizmor/shellcheck, CodeQL for C# and Actions), release tags and blog posts, Dependabot and PR auto-merge |
 | `.github/hooks/`, `scripts/gate.sh` | Git hooks: Markdown lint on commit; branch naming, lint (Markdown, YAML, workflows, shell), build and tests on push |
+| `docs/index.html` | GitHub Pages site; its blog cards and releases table are refreshed by the release workflow |
 
 ## Endpoints
 

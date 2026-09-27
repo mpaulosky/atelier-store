@@ -148,7 +148,7 @@ def test_run_writes_missing_posts_with_the_existing_tags(tmp_path):
 
     html = (tmp_path / "docs" / "index.html").read_text(encoding="utf-8")
     assert html.count('">Post</a>') == 3
-    assert f'<a href="https://github.com/{REPO}/pull/2">#2</a>' in html
+    assert f'<a href="https://github.com/{REPO}/pull/2">PR #2</a>' in html
 
 
 def test_dependabot_post_has_no_summary_but_others_do(tmp_path):

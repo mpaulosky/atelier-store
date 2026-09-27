@@ -2,6 +2,7 @@ import io
 import json
 import subprocess
 import urllib.error
+from pathlib import Path
 
 import pytest
 
@@ -203,13 +204,14 @@ def test_run_writes_readme_and_index_tables(tmp_path):
     assert "<td>feat(ui): Add the &quot;dark&quot; theme</td>" in index
     assert f'<td><a href="https://github.com/{REPO}/blob/main/docs/blogs/{post}">Post</a></td>' in index
     assert "<td>—</td>" in index
-    # Blog posts table: Date | Title | Release | Source PR
-    assert f'<td><a href="https://github.com/{REPO}/blob/main/docs/blogs/{post}">feat(ui): Add the &quot;dark&quot; theme</a></td>' in index
-    assert "<td>v0.0.3</td>" in index
-    assert f'<td><a href="https://github.com/{REPO}/pull/42">#42</a></td>' in index
+    # Blog post cards: date, release, linked title, excerpt, source PR
+    assert '<time datetime="2026-09-24">24 Sep 2026</time><span class="post-tag">v0.0.3</span>' in index
+    assert f'<h3 class="post-title"><a href="https://github.com/{REPO}/blob/main/docs/blogs/{post}">feat(ui): Add the &quot;dark&quot; theme</a></h3>' in index
+    assert '<p class="post-excerpt">Adds a theme.</p>' in index
+    assert f'<p class="post-source"><a href="https://github.com/{REPO}/pull/42">PR #42</a></p>' in index
 
 
-def test_blog_posts_table_is_newest_first_and_capped_at_ten(tmp_path):
+def test_blog_post_cards_are_newest_first_and_capped_at_ten(tmp_path):
     blog_dir = make_repo(tmp_path) / "docs" / "blogs"
     for n in range(1, 13):
         (blog_dir / f"2026-09-{n:02d}-pr-{n}-post-{n}.md").write_text(
@@ -224,9 +226,8 @@ def test_blog_posts_table_is_newest_first_and_capped_at_ten(tmp_path):
         )
     posts = rp.read_blog_posts(blog_dir)
     lines = rp.render_blogs_html(posts, REPO)
-    rows = [line for line in lines if line.strip().startswith("<tr>")]
-    # Header row plus ten posts.
-    assert len(rows) == 11
+    cards = [line for line in lines if line.strip() == '<li class="post-card">']
+    assert len(cards) == 10
     html_text = "\n".join(lines)
     assert "Post &lt;12&gt;" in html_text
     assert "Post &lt;2&gt;" not in html_text
@@ -314,6 +315,87 @@ def test_blog_index_replaces_an_old_style_separator(tmp_path):
     index = (blog_dir / "README.md").read_text(encoding="utf-8")
     assert "|------|-------|------|" not in index
     assert index.count("| ---- | ----- | ---- |") == 1
+
+
+# Blog post cards and excerpts
+
+
+def card_post(summary="Release notes seed for v0.0.3 from PR #42.", body=""):
+    return f'---\npost_title: "T"\nsummary: "{summary}"\npost_date: "2026-09-24"\n---\n## T\n\n{body}'
+
+
+def test_excerpt_prefers_the_ai_summary_section():
+    text = card_post(body="### Summary\n\nClaude wrote this.\n\n### PR description\n\nThe description.\n")
+    assert rp.post_excerpt(text, "Release notes seed for v0.0.3 from PR #42.") == "Claude wrote this."
+
+
+def test_excerpt_uses_a_real_front_matter_summary_over_the_description():
+    text = card_post(body="### PR description\n\nThe description.\n")
+    assert rp.post_excerpt(text, "A hand-written summary.") == "A hand-written summary."
+
+
+def test_excerpt_skips_the_seed_summary_headings_and_issue_references():
+    body = (
+        "### PR description\n\nFixes #16.\n\n## Problem\n\n"
+        "`FindBySlugAsync` lowercases the **slug**, see [the issue](https://x/16).\n\n"
+        "### Commits\n\n- abc Commit subject\n"
+    )
+    assert rp.post_excerpt(card_post(body=body), "Release notes seed for v0.0.3 from PR #42.") == (
+        "FindBySlugAsync lowercases the slug, see the issue."
+    )
+
+
+def test_excerpt_joins_a_list_and_keeps_snake_case():
+    body = "### PR description\n\n## Summary\n\n- Removes the `pull_request` trigger.\n- Keeps _manual_ runs.\n"
+    assert rp.post_excerpt(card_post(body=body)) == "Removes the pull_request trigger. Keeps manual runs."
+
+
+def test_excerpt_skips_code_blocks_and_tables():
+    body = "### PR description\n\n```bash\necho hi\n\necho there\n```\n\n| a | b |\n| - | - |\n\nReal text.\n"
+    assert rp.post_excerpt(card_post(body=body)) == "Real text."
+
+
+def test_excerpt_is_empty_without_a_description():
+    assert rp.post_excerpt(card_post(body="### PR description\n\nNo PR description was provided.\n")) == ""
+    assert rp.post_excerpt("no front matter or sections") == ""
+
+
+def test_long_excerpts_are_cut_at_a_word_with_an_ellipsis():
+    text = "word " * 100
+    short = rp.shorten(text.strip())
+    assert len(short) <= rp.EXCERPT_LENGTH
+    assert short.endswith("word…")
+    assert rp.shorten("Short enough.") == "Short enough."
+
+
+def test_display_date_formats_iso_dates_and_leaves_others_alone():
+    assert rp.display_date("2026-09-07") == "7 Sep 2026"
+    assert rp.display_date("someday") == "someday"
+
+
+def test_blog_cards_escape_titles_and_excerpts():
+    posts = [{"file": "a.md", "pr": "5", "title": "<b>T</b>", "date": "2026-09-24", "tag": "", "excerpt": "a < b & c"}]
+    html_text = "\n".join(rp.render_blogs_html(posts, REPO))
+    assert "&lt;b&gt;T&lt;/b&gt;" in html_text
+    assert '<p class="post-excerpt">a &lt; b &amp; c</p>' in html_text
+    assert "post-tag" not in html_text
+
+
+def test_blog_cards_without_posts_show_an_empty_message():
+    assert rp.render_blogs_html([], REPO) == ['<p class="post-empty">No blog posts yet.</p>']
+
+
+def test_real_pages_site_is_unchanged_by_a_second_table_update(tmp_path):
+    # The committed docs/index.html must already be what update_tables writes,
+    # so a release run only changes it when releases or posts change.
+    source = Path(__file__).resolve().parents[3] / "docs" / "index.html"
+    (tmp_path / "docs" / "blogs").mkdir(parents=True)
+    (tmp_path / "docs" / "index.html").write_text(source.read_text(encoding="utf-8"), encoding="utf-8")
+    rp.update_tables(REPO, FakeGitHub(), tmp_path)
+    once = (tmp_path / "docs" / "index.html").read_text(encoding="utf-8")
+    rp.update_tables(REPO, FakeGitHub(), tmp_path)
+    assert (tmp_path / "docs" / "index.html").read_text(encoding="utf-8") == once
+    assert "<!-- RELEASES_HTML_START -->" in once and "<!-- BLOGS_HTML_START -->" in once
 
 
 # Post content and the AI summary
