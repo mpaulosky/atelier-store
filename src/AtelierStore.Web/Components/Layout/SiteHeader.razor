@@ -6,7 +6,8 @@
 <header class="site-header">
 	<div class="flex items-center gap-2 lg:gap-8">
 		<details class="nav-drawer lg:hidden">
-			<summary class="btn-icon -ml-3" aria-label="Menu">
+			@* ARIA gives <summary> no implicit role, so without role="button" assistive tech sees no control and ignores aria-label (#18). *@
+			<summary class="btn-icon -ml-3" role="button" aria-label="Menu">
 				<span class="nav-drawer-open-icon"><Icon Name="menu" /></span>
 				<span class="nav-drawer-close-icon"><Icon Name="close" /></span>
 			</summary>
