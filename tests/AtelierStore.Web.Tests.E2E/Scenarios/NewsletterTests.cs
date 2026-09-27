@@ -6,26 +6,32 @@ namespace AtelierStore.Web.Tests.E2E.Scenarios;
 public sealed class NewsletterTests(E2EFixture fixture) : PlaywrightTestBase(fixture)
 {
 	[Fact]
-	public async Task InvalidEmail_BlocksSubmission_BeforeItReachesTheServer()
+	public async Task InvalidEmail_ShowsServerValidationMessage()
 	{
 		// Arrange
 		await Page.GotoAsync("/");
-		ILocator emailInput = Page.GetByLabel("Email address");
-		await emailInput.FillAsync("not-an-email");
+		await Page.GetByLabel("Email address").FillAsync("not-an-email");
 
 		// Act
 		await Page.GetByRole(AriaRole.Button, new PageGetByRoleOptions { Name = "Subscribe" }).ClickAsync();
 
 		// Assert
-		// BUG: #17 - the input is type="email", so a compliant browser's own HTML5 constraint
-		// validation blocks the submit before the 'submit' event (and so Blazor's enhanced-nav handler)
-		// ever fires. NewsletterSignup.Email's [EmailAddress] "Enter a valid email address." message is
-		// therefore unreachable through real keyboard/mouse use: any string a browser lets through already
-		// satisfies EmailAddressAttribute's own permissive "exactly one '@', not at either end" check.
-		bool nativelyInvalid = await emailInput.EvaluateAsync<bool>("el => !el.checkValidity()");
-		nativelyInvalid.Should().BeTrue();
-		await Expect(Page.GetByText("Enter a valid email address.")).Not.ToBeVisibleAsync();
-		await Expect(Page.GetByRole(AriaRole.Button, new PageGetByRoleOptions { Name = "Subscribe" })).ToBeVisibleAsync();
+		// #17: the form is novalidate, so the browser posts it and the server's [EmailAddress] message renders.
+		await Expect(Page.GetByText("Enter a valid email address.")).ToBeVisibleAsync();
+		await Expect(Page.GetByText("You're on the list.")).Not.ToBeVisibleAsync();
+	}
+
+	[Fact]
+	public async Task EmptyEmail_ShowsRequiredMessage()
+	{
+		// Arrange
+		await Page.GotoAsync("/");
+
+		// Act
+		await Page.GetByRole(AriaRole.Button, new PageGetByRoleOptions { Name = "Subscribe" }).ClickAsync();
+
+		// Assert
+		await Expect(Page.GetByText("Enter your email address.")).ToBeVisibleAsync();
 	}
 
 	[Fact]
