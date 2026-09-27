@@ -1,0 +1,9 @@
+{
+	"chat.tools.terminal.autoApprove": {
+		"git add": true,
+		"git commit": true,
+		"/--no-verify\\b/": false,
+		"/\\bgit\\s+commit\\b.*\\s-[A-Za-z]*n[A-Za-z]*(?=$|[\\s;&|)])/": false,
+		"/\\bcore\\.hooksPath\\b/i": false
+	}
+}

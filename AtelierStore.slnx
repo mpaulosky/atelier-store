@@ -6,6 +6,9 @@
     <Project Path="src/AtelierStore.Web/AtelierStore.Web.csproj" />
   </Folder>
   <Folder Name="/tests/">
+    <Project Path="tests/AtelierStore.Web.Tests.Bunit/AtelierStore.Web.Tests.Bunit.csproj" />
+    <Project Path="tests/AtelierStore.Web.Tests.E2E/AtelierStore.Web.Tests.E2E.csproj" />
     <Project Path="tests/AtelierStore.Web.Tests.Integration/AtelierStore.Web.Tests.Integration.csproj" />
+    <Project Path="tests/AtelierStore.Web.Tests.Unit/AtelierStore.Web.Tests.Unit.csproj" />
   </Folder>
 </Solution>

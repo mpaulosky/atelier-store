@@ -147,7 +147,8 @@
 		else
 		{
 			<p class="lead">New collections, private sales and stories from the atelier, a few times a season.</p>
-			<EditForm class="newsletter-form" Model="Newsletter!" FormName="newsletter" OnValidSubmit="Subscribe" Enhance>
+			@* novalidate: skip the browser's native type="email" check so the server's styled messages are reachable (#17). *@
+			<EditForm class="newsletter-form" Model="Newsletter!" FormName="newsletter" OnValidSubmit="Subscribe" Enhance novalidate>
 				<DataAnnotationsValidator />
 				<div class="w-full text-left">
 					<label class="sr-only" for="newsletter-email">Email address</label>

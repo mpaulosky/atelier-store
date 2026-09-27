@@ -10,6 +10,8 @@
 
   <ItemGroup>
     <InternalsVisibleTo Include="AtelierStore.Web.Tests.Unit" />
+    <!-- WebApplicationFactory<Program> needs compile-time access to the (internal, top-level-statement-generated) Program type. -->
+    <InternalsVisibleTo Include="AtelierStore.Web.Tests.E2E" />
   </ItemGroup>
 
   <ItemGroup>
