@@ -57,6 +57,7 @@ The app fails at startup if `Auth0:Domain`, `Auth0:ClientId`, or `ConnectionStri
 
 | Version | Date | Title | Blog post |
 | ------- | ---- | ----- | --------- |
+| [v0.0.14](https://github.com/mpaulosky/atelier-store/releases/tag/v0.0.14) | 2026-09-27 | fix(Web): Expose the mobile menu toggle as a button | [Post](https://github.com/mpaulosky/atelier-store/blob/main/docs/blogs/2026-09-27-pr-36-fix-web-expose-the-mobile-menu-toggle-as-a-button.md) |
 | [v0.0.13](https://github.com/mpaulosky/atelier-store/releases/tag/v0.0.13) | 2026-09-27 | fix(Web): Require lowercase product and category slugs | [Post](https://github.com/mpaulosky/atelier-store/blob/main/docs/blogs/2026-09-27-pr-33-fix-web-require-lowercase-product-and-category-slugs.md) |
 | [v0.0.12](https://github.com/mpaulosky/atelier-store/releases/tag/v0.0.12) | 2026-09-27 | test(Web): Add Postgres integration tests for catalog and endpoints | [Post](https://github.com/mpaulosky/atelier-store/blob/main/docs/blogs/2026-09-27-pr-25-test-web-add-postgres-integration-tests-for-catalog-and-endpoints.md) |
 | [v0.0.11](https://github.com/mpaulosky/atelier-store/releases/tag/v0.0.11) | 2026-09-27 | chore(ci): Run code metrics on manual dispatch only | [Post](https://github.com/mpaulosky/atelier-store/blob/main/docs/blogs/2026-09-27-pr-27-chore-ci-run-code-metrics-on-manual-dispatch-only.md) |
@@ -66,7 +67,6 @@ The app fails at startup if `Auth0:Domain`, `Auth0:ClientId`, or `ConnectionStri
 | [v0.0.7](https://github.com/mpaulosky/atelier-store/releases/tag/v0.0.7) | 2026-09-27 | test(Web): Add Playwright E2E tests for storefront flows | [Post](https://github.com/mpaulosky/atelier-store/blob/main/docs/blogs/2026-09-27-pr-19-test-web-add-playwright-e2e-tests-for-storefront-flows.md) |
 | [v0.0.6](https://github.com/mpaulosky/atelier-store/releases/tag/v0.0.6) | 2026-09-27 | chore: Ignore Claude Code worktrees | — |
 | [v0.0.5](https://github.com/mpaulosky/atelier-store/releases/tag/v0.0.5) | 2026-09-27 | test(Web): Add bUnit tests for catalog components and pages | — |
-| [v0.0.4](https://github.com/mpaulosky/atelier-store/releases/tag/v0.0.4) | 2026-09-26 | test(Web): Add unit tests for stock state, image URLs and return URLs | — |
 
 <!-- RELEASES_END -->
 
