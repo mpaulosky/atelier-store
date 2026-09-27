@@ -39,28 +39,6 @@ public sealed class ProductCatalogTests(PostgresContainerFixture fixture) : Data
 	}
 
 	[Fact]
-	public async Task FindBySlugAsync_ProductStoredWithAMixedCaseSlug_CannotFindItByItsOwnSlug()
-	{
-		// BUG: #16 - nothing stops a product being stored with a non-lowercase slug, and
-		// FindBySlugAsync only lowercases the *search* term, not the stored value, so a
-		// mixed-case row can never be found again, even by its own exact slug.
-		// Arrange
-		await using AppDbContext db = await Fixture.CreateDbContextFactory().CreateDbContextAsync(TestContext.Current.CancellationToken);
-		Category category = new CategoryBuilder().Build();
-		db.Categories.Add(category);
-		await db.SaveChangesAsync(TestContext.Current.CancellationToken);
-		Product product = new ProductBuilder().WithSlug("Mixed-Case").InCategory(category.Id).Build();
-		db.Products.Add(product);
-		await db.SaveChangesAsync(TestContext.Current.CancellationToken);
-
-		// Act
-		CatalogProduct? found = await _catalog.FindBySlugAsync("Mixed-Case", TestContext.Current.CancellationToken);
-
-		// Assert
-		found.Should().BeNull();
-	}
-
-	[Fact]
 	public async Task FindBySlugAsync_UnknownSlug_ReturnsNull()
 	{
 		// Arrange

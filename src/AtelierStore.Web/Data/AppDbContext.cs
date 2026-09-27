@@ -14,6 +14,8 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
 	{
 		modelBuilder.Entity<Category>(category =>
 		{
+			// Slugs are stored lowercase, so lookups can lowercase the search term and match exactly.
+			category.ToTable(table => table.HasCheckConstraint("ck_categories_slug_lowercase", "slug = lower(slug)"));
 			category.Property(c => c.Slug).HasMaxLength(100);
 			category.Property(c => c.Name).HasMaxLength(100);
 			category.HasIndex(c => c.Slug).IsUnique();
@@ -26,6 +28,8 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
 			{
 				table.HasCheckConstraint("ck_products_price_non_negative", "price >= 0");
 				table.HasCheckConstraint("ck_products_was_price_above_price", "was_price IS NULL OR was_price > price");
+				// ProductCatalog lowercases the slug it looks up, so a stored slug must be lowercase too.
+				table.HasCheckConstraint("ck_products_slug_lowercase", "slug = lower(slug)");
 			});
 			product.Property(p => p.Slug).HasMaxLength(100);
 			product.Property(p => p.Name).HasMaxLength(200);
