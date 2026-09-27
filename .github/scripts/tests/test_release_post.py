@@ -298,6 +298,24 @@ def test_blog_index_keeps_posts_whose_title_mentions_date(tmp_path):
     assert index.count("| Date | Title | Tags |") == 1
 
 
+def test_table_separators_use_the_compact_style(tmp_path):
+    # markdownlint MD060 ("compact") needs a space on both sides of every pipe.
+    blog_dir = make_repo(tmp_path) / "docs" / "blogs"
+    rp.update_blog_index(blog_dir, "2026-09-24", "feat(ui): Next", "2026-09-24-pr-8-feat-ui-next.md")
+    index = (blog_dir / "README.md").read_text(encoding="utf-8")
+    assert "| ---- | ----- | ---- |" in index.splitlines()
+    assert "| ------- | ---- | ----- | --------- |" in rp.render_releases_markdown([]).splitlines()
+
+
+def test_blog_index_replaces_an_old_style_separator(tmp_path):
+    blog_dir = make_repo(tmp_path) / "docs" / "blogs"
+    (blog_dir / "README.md").write_text("| Date | Title | Tags |\n|------|-------|------|\n", encoding="utf-8")
+    rp.update_blog_index(blog_dir, "2026-09-24", "feat(ui): Next", "2026-09-24-pr-8-feat-ui-next.md")
+    index = (blog_dir / "README.md").read_text(encoding="utf-8")
+    assert "|------|-------|------|" not in index
+    assert index.count("| ---- | ----- | ---- |") == 1
+
+
 # Post content and the AI summary
 
 
