@@ -5,14 +5,16 @@
 ## Statuses
 
 [![.NET 10](https://img.shields.io/badge/.NET-10-512BD4?logo=dotnet)](https://dotnet.microsoft.com/)
-[![MIT License](https://img.shields.io/badge/License-MIT-green.svg)](../LICENSE)
+[![MIT License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 [![xUnit Tests](https://img.shields.io/badge/Tests-xUnit-blueviolet?logo=github)](https://github.com/mpaulosky/atelier-store/actions/workflows/ci.yml)
 [![Latest release](https://img.shields.io/github/v/release/mpaulosky/atelier-store)](https://github.com/mpaulosky/atelier-store/releases/latest)
 [![Codecov](https://img.shields.io/codecov/c/github/mpaulosky/atelier-store?logo=codecov)](https://codecov.io/gh/mpaulosky/atelier-store)
+[![Stars](https://img.shields.io/github/stars/mpaulosky/atelier-store)](https://github.com/mpaulosky/atelier-store/stargazers)
 
 [![Build and Test Suite](https://github.com/mpaulosky/atelier-store/actions/workflows/ci.yml/badge.svg)](https://github.com/mpaulosky/atelier-store/actions/workflows/ci.yml)
 [![CodeQL](https://github.com/mpaulosky/atelier-store/actions/workflows/codeql-analysis.yml/badge.svg)](https://github.com/mpaulosky/atelier-store/actions/workflows/codeql-analysis.yml)
 [![.NET code metrics](https://github.com/mpaulosky/atelier-store/actions/workflows/code-metrics.yml/badge.svg)](https://github.com/mpaulosky/atelier-store/actions/workflows/code-metrics.yml)
+
 [![Lint Markdown](https://github.com/mpaulosky/atelier-store/actions/workflows/lint-markdown.yml/badge.svg)](https://github.com/mpaulosky/atelier-store/actions/workflows/lint-markdown.yml)
 [![Lint YAML](https://github.com/mpaulosky/atelier-store/actions/workflows/lint-yaml.yml/badge.svg)](https://github.com/mpaulosky/atelier-store/actions/workflows/lint-yaml.yml)
 
@@ -20,7 +22,6 @@
 [![Closed issues](https://img.shields.io/github/issues-closed/mpaulosky/atelier-store)](https://github.com/mpaulosky/atelier-store/issues?q=is%3Aissue+is%3Aclosed)
 [![Open PRs](https://img.shields.io/github/issues-pr/mpaulosky/atelier-store)](https://github.com/mpaulosky/atelier-store/pulls)
 [![Closed PRs](https://img.shields.io/github/issues-pr-closed/mpaulosky/atelier-store)](https://github.com/mpaulosky/atelier-store/pulls?q=is%3Apr+is%3Aclosed)
-[![Stars](https://img.shields.io/github/stars/mpaulosky/atelier-store)](https://github.com/mpaulosky/atelier-store/stargazers)
 
 ## Prerequisites
 
@@ -78,6 +79,7 @@ The app fails at startup if `Auth0:Domain`, `Auth0:ClientId`, or `ConnectionStri
 
 | Version | Date | Title | Blog post |
 | ------- | ---- | ----- | --------- |
+| [v0.0.19](https://github.com/mpaulosky/atelier-store/releases/tag/v0.0.19) | 2026-09-27 | docs(readme): regroup status badges | [Post](https://github.com/mpaulosky/atelier-store/blob/main/docs/blogs/2026-09-27-pr-47-docs-readme-regroup-status-badges.md) |
 | [v0.0.18](https://github.com/mpaulosky/atelier-store/releases/tag/v0.0.18) | 2026-09-27 | docs(readme): Add a Statuses badge section | [Post](https://github.com/mpaulosky/atelier-store/blob/main/docs/blogs/2026-09-27-pr-44-docs-readme-add-a-statuses-badge-section.md) |
 | [v0.0.17](https://github.com/mpaulosky/atelier-store/releases/tag/v0.0.17) | 2026-09-27 | ci: Enforce the 80% coverage gate and drop unused Auth0 secrets | [Post](https://github.com/mpaulosky/atelier-store/blob/main/docs/blogs/2026-09-27-pr-41-ci-enforce-the-80-coverage-gate-and-drop-unused-auth0-secrets.md) |
 | [v0.0.16](https://github.com/mpaulosky/atelier-store/releases/tag/v0.0.16) | 2026-09-27 | feat(docs): Add a GitHub Pages site in docs/index.html | [Post](https://github.com/mpaulosky/atelier-store/blob/main/docs/blogs/2026-09-27-pr-40-feat-docs-add-a-github-pages-site-in-docs-index-html.md) |
@@ -87,7 +89,6 @@ The app fails at startup if `Auth0:Domain`, `Auth0:ClientId`, or `ConnectionStri
 | [v0.0.12](https://github.com/mpaulosky/atelier-store/releases/tag/v0.0.12) | 2026-09-27 | test(Web): Add Postgres integration tests for catalog and endpoints | [Post](https://github.com/mpaulosky/atelier-store/blob/main/docs/blogs/2026-09-27-pr-25-test-web-add-postgres-integration-tests-for-catalog-and-endpoints.md) |
 | [v0.0.11](https://github.com/mpaulosky/atelier-store/releases/tag/v0.0.11) | 2026-09-27 | chore(ci): Run code metrics on manual dispatch only | [Post](https://github.com/mpaulosky/atelier-store/blob/main/docs/blogs/2026-09-27-pr-27-chore-ci-run-code-metrics-on-manual-dispatch-only.md) |
 | [v0.0.10](https://github.com/mpaulosky/atelier-store/releases/tag/v0.0.10) | 2026-09-27 | fix(ci): Write markdownlint-clean table separators in release tables | [Post](https://github.com/mpaulosky/atelier-store/blob/main/docs/blogs/2026-09-27-pr-28-fix-ci-write-markdownlint-clean-table-separators-in-release-tables.md) |
-| [v0.0.9](https://github.com/mpaulosky/atelier-store/releases/tag/v0.0.9) | 2026-09-27 | chore(agents): Add Beast Mode custom agent without gate-bypassing tools | — |
 
 <!-- RELEASES_END -->
 
