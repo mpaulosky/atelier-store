@@ -5,4 +5,7 @@
   <Folder Name="/src/">
     <Project Path="src/AtelierStore.Web/AtelierStore.Web.csproj" />
   </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/AtelierStore.Web.Tests.Integration/AtelierStore.Web.Tests.Integration.csproj" />
+  </Folder>
 </Solution>
