@@ -95,7 +95,7 @@ public sealed class ProductCatalogTests(PostgresContainerFixture fixture) : Data
 	}
 
 	[Fact]
-	public async Task GetRelatedAsync_IncludesTheProductItself_ExcludesIt()
+	public async Task GetRelatedAsync_ExcludesTheProductItself()
 	{
 		// Arrange
 		await using AppDbContext db = await Fixture.CreateDbContextFactory().CreateDbContextAsync(TestContext.Current.CancellationToken);

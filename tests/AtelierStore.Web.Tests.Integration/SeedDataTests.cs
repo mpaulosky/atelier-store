@@ -31,8 +31,15 @@ public sealed class SeedDataTests(PostgresContainerFixture fixture)
 		IReadOnlyList<string> newestFirst = seed.ProductSlugsNewestFirst;
 
 		// Assert
-		newestFirst.Should().StartWith("leather-biker-jacket");
-		newestFirst.Should().EndWith("pearl-collar-necklace");
+		newestFirst.Should().Equal(
+			"leather-biker-jacket",
+			"hand-knit-poncho",
+			"silk-jogger",
+			"top-handle-bag",
+			"botanical-tote",
+			"panelled-runner-sneaker",
+			"round-metal-sunglasses",
+			"pearl-collar-necklace");
 	}
 
 	[Fact]

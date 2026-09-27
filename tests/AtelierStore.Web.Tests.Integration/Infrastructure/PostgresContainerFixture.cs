@@ -11,8 +11,8 @@ using Testcontainers.PostgreSql;
 namespace AtelierStore.Web.Tests.Integration.Infrastructure;
 
 /// <summary>
-/// One Postgres 17 container for the whole assembly (declared via <c>[assembly: AssemblyFixture]</c> in
-/// <see cref="AssemblyFixtures"/>). Migrates the real schema once, captures a <see cref="Seed"/> snapshot
+/// One Postgres 17 container for the whole assembly (registered by the <see cref="AssemblyFixtureAttribute"/>
+/// at the top of this file). Migrates the real schema once, captures a <see cref="Seed"/> snapshot
 /// of what <c>HasData</c> seeded before any test can touch the database, then resets between tests with
 /// Respawn so each test starts from empty tables and builds its own rows.
 /// </summary>
@@ -43,6 +43,7 @@ public sealed class PostgresContainerFixture : IAsyncLifetime
 		// later `builder.UseSetting(...)` calls in AtelierWebApplicationFactory.
 		Environment.SetEnvironmentVariable("Auth0__Domain", TestAuth0.FakeDomain);
 		Environment.SetEnvironmentVariable("Auth0__ClientId", TestAuth0.FakeClientId);
+		Environment.SetEnvironmentVariable("Auth0__ClientSecret", TestAuth0.FakeClientSecret);
 
 		await _container.StartAsync();
 		ConnectionString = _container.GetConnectionString();

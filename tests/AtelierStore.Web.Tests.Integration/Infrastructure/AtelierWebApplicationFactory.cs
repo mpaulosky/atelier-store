@@ -22,7 +22,7 @@ namespace AtelierStore.Web.Tests.Integration.Infrastructure;
 /// The actual guarantee that the real Auth0 tenant and the developer's database are never touched is
 /// <see cref="PostgresContainerFixture"/> setting environment variables before Program.cs runs (see its
 /// comments); the settings here additionally pin the same values through configuration, and
-/// <c>Configuration_ConnectionString_ResolvesToTestContainer</c> asserts the running app actually resolved
+/// <c>Configuration_ConnectionString_ResolvesToTheTestContainerNotTheDeveloperDatabase</c> asserts the running app actually resolved
 /// the container's connection string.
 /// </summary>
 public sealed class AtelierWebApplicationFactory(string connectionString) : WebApplicationFactory<Program>
@@ -32,6 +32,7 @@ public sealed class AtelierWebApplicationFactory(string connectionString) : WebA
 		builder.UseSetting("ConnectionStrings:Default", connectionString);
 		builder.UseSetting("Auth0:Domain", TestAuth0.FakeDomain);
 		builder.UseSetting("Auth0:ClientId", TestAuth0.FakeClientId);
+		builder.UseSetting("Auth0:ClientSecret", TestAuth0.FakeClientSecret);
 
 		builder.ConfigureTestServices(services =>
 		{

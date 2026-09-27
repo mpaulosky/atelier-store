@@ -9,6 +9,8 @@ internal static class TestAuth0
 
 	public const string FakeClientId = "test-client-id";
 
+	public const string FakeClientSecret = "test-client-secret";
+
 	public static string AuthorizationEndpoint => $"https://{FakeDomain}/authorize";
 
 	public static string TokenEndpoint => $"https://{FakeDomain}/oauth/token";

@@ -2,6 +2,7 @@ using System.Net;
 using Auth0.AspNetCore.Authentication;
 using AtelierStore.Web.Tests.Integration.Infrastructure;
 using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Configuration;
@@ -40,7 +41,7 @@ public sealed class EndpointTests(PostgresContainerFixture fixture) : IDisposabl
 	}
 
 	[Fact]
-	public async Task Configuration_ConnectionString_ResolvesToTheTestContainerNotTheDeveloperDatabase()
+	public void Configuration_ConnectionString_ResolvesToTheTestContainerNotTheDeveloperDatabase()
 	{
 		// Arrange
 		Npgsql.NpgsqlConnectionStringBuilder expected = new(fixture.ConnectionString);
@@ -119,6 +120,15 @@ public sealed class EndpointTests(PostgresContainerFixture fixture) : IDisposabl
 		((int)response.StatusCode).Should().BeInRange(300, 399);
 		response.Headers.Location.Should().NotBeNull();
 		response.Headers.Location!.Host.Should().Be(TestAuth0.FakeDomain);
+
+		// Assert: the app's own session cookie is expired too, not just the Auth0 session.
+		string cookieName = _factory.Services
+			.GetRequiredService<IOptionsMonitor<CookieAuthenticationOptions>>()
+			.Get(CookieAuthenticationDefaults.AuthenticationScheme)
+			.Cookie.Name!;
+		response.Headers.GetValues("Set-Cookie").Should().Contain(cookie =>
+			cookie.StartsWith(cookieName + "=", StringComparison.Ordinal)
+			&& cookie.Contains("expires=Thu, 01 Jan 1970", StringComparison.OrdinalIgnoreCase));
 	}
 
 	/// <summary>
