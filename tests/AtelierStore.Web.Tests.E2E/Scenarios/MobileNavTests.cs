@@ -1,0 +1,33 @@
+using AtelierStore.Web.Tests.E2E.Infrastructure;
+
+namespace AtelierStore.Web.Tests.E2E.Scenarios;
+
+/// <summary>Scenario 7: at a phone viewport, the "Menu" drawer opens and lists the primary navigation.</summary>
+public sealed class MobileNavTests(E2EFixture fixture) : PlaywrightTestBase(fixture)
+{
+	private static readonly string[] PrimaryNavLabels = ["New In", "Women", "Men", "Bags", "Jewelry"];
+
+	protected override Task<IBrowserContext> CreateContextAsync() =>
+		Fixture.NewContextAsync(options: new BrowserNewContextOptions { ViewportSize = new ViewportSize { Width = 390, Height = 844 } });
+
+	[Fact]
+	public async Task OpeningMenu_ShowsPrimaryNavigationLinks()
+	{
+		// Arrange
+		await Page.GotoAsync("/");
+		ILocator drawer = Page.Locator("nav.nav-drawer-panel");
+
+		// Act
+		// BUG: #18 - the mobile menu toggle is a bare `<summary aria-label="Menu">` with no exposed
+		// accessible role in Chromium's accessibility tree (confirmed via AriaSnapshotAsync: it reports no
+		// role and no name), so it can't be reached with GetByRole like a real button. Falling back to its
+		// one distinguishing production attribute until that's fixed.
+		await Page.Locator("summary[aria-label='Menu']").ClickAsync();
+
+		// Assert
+		foreach (string label in PrimaryNavLabels)
+		{
+			await Expect(drawer.GetByRole(AriaRole.Link, new LocatorGetByRoleOptions { Name = label, Exact = true })).ToBeVisibleAsync();
+		}
+	}
+}
