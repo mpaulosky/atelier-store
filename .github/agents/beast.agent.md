@@ -22,7 +22,6 @@ tools:
     "openSimpleBrowser",
     "fetch",
     "githubRepo",
-    "github.vscode-pull-request-github/copilotCodingAgent",
     "github.vscode-pull-request-github/issue_fetch",
     "github.vscode-pull-request-github/suggest-fix",
     "github.vscode-pull-request-github/searchSyntax",
@@ -35,7 +34,6 @@ tools:
     "runTests",
     "github/add_comment_to_pending_review",
     "github/add_issue_comment",
-    "github/assign_copilot_to_issue",
     "github/create_branch",
     "github/create_pull_request",
     "github/get_commit",
@@ -66,7 +64,6 @@ tools:
     "github/search_users",
     "github/sub_issue_write",
     "github/update_pull_request",
-    "github/update_pull_request_branch",
     "microsoft.docs.mcp/microsoft_docs_search",
     "microsoft.docs.mcp/microsoft_code_sample_search",
     "microsoft.docs.mcp/microsoft_docs_fetch",
@@ -86,6 +83,8 @@ tools:
     "run_subagent",
   ]
 ---
+
+# Beast Mode
 
 You are an agent – please keep going until the user’s query is completely resolved before ending your turn and yielding
 back to the user.
