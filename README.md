@@ -78,6 +78,7 @@ The app fails at startup if `Auth0:Domain`, `Auth0:ClientId`, or `ConnectionStri
 
 | Version | Date | Title | Blog post |
 | ------- | ---- | ----- | --------- |
+| [v0.0.18](https://github.com/mpaulosky/atelier-store/releases/tag/v0.0.18) | 2026-09-27 | docs(readme): Add a Statuses badge section | [Post](https://github.com/mpaulosky/atelier-store/blob/main/docs/blogs/2026-09-27-pr-44-docs-readme-add-a-statuses-badge-section.md) |
 | [v0.0.17](https://github.com/mpaulosky/atelier-store/releases/tag/v0.0.17) | 2026-09-27 | ci: Enforce the 80% coverage gate and drop unused Auth0 secrets | [Post](https://github.com/mpaulosky/atelier-store/blob/main/docs/blogs/2026-09-27-pr-41-ci-enforce-the-80-coverage-gate-and-drop-unused-auth0-secrets.md) |
 | [v0.0.16](https://github.com/mpaulosky/atelier-store/releases/tag/v0.0.16) | 2026-09-27 | feat(docs): Add a GitHub Pages site in docs/index.html | [Post](https://github.com/mpaulosky/atelier-store/blob/main/docs/blogs/2026-09-27-pr-40-feat-docs-add-a-github-pages-site-in-docs-index-html.md) |
 | [v0.0.15](https://github.com/mpaulosky/atelier-store/releases/tag/v0.0.15) | 2026-09-27 | docs: Add contributing guide, security policy, references, and code of conduct | [Post](https://github.com/mpaulosky/atelier-store/blob/main/docs/blogs/2026-09-27-pr-35-docs-add-contributing-guide-security-policy-references-and-code-of-conduct.md) |
@@ -87,7 +88,6 @@ The app fails at startup if `Auth0:Domain`, `Auth0:ClientId`, or `ConnectionStri
 | [v0.0.11](https://github.com/mpaulosky/atelier-store/releases/tag/v0.0.11) | 2026-09-27 | chore(ci): Run code metrics on manual dispatch only | [Post](https://github.com/mpaulosky/atelier-store/blob/main/docs/blogs/2026-09-27-pr-27-chore-ci-run-code-metrics-on-manual-dispatch-only.md) |
 | [v0.0.10](https://github.com/mpaulosky/atelier-store/releases/tag/v0.0.10) | 2026-09-27 | fix(ci): Write markdownlint-clean table separators in release tables | [Post](https://github.com/mpaulosky/atelier-store/blob/main/docs/blogs/2026-09-27-pr-28-fix-ci-write-markdownlint-clean-table-separators-in-release-tables.md) |
 | [v0.0.9](https://github.com/mpaulosky/atelier-store/releases/tag/v0.0.9) | 2026-09-27 | chore(agents): Add Beast Mode custom agent without gate-bypassing tools | — |
-| [v0.0.8](https://github.com/mpaulosky/atelier-store/releases/tag/v0.0.8) | 2026-09-27 | chore(vscode): Auto-approve agent git add/commit but not --no-verify | — |
 
 <!-- RELEASES_END -->
 
