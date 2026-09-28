@@ -79,6 +79,7 @@ The app fails at startup if `Auth0:Domain`, `Auth0:ClientId`, or `ConnectionStri
 
 | Version | Date | Title | Blog post |
 | ------- | ---- | ----- | --------- |
+| [v0.0.26](https://github.com/mpaulosky/atelier-store/releases/tag/v0.0.26) | 2026-09-28 | fix(web): Serve app.css on a clean build | [Post](https://github.com/mpaulosky/atelier-store/blob/main/docs/blogs/2026-09-28-pr-62-fix-web-serve-app-css-on-a-clean-build.md) |
 | [v0.0.25](https://github.com/mpaulosky/atelier-store/releases/tag/v0.0.25) | 2026-09-28 | ci: Let README sync PRs run their required checks | [Post](https://github.com/mpaulosky/atelier-store/blob/main/docs/blogs/2026-09-28-pr-60-ci-let-readme-sync-prs-run-their-required-checks.md) |
 | [v0.0.24](https://github.com/mpaulosky/atelier-store/releases/tag/v0.0.24) | 2026-09-28 | ci: Run the test suite on Dependabot PRs | [Post](https://github.com/mpaulosky/atelier-store/blob/main/docs/blogs/2026-09-28-pr-58-ci-run-the-test-suite-on-dependabot-prs.md) |
 | [v0.0.23](https://github.com/mpaulosky/atelier-store/releases/tag/v0.0.23) | 2026-09-28 | chore: Remove unused squad branch cleanup tooling | [Post](https://github.com/mpaulosky/atelier-store/blob/main/docs/blogs/2026-09-28-pr-56-chore-remove-unused-squad-branch-cleanup-tooling.md) |
@@ -88,7 +89,6 @@ The app fails at startup if `Auth0:Domain`, `Auth0:ClientId`, or `ConnectionStri
 | [v0.0.19](https://github.com/mpaulosky/atelier-store/releases/tag/v0.0.19) | 2026-09-27 | docs(readme): regroup status badges | [Post](https://github.com/mpaulosky/atelier-store/blob/main/docs/blogs/2026-09-27-pr-47-docs-readme-regroup-status-badges.md) |
 | [v0.0.18](https://github.com/mpaulosky/atelier-store/releases/tag/v0.0.18) | 2026-09-27 | docs(readme): Add a Statuses badge section | [Post](https://github.com/mpaulosky/atelier-store/blob/main/docs/blogs/2026-09-27-pr-44-docs-readme-add-a-statuses-badge-section.md) |
 | [v0.0.17](https://github.com/mpaulosky/atelier-store/releases/tag/v0.0.17) | 2026-09-27 | ci: Enforce the 80% coverage gate and drop unused Auth0 secrets | [Post](https://github.com/mpaulosky/atelier-store/blob/main/docs/blogs/2026-09-27-pr-41-ci-enforce-the-80-coverage-gate-and-drop-unused-auth0-secrets.md) |
-| [v0.0.16](https://github.com/mpaulosky/atelier-store/releases/tag/v0.0.16) | 2026-09-27 | feat(docs): Add a GitHub Pages site in docs/index.html | [Post](https://github.com/mpaulosky/atelier-store/blob/main/docs/blogs/2026-09-27-pr-40-feat-docs-add-a-github-pages-site-in-docs-index-html.md) |
 
 <!-- RELEASES_END -->
 
