@@ -33,6 +33,12 @@
 
   <Target Name="TailwindBuild" BeforeTargets="BeforeBuild" Condition="'$(SkipTailwind)' != 'true'">
     <Exec Command="pnpm run css:build" />
+    <!-- wwwroot/** was globbed when the project loaded, before this file
+         existed, so add it now or a clean build leaves it out of the static
+         web assets manifest and @Assets["app.css"] can't serve it. -->
+    <ItemGroup>
+      <Content Include="wwwroot/app.css" Exclude="@(Content)" />
+    </ItemGroup>
   </Target>
 
 </Project>
