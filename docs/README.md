@@ -79,6 +79,7 @@ The app fails at startup if `Auth0:Domain`, `Auth0:ClientId`, or `ConnectionStri
 
 | Version | Date | Title | Blog post |
 | ------- | ---- | ----- | --------- |
+| [v0.0.21](https://github.com/mpaulosky/atelier-store/releases/tag/v0.0.21) | 2026-09-28 | ci: Add nightly squad branch and worktree cleanup | [Post](https://github.com/mpaulosky/atelier-store/blob/main/docs/blogs/2026-09-28-pr-52-ci-add-nightly-squad-branch-and-worktree-cleanup.md) |
 | [v0.0.20](https://github.com/mpaulosky/atelier-store/releases/tag/v0.0.20) | 2026-09-27 | docs(readme): use an absolute URL for the LICENSE badge link | [Post](https://github.com/mpaulosky/atelier-store/blob/main/docs/blogs/2026-09-27-pr-50-docs-readme-use-an-absolute-url-for-the-license-badge-link.md) |
 | [v0.0.19](https://github.com/mpaulosky/atelier-store/releases/tag/v0.0.19) | 2026-09-27 | docs(readme): regroup status badges | [Post](https://github.com/mpaulosky/atelier-store/blob/main/docs/blogs/2026-09-27-pr-47-docs-readme-regroup-status-badges.md) |
 | [v0.0.18](https://github.com/mpaulosky/atelier-store/releases/tag/v0.0.18) | 2026-09-27 | docs(readme): Add a Statuses badge section | [Post](https://github.com/mpaulosky/atelier-store/blob/main/docs/blogs/2026-09-27-pr-44-docs-readme-add-a-statuses-badge-section.md) |
@@ -88,7 +89,6 @@ The app fails at startup if `Auth0:Domain`, `Auth0:ClientId`, or `ConnectionStri
 | [v0.0.14](https://github.com/mpaulosky/atelier-store/releases/tag/v0.0.14) | 2026-09-27 | fix(Web): Expose the mobile menu toggle as a button | [Post](https://github.com/mpaulosky/atelier-store/blob/main/docs/blogs/2026-09-27-pr-36-fix-web-expose-the-mobile-menu-toggle-as-a-button.md) |
 | [v0.0.13](https://github.com/mpaulosky/atelier-store/releases/tag/v0.0.13) | 2026-09-27 | fix(Web): Require lowercase product and category slugs | [Post](https://github.com/mpaulosky/atelier-store/blob/main/docs/blogs/2026-09-27-pr-33-fix-web-require-lowercase-product-and-category-slugs.md) |
 | [v0.0.12](https://github.com/mpaulosky/atelier-store/releases/tag/v0.0.12) | 2026-09-27 | test(Web): Add Postgres integration tests for catalog and endpoints | [Post](https://github.com/mpaulosky/atelier-store/blob/main/docs/blogs/2026-09-27-pr-25-test-web-add-postgres-integration-tests-for-catalog-and-endpoints.md) |
-| [v0.0.11](https://github.com/mpaulosky/atelier-store/releases/tag/v0.0.11) | 2026-09-27 | chore(ci): Run code metrics on manual dispatch only | [Post](https://github.com/mpaulosky/atelier-store/blob/main/docs/blogs/2026-09-27-pr-27-chore-ci-run-code-metrics-on-manual-dispatch-only.md) |
 
 <!-- RELEASES_END -->
 
