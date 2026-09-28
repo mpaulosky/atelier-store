@@ -79,7 +79,9 @@ jobs:
           fi
 
           git add docs/README.md
-          git commit -m "docs: sync README.md -> docs/README.md [skip ci] [skip-release]"
+          # No skip-CI marker: main's required checks must run on this commit,
+          # or the sync PR can never merge.
+          git commit -m "docs: sync README.md -> docs/README.md [skip-release]"
           git push --force-with-lease origin HEAD
           echo "committed=true" >> "$GITHUB_OUTPUT"
 
