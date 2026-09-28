@@ -79,6 +79,7 @@ The app fails at startup if `Auth0:Domain`, `Auth0:ClientId`, or `ConnectionStri
 
 | Version | Date | Title | Blog post |
 | ------- | ---- | ----- | --------- |
+| [v0.0.23](https://github.com/mpaulosky/atelier-store/releases/tag/v0.0.23) | 2026-09-28 | chore: Remove unused squad branch cleanup tooling | [Post](https://github.com/mpaulosky/atelier-store/blob/main/docs/blogs/2026-09-28-pr-56-chore-remove-unused-squad-branch-cleanup-tooling.md) |
 | [v0.0.22](https://github.com/mpaulosky/atelier-store/releases/tag/v0.0.22) | 2026-09-28 | fix(scripts): Keep squad cleanup going when a local delete is refused | [Post](https://github.com/mpaulosky/atelier-store/blob/main/docs/blogs/2026-09-28-pr-54-fix-scripts-keep-squad-cleanup-going-when-a-local-delete-is-refused.md) |
 | [v0.0.21](https://github.com/mpaulosky/atelier-store/releases/tag/v0.0.21) | 2026-09-28 | ci: Add nightly squad branch and worktree cleanup | [Post](https://github.com/mpaulosky/atelier-store/blob/main/docs/blogs/2026-09-28-pr-52-ci-add-nightly-squad-branch-and-worktree-cleanup.md) |
 | [v0.0.20](https://github.com/mpaulosky/atelier-store/releases/tag/v0.0.20) | 2026-09-27 | docs(readme): use an absolute URL for the LICENSE badge link | [Post](https://github.com/mpaulosky/atelier-store/blob/main/docs/blogs/2026-09-27-pr-50-docs-readme-use-an-absolute-url-for-the-license-badge-link.md) |
@@ -88,7 +89,6 @@ The app fails at startup if `Auth0:Domain`, `Auth0:ClientId`, or `ConnectionStri
 | [v0.0.16](https://github.com/mpaulosky/atelier-store/releases/tag/v0.0.16) | 2026-09-27 | feat(docs): Add a GitHub Pages site in docs/index.html | [Post](https://github.com/mpaulosky/atelier-store/blob/main/docs/blogs/2026-09-27-pr-40-feat-docs-add-a-github-pages-site-in-docs-index-html.md) |
 | [v0.0.15](https://github.com/mpaulosky/atelier-store/releases/tag/v0.0.15) | 2026-09-27 | docs: Add contributing guide, security policy, references, and code of conduct | [Post](https://github.com/mpaulosky/atelier-store/blob/main/docs/blogs/2026-09-27-pr-35-docs-add-contributing-guide-security-policy-references-and-code-of-conduct.md) |
 | [v0.0.14](https://github.com/mpaulosky/atelier-store/releases/tag/v0.0.14) | 2026-09-27 | fix(Web): Expose the mobile menu toggle as a button | [Post](https://github.com/mpaulosky/atelier-store/blob/main/docs/blogs/2026-09-27-pr-36-fix-web-expose-the-mobile-menu-toggle-as-a-button.md) |
-| [v0.0.13](https://github.com/mpaulosky/atelier-store/releases/tag/v0.0.13) | 2026-09-27 | fix(Web): Require lowercase product and category slugs | [Post](https://github.com/mpaulosky/atelier-store/blob/main/docs/blogs/2026-09-27-pr-33-fix-web-require-lowercase-product-and-category-slugs.md) |
 
 <!-- RELEASES_END -->
 
