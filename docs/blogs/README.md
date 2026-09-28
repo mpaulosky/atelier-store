@@ -4,6 +4,7 @@ This directory contains concise release-review posts for merged PR releases.
 
 | Date | Title | Tags |
 | ---- | ----- | ---- |
+| 2026-09-28 | [ci: Add nightly squad branch and worktree cleanup](2026-09-28-pr-52-ci-add-nightly-squad-branch-and-worktree-cleanup.md) | release,automation |
 | 2026-09-27 | [docs(readme): use an absolute URL for the LICENSE badge link](2026-09-27-pr-50-docs-readme-use-an-absolute-url-for-the-license-badge-link.md) | release,automation |
 | 2026-09-27 | [docs(readme): regroup status badges](2026-09-27-pr-47-docs-readme-regroup-status-badges.md) | release,automation |
 | 2026-09-27 | [docs(readme): Add a Statuses badge section](2026-09-27-pr-44-docs-readme-add-a-statuses-badge-section.md) | release,automation |
