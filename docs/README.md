@@ -11,12 +11,13 @@
 [![Codecov](https://img.shields.io/codecov/c/github/mpaulosky/atelier-store?logo=codecov)](https://codecov.io/gh/mpaulosky/atelier-store)
 [![Stars](https://img.shields.io/github/stars/mpaulosky/atelier-store)](https://github.com/mpaulosky/atelier-store/stargazers)
 
-[![Build and Test Suite](https://github.com/mpaulosky/atelier-store/actions/workflows/ci.yml/badge.svg)](https://github.com/mpaulosky/atelier-store/actions/workflows/ci.yml)
+[![Build and Test Suite](https://github.com/mpaulosky/atelier-store/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/mpaulosky/atelier-store/actions/workflows/ci.yml)
 [![CodeQL](https://github.com/mpaulosky/atelier-store/actions/workflows/codeql-analysis.yml/badge.svg)](https://github.com/mpaulosky/atelier-store/actions/workflows/codeql-analysis.yml)
 [![.NET code metrics](https://github.com/mpaulosky/atelier-store/actions/workflows/code-metrics.yml/badge.svg)](https://github.com/mpaulosky/atelier-store/actions/workflows/code-metrics.yml)
 
-[![Lint Markdown](https://github.com/mpaulosky/atelier-store/actions/workflows/lint-markdown.yml/badge.svg)](https://github.com/mpaulosky/atelier-store/actions/workflows/lint-markdown.yml)
-[![Lint YAML](https://github.com/mpaulosky/atelier-store/actions/workflows/lint-yaml.yml/badge.svg)](https://github.com/mpaulosky/atelier-store/actions/workflows/lint-yaml.yml)
+[![Lint Markdown](https://github.com/mpaulosky/atelier-store/actions/workflows/lint-markdown.yml/badge.svg?branch=main)](https://github.com/mpaulosky/atelier-store/actions/workflows/lint-markdown.yml)
+[![Lint YAML](https://github.com/mpaulosky/atelier-store/actions/workflows/lint-yaml.yml/badge.svg?branch=main)](https://github.com/mpaulosky/atelier-store/actions/workflows/lint-yaml.yml)
+[![Lint Actions](https://github.com/mpaulosky/atelier-store/actions/workflows/lint-actions.yml/badge.svg?branch=main)](https://github.com/mpaulosky/atelier-store/actions/workflows/lint-actions.yml)
 
 [![Open issues](https://img.shields.io/github/issues/mpaulosky/atelier-store)](https://github.com/mpaulosky/atelier-store/issues)
 [![Closed issues](https://img.shields.io/github/issues-closed/mpaulosky/atelier-store)](https://github.com/mpaulosky/atelier-store/issues?q=is%3Aissue+is%3Aclosed)
