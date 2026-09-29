@@ -110,11 +110,13 @@ def heading_levels(post):
     """ATX heading levels in a rendered post, including headings inside quotes and list items.
 
     Continuation lines of a list item are recognised by their indentation, so
-    "- # A" followed by "  #### B" counts both headings.
+    "- # A" followed by "  #### B" counts both headings. A fence or comment
+    opened inside a quote or list item closes when that container ends.
     """
     body = post.split("---\n", 2)[2]
     fence = None
     comment = False
+    scope = (0, 0)  # (quote depth, list indent) where the open fence or comment started
     levels = []
     item_width = 0  # content column of the last list item seen
     for line in body.splitlines():
@@ -124,10 +126,15 @@ def heading_levels(post):
         elif line.strip():
             item_width = 0
         markers = re.match(r"(?: {0,3}(?:> ?|[-+*] +|\d+[.)] +))+", line)
+        quotes = markers.group(0).count(">") if markers else 0
         if markers:
             if re.search(r"(?:[-+*]|\d+[.)]) +$", markers.group(0)):
                 item_width += len(markers.group(0))
             line = line[markers.end():]
+        if (fence is not None or comment) and (quotes < scope[0] or item_width < scope[1]):
+            fence, comment = None, False  # the container holding it has ended
+        if fence is None and not comment:
+            scope = (quotes, item_width)
         marker = re.match(r" {0,3}(`{3,}|~{3,})(.*)", line)
         if comment:
             comment = "-->" not in line
@@ -141,6 +148,20 @@ def heading_levels(post):
         elif fence is None and re.match(r"#{1,6}( |$)", line):
             levels.append(len(line) - len(line.lstrip("#")))
     return levels
+
+
+@pytest.mark.parametrize(
+    ("body", "expected"),
+    [
+        ("> ```\n# Heading", [1, 1]),  # the quote ends, and its fence with it
+        ("> <!--\n# Heading", [1, 1]),
+        ("```\n# not a heading\n```\n## Real", [1, 2]),
+        ("- ```\n  # not a heading\n  ```\n## Real", [1, 2]),
+        ("- # A\n  #### B", [1, 1, 4]),
+    ],
+)
+def test_heading_levels_sees_headings_after_a_container_closes_its_fence(body, expected):
+    assert heading_levels(f"---\nx: 1\n---\n# T\n{body}") == expected
 
 
 def assert_one_h1_and_no_skipped_levels(post):
