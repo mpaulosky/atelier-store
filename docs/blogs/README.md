@@ -4,6 +4,8 @@ This directory contains concise release-review posts for merged PR releases.
 
 | Date | Title | Tags |
 | ---- | ----- | ---- |
+| 2026-09-29 | [docs: Pin README badges to main and add the build-ui skill](2026-09-29-pr-70-docs-pin-readme-badges-to-main-and-add-the-build-ui-skill.md) | release,automation |
+| 2026-09-29 | [fix(release): Nest headings inside quotes and lists, skip HTML comments](2026-09-29-pr-71-fix-release-nest-headings-inside-quotes-and-lists-skip-html-comments.md) | release,automation |
 | 2026-09-29 | [fix(release): Start release posts with an H1 title](2026-09-29-pr-64-fix-release-start-release-posts-with-an-h1-title.md) | release,automation |
 | 2026-09-29 | [feat(web): Add the New in page](2026-09-29-pr-66-feat-web-add-the-new-in-page.md) | release,automation |
 | 2026-09-28 | [fix(web): Serve app.css on a clean build](2026-09-28-pr-62-fix-web-serve-app-css-on-a-clean-build.md) | release,automation |
