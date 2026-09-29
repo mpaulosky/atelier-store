@@ -203,6 +203,44 @@ def request_summary(api_key, model, prompt, urlopen=urllib.request.urlopen):
 # Post file and blog index
 
 
+ATX_HEADING = re.compile(r"^( {0,3})(#{1,6})(?=[ \t]|$)")
+FENCE = re.compile(r"^ {0,3}(`{3,}|~{3,})")
+
+
+def nest_headings(markdown, parent_level=2):
+    """Re-levels the ATX headings in text inserted under a "## " section.
+
+    Distinct levels keep their order but close up (#, ####, ###### become
+    ###, ####, #####), and no heading sits more than one level below the one
+    before it, so the post keeps a single H1 and never skips a level. Fenced
+    code is left alone.
+    """
+    lines = markdown.split("\n")
+    fence = None
+    headings = []  # (line index, indent, original level, rest of line)
+    for index, line in enumerate(lines):
+        fence_match = FENCE.match(line)
+        if fence_match:
+            marker = fence_match.group(1)
+            if fence is None:
+                fence = marker
+            elif marker[0] == fence[0] and len(marker) >= len(fence):
+                fence = None
+            continue
+        if fence is None:
+            heading = ATX_HEADING.match(line)
+            if heading:
+                headings.append((index, heading.group(1), len(heading.group(2)), line[heading.end():]))
+
+    rank = {level: i for i, level in enumerate(sorted({level for _, _, level, _ in headings}))}
+    previous = parent_level
+    for index, indent, level, rest in headings:
+        new_level = min(parent_level + 1 + rank[level], previous + 1, 6)
+        lines[index] = f"{indent}{'#' * new_level}{rest}"
+        previous = new_level
+    return "\n".join(lines)
+
+
 def render_post(pr, title_line, tag, merged_date, commits, files, summary, model):
     number = pr["number"]
     # A YAML double-quoted scalar: escape backslashes before quotes.
@@ -237,9 +275,9 @@ def render_post(pr, title_line, tag, merged_date, commits, files, summary, model
         f"- **Source PR:** [#{number}]({pr.get('html_url') or ''})\n"
     ]
     if summary:
-        sections.append(f"## Summary\n\n{summary}\n")
+        sections.append(f"## Summary\n\n{nest_headings(summary)}\n")
     body = (pr.get("body") or "").strip() or "No PR description was provided."
-    sections.append(f"## PR description\n\n{body}\n")
+    sections.append(f"## PR description\n\n{nest_headings(body)}\n")
     sections.append(render_commits(commits))
     sections.append(render_files(files))
     return front_matter + "\n".join(sections)

@@ -116,6 +116,48 @@ def test_post_starts_with_one_h1_and_never_skips_a_level():
     assert all(b - a <= 1 for a, b in zip(levels, levels[1:]))
 
 
+def heading_levels(post):
+    body = post.split("---\n", 2)[2]
+    in_fence = False
+    levels = []
+    for line in body.splitlines():
+        if line.startswith("```"):
+            in_fence = not in_fence
+        elif not in_fence and line.startswith("#"):
+            levels.append(len(line) - len(line.lstrip("#")))
+    return levels
+
+
+@pytest.mark.parametrize(
+    "description",
+    [
+        "# Context\n\nWhy.\n\n## Details\n\nHow.",
+        "#### Details\n\nHow.",
+        "### Deep first\n\n# Then shallow\n\n###### Then very deep",
+        "## Plan\n\n```bash\n# a shell comment, not a heading\n```\n\n### Steps",
+    ],
+)
+def test_headings_in_the_description_and_summary_stay_nested(description):
+    summary = "# The gist\n\nShort.\n\n### Detail"
+    post = rp.render_post({"number": 7, "body": description}, "T", "v1.2.3", "2026-09-26", [], [], summary, "m")
+    levels = heading_levels(post)
+    assert levels[0] == 1
+    assert levels.count(1) == 1
+    assert all(b - a <= 1 for a, b in zip(levels, levels[1:]))
+
+
+def test_nest_headings_keeps_relative_levels_and_fenced_code():
+    text = "# A\n\n```\n# not a heading\n```\n\n### B\n\n~~~\n## still code\n~~~\n\n## C\n#hashtag"
+    assert rp.nest_headings(text) == (
+        "### A\n\n```\n# not a heading\n```\n\n#### B\n\n~~~\n## still code\n~~~\n\n#### C\n#hashtag"
+    )
+
+
+def test_nested_description_headings_do_not_end_the_section():
+    post = rp.render_post({"number": 7, "body": "# Context\n\nWhy."}, "T", "v1.2.3", "2026-09-26", [], [], None, "m")
+    assert rp.first_paragraph(rp.section(post, "PR description")) == "Why."
+
+
 @pytest.mark.parametrize("level", ["##", "###"])
 def test_section_reads_posts_from_before_and_after_the_h1_title(level):
     # Posts written before the title became an H1 used ### section headings.
