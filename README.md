@@ -80,6 +80,7 @@ The app fails at startup if `Auth0:Domain`, `Auth0:ClientId`, or `ConnectionStri
 
 | Version | Date | Title | Blog post |
 | ------- | ---- | ----- | --------- |
+| [v0.0.29](https://github.com/mpaulosky/atelier-store/releases/tag/v0.0.29) | 2026-09-29 | docs: Pin README badges to main and add the build-ui skill | [Post](https://github.com/mpaulosky/atelier-store/blob/main/docs/blogs/2026-09-29-pr-70-docs-pin-readme-badges-to-main-and-add-the-build-ui-skill.md) |
 | [v0.0.30](https://github.com/mpaulosky/atelier-store/releases/tag/v0.0.30) | 2026-09-29 | fix(release): Nest headings inside quotes and lists, skip HTML comments | [Post](https://github.com/mpaulosky/atelier-store/blob/main/docs/blogs/2026-09-29-pr-71-fix-release-nest-headings-inside-quotes-and-lists-skip-html-comments.md) |
 | [v0.0.29](https://github.com/mpaulosky/atelier-store/releases/tag/v0.0.29) | 2026-09-29 | docs: Pin README badges to main and add the build-ui skill | — |
 | [v0.0.28](https://github.com/mpaulosky/atelier-store/releases/tag/v0.0.28) | 2026-09-29 | fix(release): Start release posts with an H1 title | [Post](https://github.com/mpaulosky/atelier-store/blob/main/docs/blogs/2026-09-29-pr-64-fix-release-start-release-posts-with-an-h1-title.md) |
@@ -90,6 +91,7 @@ The app fails at startup if `Auth0:Domain`, `Auth0:ClientId`, or `ConnectionStri
 | [v0.0.23](https://github.com/mpaulosky/atelier-store/releases/tag/v0.0.23) | 2026-09-28 | chore: Remove unused squad branch cleanup tooling | [Post](https://github.com/mpaulosky/atelier-store/blob/main/docs/blogs/2026-09-28-pr-56-chore-remove-unused-squad-branch-cleanup-tooling.md) |
 | [v0.0.22](https://github.com/mpaulosky/atelier-store/releases/tag/v0.0.22) | 2026-09-28 | fix(scripts): Keep squad cleanup going when a local delete is refused | [Post](https://github.com/mpaulosky/atelier-store/blob/main/docs/blogs/2026-09-28-pr-54-fix-scripts-keep-squad-cleanup-going-when-a-local-delete-is-refused.md) |
 | [v0.0.21](https://github.com/mpaulosky/atelier-store/releases/tag/v0.0.21) | 2026-09-28 | ci: Add nightly squad branch and worktree cleanup | [Post](https://github.com/mpaulosky/atelier-store/blob/main/docs/blogs/2026-09-28-pr-52-ci-add-nightly-squad-branch-and-worktree-cleanup.md) |
+| [v0.0.20](https://github.com/mpaulosky/atelier-store/releases/tag/v0.0.20) | 2026-09-27 | docs(readme): use an absolute URL for the LICENSE badge link | [Post](https://github.com/mpaulosky/atelier-store/blob/main/docs/blogs/2026-09-27-pr-50-docs-readme-use-an-absolute-url-for-the-license-badge-link.md) |
 
 <!-- RELEASES_END -->
 
