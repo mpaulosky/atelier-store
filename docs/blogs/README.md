@@ -4,6 +4,7 @@ This directory contains concise release-review posts for merged PR releases.
 
 | Date | Title | Tags |
 | ---- | ----- | ---- |
+| 2026-09-29 | [test(release): Track only column-zero fences in heading_levels()](2026-09-29-pr-81-test-release-track-only-column-zero-fences-in-heading-levels.md) | release,automation |
 | 2026-09-29 | [fix(release): Scan Markdown blocks in one pass with a container stack](2026-09-29-pr-77-fix-release-scan-markdown-blocks-in-one-pass-with-a-container-stack.md) | release,automation |
 | 2026-09-29 | [build: write a single-document pnpm lockfile](2026-09-29-pr-76-build-write-a-single-document-pnpm-lockfile.md) | release,automation |
 | 2026-09-29 | [docs: Pin README badges to main and add the build-ui skill](2026-09-29-pr-70-docs-pin-readme-badges-to-main-and-add-the-build-ui-skill.md) | release,automation |
