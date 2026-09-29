@@ -80,6 +80,7 @@ The app fails at startup if `Auth0:Domain`, `Auth0:ClientId`, or `ConnectionStri
 
 | Version | Date | Title | Blog post |
 | ------- | ---- | ----- | --------- |
+| [v0.0.33](https://github.com/mpaulosky/atelier-store/releases/tag/v0.0.33) | 2026-09-29 | test(release): Track only column-zero fences in heading_levels() | [Post](https://github.com/mpaulosky/atelier-store/blob/main/docs/blogs/2026-09-29-pr-81-test-release-track-only-column-zero-fences-in-heading-levels.md) |
 | [v0.0.32](https://github.com/mpaulosky/atelier-store/releases/tag/v0.0.32) | 2026-09-29 | fix(release): Scan Markdown blocks in one pass with a container stack | [Post](https://github.com/mpaulosky/atelier-store/blob/main/docs/blogs/2026-09-29-pr-77-fix-release-scan-markdown-blocks-in-one-pass-with-a-container-stack.md) |
 | [v0.0.31](https://github.com/mpaulosky/atelier-store/releases/tag/v0.0.31) | 2026-09-29 | build: write a single-document pnpm lockfile | [Post](https://github.com/mpaulosky/atelier-store/blob/main/docs/blogs/2026-09-29-pr-76-build-write-a-single-document-pnpm-lockfile.md) |
 | [v0.0.30](https://github.com/mpaulosky/atelier-store/releases/tag/v0.0.30) | 2026-09-29 | fix(release): Nest headings inside quotes and lists, skip HTML comments | [Post](https://github.com/mpaulosky/atelier-store/blob/main/docs/blogs/2026-09-29-pr-71-fix-release-nest-headings-inside-quotes-and-lists-skip-html-comments.md) |
@@ -89,7 +90,6 @@ The app fails at startup if `Auth0:Domain`, `Auth0:ClientId`, or `ConnectionStri
 | [v0.0.26](https://github.com/mpaulosky/atelier-store/releases/tag/v0.0.26) | 2026-09-28 | fix(web): Serve app.css on a clean build | [Post](https://github.com/mpaulosky/atelier-store/blob/main/docs/blogs/2026-09-28-pr-62-fix-web-serve-app-css-on-a-clean-build.md) |
 | [v0.0.25](https://github.com/mpaulosky/atelier-store/releases/tag/v0.0.25) | 2026-09-28 | ci: Let README sync PRs run their required checks | [Post](https://github.com/mpaulosky/atelier-store/blob/main/docs/blogs/2026-09-28-pr-60-ci-let-readme-sync-prs-run-their-required-checks.md) |
 | [v0.0.24](https://github.com/mpaulosky/atelier-store/releases/tag/v0.0.24) | 2026-09-28 | ci: Run the test suite on Dependabot PRs | [Post](https://github.com/mpaulosky/atelier-store/blob/main/docs/blogs/2026-09-28-pr-58-ci-run-the-test-suite-on-dependabot-prs.md) |
-| [v0.0.23](https://github.com/mpaulosky/atelier-store/releases/tag/v0.0.23) | 2026-09-28 | chore: Remove unused squad branch cleanup tooling | [Post](https://github.com/mpaulosky/atelier-store/blob/main/docs/blogs/2026-09-28-pr-56-chore-remove-unused-squad-branch-cleanup-tooling.md) |
 
 <!-- RELEASES_END -->
 
