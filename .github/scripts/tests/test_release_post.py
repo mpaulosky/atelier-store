@@ -1,5 +1,6 @@
 import io
 import json
+import re
 import subprocess
 import urllib.error
 from pathlib import Path
@@ -105,10 +106,144 @@ def test_post_title_is_a_valid_yaml_double_quoted_scalar():
     assert 'post_title: "Fix \\"quotes\\" and a trailing \\\\"\n' in post
 
 
+def heading_levels(post):
+    body = post.split("---\n", 2)[2]
+    fence = None
+    levels = []
+    for line in body.splitlines():
+        marker = re.match(r"(`{3,}|~{3,})(.*)", line)
+        if marker:
+            if fence is None:
+                fence = marker.group(1)
+            elif marker.group(1)[0] == fence[0] and len(marker.group(1)) >= len(fence) and not marker.group(2).strip():
+                fence = None
+        elif fence is None and line.startswith("#"):
+            levels.append(len(line) - len(line.lstrip("#")))
+    return levels
+
+
+def assert_one_h1_and_no_skipped_levels(post):
+    levels = heading_levels(post)
+    assert levels[0] == 1
+    assert levels.count(1) == 1
+    assert all(b - a <= 1 for a, b in zip(levels, levels[1:]))
+
+
+def test_post_starts_with_one_h1_and_never_skips_a_level():
+    commits = [{"sha": "abc1234def", "commit": {"message": "Add a thing"}}]
+    files = [{"filename": "src/A.cs", "additions": 1, "deletions": 0}]
+    post = rp.render_post({"number": 7, "body": "Why"}, "Add a thing", "v1.2.3", "2026-09-26", commits, files, "Short.", "m")
+    assert_one_h1_and_no_skipped_levels(post)
+
+
+@pytest.mark.parametrize(
+    "description",
+    [
+        "# Context\n\nWhy.\n\n## Details\n\nHow.",
+        "#### Details\n\nHow.",
+        "### Deep first\n\n# Then shallow\n\n###### Then very deep",
+        "## Plan\n\n```bash\n# a shell comment, not a heading\n```\n\n### Steps",
+        "```\n```bash\n# a fence line with an info string doesn't close the fence\n```\n\n# After",
+    ],
+)
+def test_headings_in_the_description_and_summary_stay_nested(description):
+    summary = "# The gist\n\nShort.\n\n### Detail"
+    post = rp.render_post({"number": 7, "body": description}, "T", "v1.2.3", "2026-09-26", [], [], summary, "m")
+    assert_one_h1_and_no_skipped_levels(post)
+
+
+def test_nest_headings_keeps_relative_levels_and_fenced_code():
+    text = "# A\n\n```\n# not a heading\n```\n\n### B\n\n~~~\n## still code\n~~~\n\n## C\n#hashtag"
+    assert rp.nest_headings(text) == (
+        "### A\n\n```\n# not a heading\n```\n\n#### B\n\n~~~\n## still code\n~~~\n\n#### C\n#hashtag"
+    )
+
+
+def test_nest_headings_converts_setext_headings_but_keeps_thematic_breaks():
+    text = "Title\n===\n\nText.\n\n---\n\n- item\n---\n\nSub\n---"
+    assert rp.nest_headings(text) == "### Title\n\nText.\n\n---\n\n- item\n---\n\n#### Sub"
+
+
+def test_a_closing_fence_followed_by_a_thematic_break_stays_a_fence():
+    text = "```\ncode\n```\n---\n# After"
+    assert rp.nest_headings(text) == "```\ncode\n```\n---\n### After"
+
+
+def test_adjacent_thematic_breaks_are_not_setext_text():
+    text = "Text.\n\n---\n---\n\n# After"
+    assert rp.nest_headings(text) == "Text.\n\n---\n---\n\n### After"
+
+
+def test_a_setext_heading_takes_its_whole_paragraph():
+    text = "Release\nNotes\n===\n\nBody.\n\nSub\nheading\n---\n\n- item\nlazy continuation\n---"
+    assert rp.nest_headings(text) == (
+        "### Release Notes\n\nBody.\n\n#### Sub heading\n\n- item\nlazy continuation\n---"
+    )
+
+
+@pytest.mark.parametrize(
+    ("text", "expected"),
+    [
+        # Table-like and #hashtag lines are paragraph text, so the underline takes them too.
+        ("text\n| a | b |\n===", "### text | a | b |"),
+        ("#hashtag\nPara\n---", "### #hashtag Para"),
+        # A lone === line is text, and becomes part of the heading below it.
+        ("===\nTitle\n---", "### === Title"),
+        # Text continuing a list item or quote can't be underlined into a heading.
+        ("1. one\n===\ntext\n---", "1. one\n===\ntext\n---"),
+        ("> quote\n===\n===", "> quote\n===\n==="),
+        ("- item\n\n    indented\nPara\n---", "- item\n\n    indented\nPara\n---"),
+        # A quote closes at a blank line; a list closes at a thematic break.
+        ("> quote\n\nPara\n---", "> quote\n\n### Para"),
+        ("- item\ntext\n---\nPara\n---", "- item\ntext\n---\n### Para"),
+    ],
+)
+def test_setext_headings_follow_commonmark_paragraphs(text, expected):
+    assert rp.nest_headings(text) == expected
+
+
+def test_a_fence_line_with_an_info_string_does_not_close_the_fence():
+    text = "```\n```python\n# comment\n```\n# Heading"
+    assert rp.nest_headings(text) == "```\n```python\n# comment\n```\n### Heading"
+
+
+def test_section_ignores_a_summary_heading_from_inside_the_pr_description():
+    new_post = rp.render_post(
+        {"number": 7, "body": "## Summary\n\nFrom the PR body."}, "T", "v1.2.3", "2026-09-26", [], [], None, "m"
+    )
+    old_post = "## T\n\n### PR description\n\n## Summary\n\nFrom the PR body.\n\n### Commits\n"
+    assert rp.section(new_post, "Summary") == ""
+    assert rp.section(old_post, "Summary") == ""
+
+
+@pytest.mark.parametrize(("title", "level"), [("#", "##"), ("##", "###")])
+def test_excerpt_skips_a_summary_heading_inside_a_fenced_example(title, level):
+    fenced = f"```markdown\n{level} Summary\n\nCode sample, not a summary.\n```"
+    post = (
+        f"---\npost_title: \"T\"\n---\n{title} T\n\n{level} PR description\n\n"
+        f"The real description.\n\n{fenced}\n\n{level} Commits\n\n- Add a thing\n"
+    )
+    assert rp.section(post, "Summary") == ""
+    assert rp.post_excerpt(post) == "The real description."
+
+
+def test_nested_description_headings_do_not_end_the_section():
+    post = rp.render_post({"number": 7, "body": "# Context\n\nWhy."}, "T", "v1.2.3", "2026-09-26", [], [], None, "m")
+    assert rp.first_paragraph(rp.section(post, "PR description")) == "Why."
+
+
+@pytest.mark.parametrize(("title", "level"), [("#", "##"), ("##", "###")])
+def test_section_reads_posts_from_before_and_after_the_h1_title(title, level):
+    # Posts written before the title became an H1 used a ## title and ### section headings.
+    text = f"{title} T\n\n{level} Summary\n\nThe gist.\n\n{level} PR description\n\nWhy.\n"
+    assert rp.first_paragraph(rp.section(text, "Summary")) == "The gist."
+    assert rp.first_paragraph(rp.section(text, "PR description")) == "Why."
+
+
 def test_commits_section_lists_subjects_only():
     section = rp.render_commits(FakeGitHub().commits(42))
     assert section == (
-        "### Commits\n\n"
+        "## Commits\n\n"
         "- feat(ui): Add theme tokens (`abcdef1`)\n"
         "- test(ui): Cover the theme switch (`1234567`)\n"
     )
@@ -121,18 +256,18 @@ def test_commits_section_without_commits():
 def test_files_section_groups_by_area_in_fixed_order():
     section = rp.render_files(FakeGitHub().files(42))
     assert section == (
-        "### Files changed\n\n"
-        "#### src/\n\n"
+        "## Files changed\n\n"
+        "### src/\n\n"
         "- `src/Web/Theme.cs` (+10 / -2)\n\n"
-        "#### tests/\n\n"
+        "### tests/\n\n"
         "- `tests/Web.Tests/ThemeTests.cs` (+5 / -0)\n\n"
-        "#### .github/\n\n"
+        "### .github/\n\n"
         "- `.github/workflows/ci.yml` (+1 / -1)\n\n"
-        "#### .sandcastle/\n\n"
+        "### .sandcastle/\n\n"
         "- `.sandcastle/main.mts` (+3 / -3)\n\n"
-        "#### docs/\n\n"
+        "### docs/\n\n"
         "- `docs/adr/0001.md` (+4 / -0)\n\n"
-        "#### other\n\n"
+        "### other\n\n"
         "- `Directory.Packages.props` (+1 / -0)\n"
         "- `package-lock.json` (+900 / -800)\n"
     )
@@ -410,7 +545,7 @@ def test_no_key_writes_post_without_summary(tmp_path, capsys):
     run(tmp_path, api_key=None)
     post = post_text(tmp_path)
 
-    assert "### Summary" not in post
+    assert "## Summary" not in post
     assert 'ai_note: "Generated by release automation from the PR title, description, commits and changed files. No AI summary."' in post
     assert "::notice::" in capsys.readouterr().out
     # Front matter fields the workflow always wrote.
@@ -425,7 +560,7 @@ def test_no_key_writes_post_without_summary(tmp_path, capsys):
         'post_date: "2026-09-24"',
     ]:
         assert line in post
-    assert post.index("### PR description") < post.index("### Commits") < post.index("### Files changed")
+    assert post.index("## PR description") < post.index("## Commits") < post.index("## Files changed")
     assert "Adds a theme." in post
 
 
@@ -450,7 +585,7 @@ def test_summary_is_included_when_the_api_answers(tmp_path):
     run(tmp_path, api_key="sk-test", model="claude-test", urlopen=urlopen)
     post = post_text(tmp_path)
 
-    assert post.index("### Summary\n\nThis release adds a dark theme.\n") < post.index("### PR description")
+    assert post.index("## Summary\n\nThis release adds a dark theme.\n") < post.index("## PR description")
     assert "Includes an AI summary written by claude-test." in post
     assert 'summary: "Release notes seed for v0.0.3 from PR #42."' in post
 
@@ -484,7 +619,7 @@ def test_api_failure_writes_post_without_summary(tmp_path, capsys, error):
     run(tmp_path, api_key="sk-test", urlopen=urlopen)
     post = post_text(tmp_path)
 
-    assert "### Summary" not in post
+    assert "## Summary" not in post
     assert "No AI summary." in post
     assert "::warning::" in capsys.readouterr().out
 
@@ -496,7 +631,7 @@ def test_empty_api_answer_is_treated_as_no_summary(tmp_path, capsys):
         return FakeResponse(b'{"content": []}')
 
     run(tmp_path, api_key="sk-test", urlopen=urlopen)
-    assert "### Summary" not in post_text(tmp_path)
+    assert "## Summary" not in post_text(tmp_path)
     assert "::warning::" in capsys.readouterr().out
 
 
@@ -514,7 +649,7 @@ def test_dependabot_pr_gets_no_summary_even_with_a_key(tmp_path, capsys):
     run(tmp_path, gh=gh, api_key="sk-test", urlopen=urlopen)
     post = post_text(tmp_path)
     assert calls == []
-    assert "### Summary" not in post
+    assert "## Summary" not in post
     assert "No AI summary." in post
     assert "::notice::" in capsys.readouterr().out
 

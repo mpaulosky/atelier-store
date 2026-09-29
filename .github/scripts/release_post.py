@@ -100,7 +100,7 @@ def commit_subject(commit):
 
 
 def render_commits(commits):
-    lines = ["### Commits", ""]
+    lines = ["## Commits", ""]
     if not commits:
         lines.append("No commits were found.")
     for commit in commits:
@@ -117,13 +117,13 @@ def render_files(files):
     for file in files:
         groups.setdefault(area_of(file["filename"]), []).append(file)
 
-    lines = ["### Files changed", ""]
+    lines = ["## Files changed", ""]
     if not files:
         lines.append("No files were changed.")
     for area in AREAS + [OTHER_AREA]:
         if area not in groups:
             continue
-        lines += [f"#### {area}", ""]
+        lines += [f"### {area}", ""]
         for file in sorted(groups[area], key=lambda f: f["filename"]):
             lines.append(f"- `{file['filename']}` (+{file.get('additions', 0)} / -{file.get('deletions', 0)})")
         lines.append("")
@@ -203,6 +203,112 @@ def request_summary(api_key, model, prompt, urlopen=urllib.request.urlopen):
 # Post file and blog index
 
 
+ATX_HEADING = re.compile(r"^( {0,3})(#{1,6})(?=[ \t]|$)")
+FENCE = re.compile(r"^ {0,3}(`{3,}|~{3,})(.*)$")
+SETEXT_UNDERLINE = re.compile(r"^ {0,3}(=+|-+)[ \t]*$")
+THEMATIC_BREAK = re.compile(r"^ {0,3}([-*_])([ \t]*\1){2,}[ \t]*$")
+# Block quotes and list items: they start a new block even inside a paragraph,
+# except an ordered item not numbered 1 or an empty item.
+CONTAINER_START = re.compile(r"^ {0,3}(>|[-+*][ \t]+\S|1[.)][ \t]+\S)")
+CONTAINER_LINE = re.compile(r"^ {0,3}(>|[-+*](?:[ \t]|$)|\d{1,9}[.)](?:[ \t]|$))")
+INDENTED_CODE = re.compile(r"^( {4}|\t)")
+
+
+def code_lines(lines):
+    """Indexes of the fence lines, and the lines between them, in a list of Markdown lines.
+
+    A fence closes on a run of the same character at least as long as the
+    opener, with nothing but whitespace after it. An unclosed fence runs to
+    the end.
+    """
+    code = set()
+    fence = None
+    for index, line in enumerate(lines):
+        fence_match = FENCE.match(line)
+        if fence is None:
+            if fence_match:
+                fence = fence_match.group(1)
+                code.add(index)
+            continue
+        code.add(index)
+        if fence_match:
+            marker, info = fence_match.groups()
+            if marker[0] == fence[0] and len(marker) >= len(fence) and not info.strip():
+                fence = None
+    return code
+
+
+def container_kind(line):
+    """"quote" or "list" for a line that opens a block quote or list item, else None."""
+    if not CONTAINER_LINE.match(line):
+        return None
+    return "quote" if line.lstrip().startswith(">") else "list"
+
+
+def nest_headings(markdown, parent_level=2):
+    """Re-levels the ATX headings in text inserted under a "## " section.
+
+    Distinct levels keep their order but close up (#, ####, ###### become
+    ###, ####, #####), and no heading sits more than one level below the one
+    before it, so the post keeps a single H1 and never skips a level. Setext
+    headings (a paragraph over a === or --- line, by CommonMark's paragraph
+    rules) become ATX headings first. Fenced code is left alone.
+    """
+    lines = markdown.split("\n")
+    code = code_lines(lines)
+    headings = []  # (line index, indent, original level, rest of line)
+    # paragraph: first line of the open paragraph a setext underline would
+    # turn into a heading. container: the list or quote it sits in, if any;
+    # there the underline can't reach the text, so it stays a break. A list
+    # stays open across blank lines, so an indented line continues the item.
+    paragraph = None
+    container = None
+    for index, line in enumerate(lines):
+        if index in code:
+            paragraph = container = None
+            continue
+        if not line.strip():
+            paragraph = None
+            if container == "quote":
+                container = None
+            continue
+        heading = ATX_HEADING.match(line)
+        if heading:
+            headings.append((index, heading.group(1), len(heading.group(2)), line[heading.end():]))
+            paragraph = container = None
+            continue
+        if paragraph is not None:
+            underline = SETEXT_UNDERLINE.match(line)
+            if underline and container is None:
+                level = 1 if underline.group(1)[0] == "=" else 2
+                text = " ".join(lines[i].strip() for i in range(paragraph, index))
+                headings.append((paragraph, "", level, " " + text))
+                for i in range(paragraph + 1, index + 1):
+                    lines[i] = None
+                paragraph = None
+            elif THEMATIC_BREAK.match(line):
+                paragraph = container = None
+            elif CONTAINER_START.match(line):
+                paragraph, container = index, container_kind(line)
+            continue
+        if INDENTED_CODE.match(line):
+            if container == "list":
+                paragraph = index
+            continue
+        if THEMATIC_BREAK.match(line):
+            container = None
+            continue
+        paragraph, container = index, container_kind(line)
+
+    rank = {level: i for i, level in enumerate(sorted({level for _, _, level, _ in headings}))}
+    previous = parent_level
+    for index, indent, level, rest in headings:
+        new_level = min(parent_level + 1 + rank[level], previous + 1, 6)
+        lines[index] = f"{indent}{'#' * new_level}{rest}"
+        previous = new_level
+    return "\n".join(line for line in lines if line is not None)
+
+
 def render_post(pr, title_line, tag, merged_date, commits, files, summary, model):
     number = pr["number"]
     # A YAML double-quoted scalar: escape backslashes before quotes.
@@ -232,14 +338,14 @@ def render_post(pr, title_line, tag, merged_date, commits, files, summary, model
         ]
     )
     sections = [
-        f"## {title_line}\n\n"
+        f"# {title_line}\n\n"
         f"- **Release tag:** `{tag}`\n"
         f"- **Source PR:** [#{number}]({pr.get('html_url') or ''})\n"
     ]
     if summary:
-        sections.append(f"### Summary\n\n{summary}\n")
+        sections.append(f"## Summary\n\n{nest_headings(summary)}\n")
     body = (pr.get("body") or "").strip() or "No PR description was provided."
-    sections.append(f"### PR description\n\n{body}\n")
+    sections.append(f"## PR description\n\n{nest_headings(body)}\n")
     sections.append(render_commits(commits))
     sections.append(render_files(files))
     return front_matter + "\n".join(sections)
@@ -332,7 +438,7 @@ ISSUE_REFERENCE = re.compile(r"^(?:(?:fixes|closes|resolves|refs|part of)\s+#\d+
 def post_excerpt(text, summary=""):
     """A card's excerpt: the AI summary section, a real front matter summary, else the PR description.
 
-    render_post writes the AI summary into a "### Summary" section and a
+    render_post writes the AI summary into a "## Summary" section and a
     "Release notes seed" line into the front matter, so the seed line is skipped.
     """
     ai_summary = first_paragraph(section(text, "Summary"))
@@ -347,9 +453,25 @@ def post_excerpt(text, summary=""):
 
 
 def section(text, heading):
-    """The body of the post's "### {heading}" section, up to the next "### " heading."""
-    match = re.search(rf"^### {re.escape(heading)}\n(.*?)(?=^### |\Z)", text, flags=re.DOTALL | re.MULTILINE)
-    return match.group(1) if match else ""
+    """The body of the post's "## {heading}" section, up to the next heading of the same level.
+
+    Posts written before the title became an H1 start with a "## " title and
+    use "### " for these sections. Only the post's own section level is read,
+    and lines inside fenced code are never headings, so a heading from the PR
+    description (nested, or in a code example) never passes for a section.
+    """
+    lines = text.split("\n")
+    code = code_lines(lines)
+    headings = [index for index, line in enumerate(lines) if index not in code and ATX_HEADING.match(line)]
+    if not headings:
+        return ""
+    level = "##" if lines[headings[0]].startswith("# ") else "###"
+    starts = [index for index in headings if lines[index].startswith(level + " ")]
+    for position, start in enumerate(starts):
+        if lines[start] == f"{level} {heading}":
+            end = starts[position + 1] if position + 1 < len(starts) else len(lines)
+            return "\n".join(lines[start + 1:end]) + ("\n" if end < len(lines) else "")
+    return ""
 
 
 def first_paragraph(markdown):
