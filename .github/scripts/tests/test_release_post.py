@@ -1,5 +1,6 @@
 import io
 import json
+import re
 import subprocess
 import urllib.error
 from pathlib import Path
@@ -105,27 +106,34 @@ def test_post_title_is_a_valid_yaml_double_quoted_scalar():
     assert 'post_title: "Fix \\"quotes\\" and a trailing \\\\"\n' in post
 
 
-def test_post_starts_with_one_h1_and_never_skips_a_level():
-    commits = [{"sha": "abc1234def", "commit": {"message": "Add a thing"}}]
-    files = [{"filename": "src/A.cs", "additions": 1, "deletions": 0}]
-    post = rp.render_post({"number": 7, "body": "Why"}, "Add a thing", "v1.2.3", "2026-09-26", commits, files, "Short.", "m")
+def heading_levels(post):
     body = post.split("---\n", 2)[2]
-    levels = [len(line) - len(line.lstrip("#")) for line in body.splitlines() if line.startswith("#")]
+    fence = None
+    levels = []
+    for line in body.splitlines():
+        marker = re.match(r"(`{3,}|~{3,})(.*)", line)
+        if marker:
+            if fence is None:
+                fence = marker.group(1)
+            elif marker.group(1)[0] == fence[0] and len(marker.group(1)) >= len(fence) and not marker.group(2).strip():
+                fence = None
+        elif fence is None and line.startswith("#"):
+            levels.append(len(line) - len(line.lstrip("#")))
+    return levels
+
+
+def assert_one_h1_and_no_skipped_levels(post):
+    levels = heading_levels(post)
     assert levels[0] == 1
     assert levels.count(1) == 1
     assert all(b - a <= 1 for a, b in zip(levels, levels[1:]))
 
 
-def heading_levels(post):
-    body = post.split("---\n", 2)[2]
-    in_fence = False
-    levels = []
-    for line in body.splitlines():
-        if line.startswith("```"):
-            in_fence = not in_fence
-        elif not in_fence and line.startswith("#"):
-            levels.append(len(line) - len(line.lstrip("#")))
-    return levels
+def test_post_starts_with_one_h1_and_never_skips_a_level():
+    commits = [{"sha": "abc1234def", "commit": {"message": "Add a thing"}}]
+    files = [{"filename": "src/A.cs", "additions": 1, "deletions": 0}]
+    post = rp.render_post({"number": 7, "body": "Why"}, "Add a thing", "v1.2.3", "2026-09-26", commits, files, "Short.", "m")
+    assert_one_h1_and_no_skipped_levels(post)
 
 
 @pytest.mark.parametrize(
@@ -135,15 +143,13 @@ def heading_levels(post):
         "#### Details\n\nHow.",
         "### Deep first\n\n# Then shallow\n\n###### Then very deep",
         "## Plan\n\n```bash\n# a shell comment, not a heading\n```\n\n### Steps",
+        "```\n```bash\n# a fence line with an info string doesn't close the fence\n```\n\n# After",
     ],
 )
 def test_headings_in_the_description_and_summary_stay_nested(description):
     summary = "# The gist\n\nShort.\n\n### Detail"
     post = rp.render_post({"number": 7, "body": description}, "T", "v1.2.3", "2026-09-26", [], [], summary, "m")
-    levels = heading_levels(post)
-    assert levels[0] == 1
-    assert levels.count(1) == 1
-    assert all(b - a <= 1 for a, b in zip(levels, levels[1:]))
+    assert_one_h1_and_no_skipped_levels(post)
 
 
 def test_nest_headings_keeps_relative_levels_and_fenced_code():
@@ -153,15 +159,34 @@ def test_nest_headings_keeps_relative_levels_and_fenced_code():
     )
 
 
+def test_nest_headings_converts_setext_headings_but_keeps_thematic_breaks():
+    text = "Title\n===\n\nText.\n\n---\n\n- item\n---\n\nSub\n---"
+    assert rp.nest_headings(text) == "### Title\n\nText.\n\n---\n\n- item\n---\n\n#### Sub"
+
+
+def test_a_fence_line_with_an_info_string_does_not_close_the_fence():
+    text = "```\n```python\n# comment\n```\n# Heading"
+    assert rp.nest_headings(text) == "```\n```python\n# comment\n```\n### Heading"
+
+
+def test_section_ignores_a_summary_heading_from_inside_the_pr_description():
+    new_post = rp.render_post(
+        {"number": 7, "body": "## Summary\n\nFrom the PR body."}, "T", "v1.2.3", "2026-09-26", [], [], None, "m"
+    )
+    old_post = "## T\n\n### PR description\n\n## Summary\n\nFrom the PR body.\n\n### Commits\n"
+    assert rp.section(new_post, "Summary") == ""
+    assert rp.section(old_post, "Summary") == ""
+
+
 def test_nested_description_headings_do_not_end_the_section():
     post = rp.render_post({"number": 7, "body": "# Context\n\nWhy."}, "T", "v1.2.3", "2026-09-26", [], [], None, "m")
     assert rp.first_paragraph(rp.section(post, "PR description")) == "Why."
 
 
-@pytest.mark.parametrize("level", ["##", "###"])
-def test_section_reads_posts_from_before_and_after_the_h1_title(level):
-    # Posts written before the title became an H1 used ### section headings.
-    text = f"# T\n\n{level} Summary\n\nThe gist.\n\n{level} PR description\n\nWhy.\n"
+@pytest.mark.parametrize(("title", "level"), [("#", "##"), ("##", "###")])
+def test_section_reads_posts_from_before_and_after_the_h1_title(title, level):
+    # Posts written before the title became an H1 used a ## title and ### section headings.
+    text = f"{title} T\n\n{level} Summary\n\nThe gist.\n\n{level} PR description\n\nWhy.\n"
     assert rp.first_paragraph(rp.section(text, "Summary")) == "The gist."
     assert rp.first_paragraph(rp.section(text, "PR description")) == "Why."
 

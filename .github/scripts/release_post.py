@@ -204,7 +204,11 @@ def request_summary(api_key, model, prompt, urlopen=urllib.request.urlopen):
 
 
 ATX_HEADING = re.compile(r"^( {0,3})(#{1,6})(?=[ \t]|$)")
-FENCE = re.compile(r"^ {0,3}(`{3,}|~{3,})")
+FENCE = re.compile(r"^ {0,3}(`{3,}|~{3,})(.*)$")
+SETEXT_UNDERLINE = re.compile(r"^ {0,3}(=+|-+)[ \t]*$")
+# Lines a setext underline can't turn into a heading: blank, list items,
+# quotes, table rows, headings and indented code.
+NOT_SETEXT_TEXT = re.compile(r"^(\s*$| {0,3}([-+*>|#]|\d+[.)])(\s|$)| {4,}|\t)")
 
 
 def nest_headings(markdown, parent_level=2):
@@ -212,7 +216,8 @@ def nest_headings(markdown, parent_level=2):
 
     Distinct levels keep their order but close up (#, ####, ###### become
     ###, ####, #####), and no heading sits more than one level below the one
-    before it, so the post keeps a single H1 and never skips a level. Fenced
+    before it, so the post keeps a single H1 and never skips a level. Setext
+    headings (text over a === or --- line) become ATX headings first. Fenced
     code is left alone.
     """
     lines = markdown.split("\n")
@@ -221,16 +226,25 @@ def nest_headings(markdown, parent_level=2):
     for index, line in enumerate(lines):
         fence_match = FENCE.match(line)
         if fence_match:
-            marker = fence_match.group(1)
+            marker, info = fence_match.groups()
             if fence is None:
                 fence = marker
-            elif marker[0] == fence[0] and len(marker) >= len(fence):
+            elif marker[0] == fence[0] and len(marker) >= len(fence) and not info.strip():
                 fence = None
             continue
-        if fence is None:
-            heading = ATX_HEADING.match(line)
-            if heading:
-                headings.append((index, heading.group(1), len(heading.group(2)), line[heading.end():]))
+        if fence is not None:
+            continue
+        heading = ATX_HEADING.match(line)
+        if heading:
+            headings.append((index, heading.group(1), len(heading.group(2)), line[heading.end():]))
+            continue
+        underline = SETEXT_UNDERLINE.match(line)
+        previous_line = (lines[index - 1] or "") if index else ""
+        previous_is_heading = headings and headings[-1][0] == index - 1
+        if underline and not NOT_SETEXT_TEXT.match(previous_line) and not previous_is_heading:
+            level = 1 if underline.group(1)[0] == "=" else 2
+            headings.append((index - 1, "", level, " " + previous_line.strip()))
+            lines[index] = None
 
     rank = {level: i for i, level in enumerate(sorted({level for _, _, level, _ in headings}))}
     previous = parent_level
@@ -238,7 +252,7 @@ def nest_headings(markdown, parent_level=2):
         new_level = min(parent_level + 1 + rank[level], previous + 1, 6)
         lines[index] = f"{indent}{'#' * new_level}{rest}"
         previous = new_level
-    return "\n".join(lines)
+    return "\n".join(line for line in lines if line is not None)
 
 
 def render_post(pr, title_line, tag, merged_date, commits, files, summary, model):
@@ -387,13 +401,16 @@ def post_excerpt(text, summary=""):
 def section(text, heading):
     """The body of the post's "## {heading}" section, up to the next heading of the same level.
 
-    Posts written before the title became an H1 used "### " for these sections,
-    so both levels are read.
+    Posts written before the title became an H1 start with a "## " title and
+    use "### " for these sections. Only the post's own section level is read,
+    so a heading nested inside the PR description never passes for a section.
     """
+    first_heading = re.search(r"^(#+) ", text, flags=re.MULTILINE)
+    level = "##" if first_heading and first_heading.group(1) == "#" else "###"
     match = re.search(
-        rf"^(#{{2,3}}) {re.escape(heading)}\n(.*?)(?=^\1 |\Z)", text, flags=re.DOTALL | re.MULTILINE
+        rf"^{level} {re.escape(heading)}\n(.*?)(?=^{level} |\Z)", text, flags=re.DOTALL | re.MULTILINE
     )
-    return match.group(2) if match else ""
+    return match.group(1) if match else ""
 
 
 def first_paragraph(markdown):
