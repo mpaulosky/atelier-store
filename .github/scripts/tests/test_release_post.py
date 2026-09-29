@@ -112,11 +112,12 @@ def heading_levels(post):
 
     This deliberately over-counts rather than re-implementing the parser under
     test: it strips all quote and list markers and leading indentation from
-    every line, and skips only top-level fences and HTML comments. So it can
-    never miss a heading (the invariant tests need exactly that), but a
-    "#" line in indented code or in a fence inside a container counts too, so
-    the invariant tests don't use those. nest_headings' exact behaviour inside
-    containers is pinned by its own tests.
+    every line, and skips only fences and HTML comments that open at column 0,
+    which are unambiguously top-level (an indented opener may belong to a list
+    item and end with it). So it can never miss a heading (the invariant tests
+    need exactly that), but a "#" line in indented code or in a fence inside a
+    container counts too, so the invariant tests don't use those.
+    nest_headings' exact behaviour inside containers is pinned by its own tests.
     """
     body = post.split("---\n", 2)[2]
     fence = None
@@ -131,11 +132,11 @@ def heading_levels(post):
             if marker and marker.group(1)[0] == fence[0] and len(marker.group(1)) >= len(fence) and not marker.group(2).strip():
                 fence = None
             continue
-        if marker:
+        if marker and marker.start(1) == 0:
             fence = marker.group(1)
             continue
-        if re.match(r" {0,3}<!--", line):
-            comment = "-->" not in line[line.index("<!--") + 4:]
+        if line.startswith("<!--"):
+            comment = "-->" not in line[4:]
             continue
         text = re.sub(r"^(?:\s*(?:>|[-+*](?=\s)|\d+[.)](?=\s)))*\s*", "", line)
         if re.match(r"#{1,6}(\s|$)", text):
@@ -150,6 +151,9 @@ def heading_levels(post):
         ("- # A\n  #### B\n    ### C", [1, 1, 4, 3]),  # continuation lines, at any depth
         ("- > ```\n  > # counted\n  > ```", [1, 1]),  # container fences over-count; never miss
         ("```\n# not a heading\n```\n<!--\n# nor this\n-->\n## Real", [1, 2]),
+        # An indented opener may belong to a list item and end with it, so it isn't tracked.
+        ("- item\n  ```\n# Root", [1, 1]),
+        ("- item\n  <!--\n# Root", [1, 1]),
     ],
 )
 def test_heading_levels_counts_every_heading_looking_line(body, expected):
