@@ -223,29 +223,14 @@ def closes_fence(fence, line):
 
 
 def code_lines(lines):
-    """Indexes of the lines that aren't Markdown text: fenced code and HTML comments.
+    """Indexes of the lines that aren't Markdown text: fenced code and HTML comments, at any depth.
 
     A fence closes on a run of the same character at least as long as the
-    opener, with nothing but whitespace after it; an HTML comment closes on
-    the line containing "-->". Either runs to the end if unclosed.
+    opener, with nothing but whitespace after it, or where its quote or list
+    item ends; an HTML comment closes on the line containing "-->".
     """
     code = set()
-    fence = None
-    comment = False
-    for index, line in enumerate(lines):
-        if fence is not None:
-            code.add(index)
-            if closes_fence(fence, line):
-                fence = None
-        elif comment:
-            code.add(index)
-            comment = "-->" not in line
-        elif FENCE.match(line):
-            fence = FENCE.match(line).group(1)
-            code.add(index)
-        elif HTML_COMMENT_START.match(line):
-            code.add(index)
-            comment = "-->" not in line[line.index("<!--") + 4:]
+    scan_blocks(list(lines), [], code)
     return code
 
 
@@ -275,17 +260,20 @@ def starts_block(line):
     )
 
 
-def scan_blocks(lines, headings):
+def scan_blocks(lines, headings, code=None):
     """Finds the headings in Markdown lines, recursing into block quotes and list items.
 
     Appends (line index, prefix, level, rest of line) to `headings` for each
     ATX or setext heading, where the prefix is everything before the "#"s
     (container markers and indent). The later lines of a setext heading,
-    including its underline, are set to None in `lines`.
+    including its underline, are set to None in `lines`. When `code` is a set,
+    the indexes of fenced code and HTML comment lines are added to it.
+    Columns are measured with tabs expanded to CommonMark's 4-column stops.
     """
     prefix = [""] * len(lines)
-    content = list(lines)
+    content = [line.expandtabs(4) for line in lines]
     lazy = [False] * len(lines)
+    code = set() if code is None else code
 
     def is_blank(index):
         return not content[index].strip()
@@ -308,12 +296,13 @@ def scan_blocks(lines, headings):
             inner_open = False
             index = ids[position]
             line = content[index]
-            if fence is not None:
-                fence = None if closes_fence(fence, line) else fence
-                position += 1
-                continue
-            if comment:
-                comment = "-->" not in line
+            if fence is not None or comment:
+                if record:
+                    code.add(index)
+                if fence is not None:
+                    fence = None if closes_fence(fence, line) else fence
+                else:
+                    comment = "-->" not in line
                 position += 1
                 continue
             if is_blank(index):
@@ -325,6 +314,8 @@ def scan_blocks(lines, headings):
                 continue
             fence_match = FENCE.match(line)
             if fence_match or HTML_COMMENT_START.match(line):
+                if record:
+                    code.add(index)
                 if fence_match:
                     fence = fence_match.group(1)
                 else:

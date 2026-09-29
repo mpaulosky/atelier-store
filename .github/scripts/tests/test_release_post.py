@@ -224,14 +224,19 @@ def test_setext_headings_follow_commonmark_paragraphs(text, expected):
         # Fence markers inside an HTML comment are comment text, not code.
         ("<!--\n```\n-->\n# Context", "<!--\n```\n-->\n### Context"),
         ("<!-- # not a heading -->\n# Context", "<!-- # not a heading -->\n### Context"),
+        # An HTML comment inside a list item is opaque too, fence markers and all.
+        ("- <!--\n  ```\n  -->\n# Context", "- <!--\n  ```\n  -->\n### Context"),
+        # Tabs expand to 4-column stops, so a tab-indented line continues the list item.
+        ("-\t# First\n\t# Second", "-   ### First\n    ### Second"),
     ],
 )
 def test_nest_headings_reaches_into_containers_and_skips_html_comments(text, expected):
     assert rp.nest_headings(text) == expected
 
 
-def test_a_fence_in_an_html_comment_does_not_swallow_the_rest_of_the_post():
-    body = "<!--\n```\n-->\nThe real description."
+@pytest.mark.parametrize("comment", ["<!--\n```\n-->", "- <!--\n  ```\n  -->"])
+def test_a_fence_in_an_html_comment_does_not_swallow_the_rest_of_the_post(comment):
+    body = f"{comment}\n\nThe real description."
     commits = [{"sha": "abc1234def", "commit": {"message": "Add a thing"}}]
     post = rp.render_post({"number": 7, "body": body}, "T", "v1.2.3", "2026-09-26", commits, [], None, "m")
     assert rp.post_excerpt(post) == "The real description."
