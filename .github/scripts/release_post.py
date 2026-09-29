@@ -211,6 +211,11 @@ INDENTED_CODE = re.compile(r"^( {4}|\t)")
 HTML_COMMENT_START = re.compile(r"^ {0,3}<!--")
 QUOTE_MARKER = re.compile(r"^ {0,3}> ?")
 LIST_MARKER = re.compile(r"^ {0,3}([-+*]|\d{1,9}[.)])(?=[ \t]|$)")
+# Position-anchored versions for scan_blocks, which matches containers at an
+# offset into the line instead of slicing a new suffix for every level.
+QUOTE_AT = re.compile(r" {0,3}> ?")
+LIST_AT = re.compile(r" {0,3}([-+*]|\d{1,9}[.)])(?=[ \t]|$)")
+SPACES_AT = re.compile(r" *")
 
 
 def closes_fence(fence, line):
@@ -234,18 +239,37 @@ def code_lines(lines):
     return code
 
 
-def list_item_width(line):
-    """The content column of a list item opened by this line, or None if it opens none.
+def line_bounds(line):
+    """(last non-space index, last index of a character a thematic break can't contain), -1 if none."""
+    last_text = len(line.rstrip()) - 1
+    last_other = last_text
+    while last_other >= 0 and line[last_other] in " \t-*_":
+        last_other -= 1
+    return last_text, last_other
+
+
+def list_width_at(line, pos, bounds):
+    """The width of the list item marker and its spacing at `pos`, or None if none opens there.
 
     The content starts after the marker and 1 to 4 spaces; with more, or none
-    at all, it starts one column after the marker.
+    at all, it starts one column after the marker. `bounds` is line_bounds(line),
+    so ruling out a thematic break costs O(1) unless the rest of the line could
+    be one.
     """
-    marker = LIST_MARKER.match(line)
-    if not marker or THEMATIC_BREAK.match(line):
+    marker = LIST_AT.match(line, pos)
+    if not marker:
         return None
-    rest = line[marker.end():]
-    spaces = len(rest) - len(rest.lstrip(" "))
-    return marker.end() + (spaces if rest.strip() and 1 <= spaces <= 4 else 1)
+    last_text, last_other = bounds
+    if last_other < pos and THEMATIC_BREAK.match(line[pos:]):
+        return None
+    end = marker.end()
+    spaces = SPACES_AT.match(line, end).end() - end
+    return end - pos + (spaces if last_text >= end and 1 <= spaces <= 4 else 1)
+
+
+def list_item_width(line):
+    """The content column of a list item opened by this line, or None if it opens none."""
+    return list_width_at(line, 0, line_bounds(line))
 
 
 def interrupts_paragraph(line):
@@ -283,26 +307,37 @@ def scan_blocks(lines, headings, code=None):
     code = set() if code is None else code
     # Open containers, outermost first: {"kind": "quote"}, or
     # {"kind": "list", "width": content column, "has_content": bool}.
+    # quote_levels holds the stack positions of the quotes, so a blank line,
+    # which keeps every list item open, finds the first quote it ends in O(1).
     stack = []
+    quote_levels = []
     paragraph = None  # [(line index, container prefix, text)] of the open paragraph
     fence = None
     comment = False
+    def mark_content():
+        if stack and stack[-1]["kind"] == "list":
+            stack[-1]["has_content"] = True
+
     for index, raw in enumerate(lines):
         line = raw.expandtabs(4)
+        bounds = line_bounds(line)
+        last_text = bounds[0]
         offset = 0
-        matched = 0
-        for container in stack:
-            rest = line[offset:]
-            if container["kind"] == "quote":
-                marker = QUOTE_MARKER.match(rest)
-                if not marker:
-                    break
-                offset += marker.end()
-            elif rest.strip():
-                if len(rest) - len(rest.lstrip(" ")) < container["width"]:
-                    break
-                offset += container["width"]
-            matched += 1
+        if last_text < 0:
+            matched = quote_levels[0] if quote_levels else len(stack)
+        else:
+            matched = 0
+            for container in stack:
+                if container["kind"] == "quote":
+                    marker = QUOTE_AT.match(line, offset)
+                    if not marker:
+                        break
+                    offset = marker.end()
+                elif last_text >= offset:
+                    if SPACES_AT.match(line, offset).end() - offset < container["width"]:
+                        break
+                    offset += container["width"]
+                matched += 1
         rest = line[offset:]
 
         if matched < len(stack):
@@ -314,6 +349,8 @@ def scan_blocks(lines, headings, code=None):
                 paragraph.append((index, line[:offset], rest))
                 continue
             del stack[matched:]
+            while quote_levels and quote_levels[-1] >= matched:
+                quote_levels.pop()
             paragraph = fence = None
             comment = False
 
@@ -328,19 +365,22 @@ def scan_blocks(lines, headings, code=None):
         # Open new quotes and list items. A quote always interrupts a paragraph;
         # a list item only when interrupts_paragraph() says so.
         opened = len(stack)
-        while not INDENTED_CODE.match(rest):
-            marker = QUOTE_MARKER.match(rest)
-            width = None if marker else list_item_width(rest)
+        while SPACES_AT.match(line, offset).end() - offset < 4:  # indented code opens no container
+            marker = QUOTE_AT.match(line, offset)
+            width = None if marker else list_width_at(line, offset, bounds)
             if marker:
+                mark_content()
+                quote_levels.append(len(stack))
                 stack.append({"kind": "quote"})
-                offset += marker.end()
-            elif width is not None and (paragraph is None or interrupts_paragraph(rest)):
-                stack.append({"kind": "list", "width": width, "has_content": bool(rest[width:].strip())})
+                offset = marker.end()
+            elif width is not None and (paragraph is None or interrupts_paragraph(line[offset:])):
+                mark_content()
+                stack.append({"kind": "list", "width": width, "has_content": last_text >= offset + width})
                 offset += width
             else:
                 break
             paragraph = None
-            rest = line[offset:]
+        rest = line[offset:]
 
         if not rest.strip():
             paragraph = None
@@ -348,9 +388,7 @@ def scan_blocks(lines, headings, code=None):
             if len(stack) == opened and stack and stack[-1]["kind"] == "list" and not stack[-1]["has_content"]:
                 stack.pop()
             continue
-        for container in stack:
-            if container["kind"] == "list":
-                container["has_content"] = True
+        mark_content()
 
         fence_match = FENCE.match(rest)
         if fence_match or HTML_COMMENT_START.match(rest):

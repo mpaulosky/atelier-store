@@ -2,6 +2,7 @@ import io
 import json
 import re
 import subprocess
+import time
 import urllib.error
 from pathlib import Path
 
@@ -107,60 +108,51 @@ def test_post_title_is_a_valid_yaml_double_quoted_scalar():
 
 
 def heading_levels(post):
-    """ATX heading levels in a rendered post, including headings inside quotes and list items.
+    """Levels of every line in a rendered post that looks like an ATX heading.
 
-    Continuation lines of a list item are recognised by their indentation, so
-    "- # A" followed by "  #### B" counts both headings. A fence or comment
-    opened inside a quote or list item closes when that container ends.
+    This deliberately over-counts rather than re-implementing the parser under
+    test: it strips all quote and list markers and leading indentation from
+    every line, and skips only top-level fences and HTML comments. So it can
+    never miss a heading (the invariant tests need exactly that), but a
+    "#" line in indented code or in a fence inside a container counts too, so
+    the invariant tests don't use those. nest_headings' exact behaviour inside
+    containers is pinned by its own tests.
     """
     body = post.split("---\n", 2)[2]
     fence = None
     comment = False
-    scope = (0, 0)  # (quote depth, list indent) where the open fence or comment started
     levels = []
-    item_width = 0  # content column of the last list item seen
     for line in body.splitlines():
-        indent = len(line) - len(line.lstrip(" "))
-        if item_width and line.strip() and indent >= item_width:
-            line = line[item_width:]
-        elif line.strip():
-            item_width = 0
-        markers = re.match(r"(?: {0,3}(?:> ?|[-+*] +|\d+[.)] +))+", line)
-        quotes = markers.group(0).count(">") if markers else 0
-        if markers:
-            if re.search(r"(?:[-+*]|\d+[.)]) +$", markers.group(0)):
-                item_width += len(markers.group(0))
-            line = line[markers.end():]
-        if (fence is not None or comment) and (quotes < scope[0] or item_width < scope[1]):
-            fence, comment = None, False  # the container holding it has ended
-        if fence is None and not comment:
-            scope = (quotes, item_width)
-        marker = re.match(r" {0,3}(`{3,}|~{3,})(.*)", line)
         if comment:
             comment = "-->" not in line
-        elif marker:
-            if fence is None:
-                fence = marker.group(1)
-            elif marker.group(1)[0] == fence[0] and len(marker.group(1)) >= len(fence) and not marker.group(2).strip():
+            continue
+        marker = re.match(r" {0,3}(`{3,}|~{3,})(.*)", line)
+        if fence is not None:
+            if marker and marker.group(1)[0] == fence[0] and len(marker.group(1)) >= len(fence) and not marker.group(2).strip():
                 fence = None
-        elif fence is None and line.startswith("<!--"):
-            comment = "-->" not in line[4:]
-        elif fence is None and re.match(r"#{1,6}( |$)", line):
-            levels.append(len(line) - len(line.lstrip("#")))
+            continue
+        if marker:
+            fence = marker.group(1)
+            continue
+        if re.match(r" {0,3}<!--", line):
+            comment = "-->" not in line[line.index("<!--") + 4:]
+            continue
+        text = re.sub(r"^(?:\s*(?:>|[-+*](?=\s)|\d+[.)](?=\s)))*\s*", "", line)
+        if re.match(r"#{1,6}(\s|$)", text):
+            levels.append(len(text) - len(text.lstrip("#")))
     return levels
 
 
 @pytest.mark.parametrize(
     ("body", "expected"),
     [
-        ("> ```\n# Heading", [1, 1]),  # the quote ends, and its fence with it
-        ("> <!--\n# Heading", [1, 1]),
-        ("```\n# not a heading\n```\n## Real", [1, 2]),
-        ("- ```\n  # not a heading\n  ```\n## Real", [1, 2]),
-        ("- # A\n  #### B", [1, 1, 4]),
+        ("> # A\n- # B\n1. # C\n> - > ## D", [1, 1, 1, 1, 2]),
+        ("- # A\n  #### B\n    ### C", [1, 1, 4, 3]),  # continuation lines, at any depth
+        ("- > ```\n  > # counted\n  > ```", [1, 1]),  # container fences over-count; never miss
+        ("```\n# not a heading\n```\n<!--\n# nor this\n-->\n## Real", [1, 2]),
     ],
 )
-def test_heading_levels_sees_headings_after_a_container_closes_its_fence(body, expected):
+def test_heading_levels_counts_every_heading_looking_line(body, expected):
     assert heading_levels(f"---\nx: 1\n---\n# T\n{body}") == expected
 
 
@@ -289,6 +281,32 @@ def test_deeply_nested_containers_do_not_exhaust_the_stack():
     # A size-bounded PR body can nest far deeper than Python's recursion limit.
     assert rp.nest_headings("> " * 1100 + "# Context").endswith("> ### Context")
     assert rp.nest_headings("- " * 1100 + "# Context").endswith("- ### Context")
+
+
+@pytest.mark.parametrize(
+    "shape",
+    [
+        lambda n: "- " * n + "# Context",
+        lambda n: "> " * n + "# Context",
+        lambda n: "- " * n + "x" + "\n" * n + "  text",
+        lambda n: "> x\n" + "lazy\n" * n,
+    ],
+)
+def test_scanning_stays_linear_in_nesting_depth_and_length(shape):
+    # Time the same shape at two sizes; a quadratic scan takes ~16x longer at 4x
+    # the size (measured before the fix), a linear one ~4x. The best of three
+    # runs keeps scheduling noise out, and the 10x bound leaves plenty of slack.
+    def best(n):
+        text = shape(n)
+        runs = []
+        for _ in range(3):
+            start = time.perf_counter()
+            rp.nest_headings(text)
+            runs.append(time.perf_counter() - start)
+        return min(runs)
+
+    small, large = best(2_000), best(8_000)
+    assert large < max(small, 0.001) * 10
 
 
 def test_a_fence_line_with_an_info_string_does_not_close_the_fence():
