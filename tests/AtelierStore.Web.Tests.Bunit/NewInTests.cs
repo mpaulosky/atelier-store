@@ -33,6 +33,7 @@ public sealed class NewInTests : BunitContext
 			.Should().Equal("wool-coat", "leather-bag", "silk-scarf");
 		cut.Find(".section-header .caption").TextContent.Should().Be("3 pieces");
 		cut.FindAll(".lead").Should().BeEmpty();
+		cut.FindAll(".product-card-name").Should().OnlyContain(name => name.TagName == "H2");
 	}
 
 	[Fact]

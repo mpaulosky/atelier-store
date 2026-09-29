@@ -15,13 +15,23 @@
 	</div>
 	<div class="product-card-body">
 		<p class="caption">@Product.Category</p>
-		<h3 class="product-card-name">
-			<a class="product-card-link" href="products/@Product.Slug">@Product.Name</a>
-		</h3>
+		@if (HeadingLevel == 2)
+		{
+			<h2 class="product-card-name">@NameLink</h2>
+		}
+		else
+		{
+			<h3 class="product-card-name">@NameLink</h3>
+		}
 		<p class="product-card-price"><ProductPrice Product="Product" /></p>
 	</div>
 </article>
 
 @code {
 	[Parameter, EditorRequired] public Product Product { get; set; } = default!;
+
+	/// <summary>Heading level of the product name: 3 under a section's <c>h2</c> (the default), 2 when the grid sits directly under the page's <c>h1</c>.</summary>
+	[Parameter] public int HeadingLevel { get; set; } = 3;
+
+	private RenderFragment NameLink => @<a class="product-card-link" href="products/@Product.Slug">@Product.Name</a>;
 }
