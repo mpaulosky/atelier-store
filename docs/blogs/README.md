@@ -4,6 +4,7 @@ This directory contains concise release-review posts for merged PR releases.
 
 | Date | Title | Tags |
 | ---- | ----- | ---- |
+| 2026-09-29 | [feat(web): Add the New in page](2026-09-29-pr-66-feat-web-add-the-new-in-page.md) | release,automation |
 | 2026-09-28 | [fix(web): Serve app.css on a clean build](2026-09-28-pr-62-fix-web-serve-app-css-on-a-clean-build.md) | release,automation |
 | 2026-09-28 | [ci: Let README sync PRs run their required checks](2026-09-28-pr-60-ci-let-readme-sync-prs-run-their-required-checks.md) | release,automation |
 | 2026-09-28 | [ci: Run the test suite on Dependabot PRs](2026-09-28-pr-58-ci-run-the-test-suite-on-dependabot-prs.md) | release,automation |
