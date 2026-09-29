@@ -107,17 +107,24 @@ def test_post_title_is_a_valid_yaml_double_quoted_scalar():
 
 
 def heading_levels(post):
+    """ATX heading levels in a rendered post, including headings inside quotes and list items."""
     body = post.split("---\n", 2)[2]
     fence = None
+    comment = False
     levels = []
     for line in body.splitlines():
-        marker = re.match(r"(`{3,}|~{3,})(.*)", line)
-        if marker:
+        line = re.sub(r"^(?: {0,3}(?:> ?|[-+*] +|\d+[.)] +))+", "", line)
+        marker = re.match(r" {0,3}(`{3,}|~{3,})(.*)", line)
+        if comment:
+            comment = "-->" not in line
+        elif marker:
             if fence is None:
                 fence = marker.group(1)
             elif marker.group(1)[0] == fence[0] and len(marker.group(1)) >= len(fence) and not marker.group(2).strip():
                 fence = None
-        elif fence is None and line.startswith("#"):
+        elif fence is None and line.startswith("<!--"):
+            comment = "-->" not in line[4:]
+        elif fence is None and re.match(r"#{1,6}( |$)", line):
             levels.append(len(line) - len(line.lstrip("#")))
     return levels
 
@@ -144,6 +151,8 @@ def test_post_starts_with_one_h1_and_never_skips_a_level():
         "### Deep first\n\n# Then shallow\n\n###### Then very deep",
         "## Plan\n\n```bash\n# a shell comment, not a heading\n```\n\n### Steps",
         "```\n```bash\n# a fence line with an info string doesn't close the fence\n```\n\n# After",
+        "> # Context\n\n- # Context\n\n1. # Context",
+        "<!--\n```\n-->\n# Context",
     ],
 )
 def test_headings_in_the_description_and_summary_stay_nested(description):
@@ -200,6 +209,33 @@ def test_a_setext_heading_takes_its_whole_paragraph():
 )
 def test_setext_headings_follow_commonmark_paragraphs(text, expected):
     assert rp.nest_headings(text) == expected
+
+
+@pytest.mark.parametrize(
+    ("text", "expected"),
+    [
+        ("> # Context\n> Why.", "> ### Context\n> Why."),
+        ("- # Context\n  Why.", "- ### Context\n  Why."),
+        ("> - # Deep\n>   ## Deeper", "> - ### Deep\n>   #### Deeper"),
+        # Setext headings inside a quote or list item, and a lazy === that isn't one.
+        ("> Title\n> ===", "> ### Title"),
+        ("- Title\n  ===", "- ### Title"),
+        ("> Title\n===", "> Title\n==="),
+        # Fence markers inside an HTML comment are comment text, not code.
+        ("<!--\n```\n-->\n# Context", "<!--\n```\n-->\n### Context"),
+        ("<!-- # not a heading -->\n# Context", "<!-- # not a heading -->\n### Context"),
+    ],
+)
+def test_nest_headings_reaches_into_containers_and_skips_html_comments(text, expected):
+    assert rp.nest_headings(text) == expected
+
+
+def test_a_fence_in_an_html_comment_does_not_swallow_the_rest_of_the_post():
+    body = "<!--\n```\n-->\nThe real description."
+    commits = [{"sha": "abc1234def", "commit": {"message": "Add a thing"}}]
+    post = rp.render_post({"number": 7, "body": body}, "T", "v1.2.3", "2026-09-26", commits, [], None, "m")
+    assert rp.post_excerpt(post) == "The real description."
+    assert "Add a thing" not in rp.section(post, "PR description")
 
 
 def test_a_fence_line_with_an_info_string_does_not_close_the_fence():
