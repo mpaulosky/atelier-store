@@ -287,7 +287,7 @@ def code_lines(lines):
 
 def line_bounds(line):
     """(last non-space index, last index of a character a thematic break can't contain), -1 if none."""
-    last_text = len(line.rstrip()) - 1
+    last_text = len(line.rstrip(" \t")) - 1
     last_other = last_text
     while last_other >= 0 and line[last_other] in " \t-*_":
         last_other -= 1
@@ -332,7 +332,7 @@ def interrupts_paragraph(line):
         or THEMATIC_BREAK.match(line)
         or html_block_end(line, in_paragraph=True) is not None
         or QUOTE_MARKER.match(line)
-        or (width is not None and line[width:].strip() and re.match(r" {0,3}([-+*]|1[.)])", line))
+        or (width is not None and line[width:].strip(" \t") and re.match(r" {0,3}([-+*]|1[.)])", line))
     )
 
 
@@ -348,7 +348,8 @@ def scan_blocks(lines, headings, code=None):
     This follows CommonMark's block parsing in one pass: each line first
     matches the open quotes and list items, may lazily continue an open
     paragraph, then opens new containers before its content is read. Columns
-    are measured with tabs expanded to CommonMark's 4-column stops.
+    are measured with tabs expanded to CommonMark's 4-column stops, and a
+    blank line holds only spaces and tabs (a non-breaking space is text).
     """
     code = set() if code is None else code
     # Open containers, outermost first: {"kind": "quote"}, or
@@ -366,7 +367,9 @@ def scan_blocks(lines, headings, code=None):
             stack[-1]["has_content"] = True
 
     for index, raw in enumerate(lines):
-        line = raw.expandtabs(4)
+        # A trailing "\r" is the rest of a CRLF line ending; tabs expand so
+        # columns can be counted in spaces from here on.
+        line = raw.removesuffix("\r").expandtabs(4)
         bounds = line_bounds(line)
         last_text = bounds[0]
         offset = 0
@@ -395,7 +398,7 @@ def scan_blocks(lines, headings, code=None):
             opens_block = (
                 interrupts_paragraph(rest) or list_item_width(rest) is not None or html_block_end(rest) is not None
             )
-            if paragraph is not None and rest.strip() and not opens_block:
+            if paragraph is not None and rest.strip(" ") and not opens_block:
                 paragraph.append((index, line[:offset], rest))
                 continue
             del stack[matched:]
@@ -403,7 +406,7 @@ def scan_blocks(lines, headings, code=None):
                 quote_levels.pop()
             paragraph = fence = html_end = None
 
-        if html_end is HTML_ENDS_AT_BLANK and not rest.strip():
+        if html_end is HTML_ENDS_AT_BLANK and not rest.strip(" "):
             html_end = None  # the blank line ends the block and is read as usual
         if fence is not None or html_end is not None:
             code.add(index)
@@ -433,7 +436,7 @@ def scan_blocks(lines, headings, code=None):
             paragraph = None
         rest = line[offset:]
 
-        if not rest.strip():
+        if not rest.strip(" "):
             paragraph = None
             # An item that starts empty ends at its first blank line (not at its own marker line).
             if len(stack) == opened and stack and stack[-1]["kind"] == "list" and not stack[-1]["has_content"]:
@@ -460,7 +463,7 @@ def scan_blocks(lines, headings, code=None):
             underline = SETEXT_UNDERLINE.match(rest)
             if underline:
                 first, first_prefix, _ = paragraph[0]
-                text = " ".join(part.strip() for _, _, part in paragraph)
+                text = " ".join(part.strip(" ") for _, _, part in paragraph)
                 headings.append((first, first_prefix, 1 if underline.group(1)[0] == "=" else 2, " " + text))
                 for later, _, _ in paragraph[1:]:
                     lines[later] = None
@@ -487,7 +490,7 @@ def nest_headings(markdown):
     items are re-levelled too, keeping their markers. Fenced code and raw HTML
     blocks are left alone.
     """
-    lines = markdown.split("\n")
+    lines = re.split(r"\r\n|\r|\n", markdown)  # CommonMark's three line endings; PR bodies often use CRLF
     headings = []  # (line index, prefix, original level, rest of line), in document order
     scan_blocks(lines, headings)
 
