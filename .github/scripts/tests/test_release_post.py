@@ -341,6 +341,13 @@ def test_scanning_stays_linear_in_nesting_depth_and_length(shape):
         ("<![CDATA[\n# x\n]]>\n# after", "<![CDATA[\n# x\n]]>\n### after"),
         # A declaration needs an uppercase letter: GitHub reads "<!doctype" as text.
         ("<!doctype html\n# x", "<!doctype html\n### x"),
+        # The tag grammar is ASCII: a non-breaking space or a long s ("\u017f", which
+        # Unicode case-folds to "s") makes the line text, so GitHub reads the "#" after it
+        # as a heading. ASCII case-insensitivity still applies.
+        ("<div\u00a0>\n# x", "<div\u00a0>\n### x"),
+        ("<\u017ftyle>\n# x", "<\u017ftyle>\n### x"),
+        ('<a\u00a0href="x">\n# y', '<a\u00a0href="x">\n### y'),
+        ("<DIV>\n# x", "<DIV>\n# x"),
         # Only spaces and tabs make a blank line: a non-breaking space doesn't end the block.
         ("<div>\n\u00a0\n# x", "<div>\n\u00a0\n# x"),
         ("<div>\n \t\n# x", "<div>\n \t\n### x"),
@@ -366,6 +373,9 @@ def test_an_html_block_never_becomes_the_excerpt():
         ("Title\r===", "### Title"),  # a lone CR is a line ending too
         # A non-breaking space is text: this line continues the paragraph instead of ending it.
         ("para\n\u00a0\n# y", "para\n\u00a0\n### y"),
+        # List numbers are ASCII digits: GitHub reads these lines as paragraph text.
+        ("\u0661. # x", "\u0661. # x"),
+        ("\uff11. # x", "\uff11. # x"),
     ],
 )
 def test_nest_headings_reads_line_endings_and_blank_lines_as_commonmark_does(text, expected):

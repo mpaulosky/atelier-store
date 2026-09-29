@@ -220,27 +220,30 @@ HTML_BLOCK_TAGS = (
 )
 HTML_ATTRIBUTE = r"""\s+[A-Za-z_:][A-Za-z0-9_.:-]*(?:\s*=\s*(?:[^\s"'=<>`]+|'[^']*'|"[^"]*"))?"""
 HTML_BLOCKS = [
-    (re.compile(r" {0,3}<(?:pre|script|style|textarea)(?:\s|>|$)", re.I), re.compile(r"</(?:pre|script|style|textarea)>", re.I)),
-    (re.compile(r" {0,3}<!--"), re.compile(r"-->")),
-    (re.compile(r" {0,3}<\?"), re.compile(r"\?>")),
+    (re.compile(r" {0,3}<(?:pre|script|style|textarea)(?:\s|>|$)", re.I | re.A), re.compile(r"</(?:pre|script|style|textarea)>", re.I | re.A)),
+    (re.compile(r" {0,3}<!--", re.A), re.compile(r"-->", re.A)),
+    (re.compile(r" {0,3}<\?", re.A), re.compile(r"\?>", re.A)),
     # Kind 4 needs an uppercase letter, as GitHub (cmark-gfm) reads it: "<!doctype" is text.
-    (re.compile(r" {0,3}<![A-Z]"), re.compile(r">")),
-    (re.compile(r" {0,3}<!\[CDATA\["), re.compile(r"\]\]>")),
-    (re.compile(rf" {{0,3}}</?(?:{HTML_BLOCK_TAGS})(?:\s|/?>|$)", re.I), HTML_ENDS_AT_BLANK),
+    (re.compile(r" {0,3}<![A-Z]", re.A), re.compile(r">", re.A)),
+    (re.compile(r" {0,3}<!\[CDATA\[", re.A), re.compile(r"\]\]>", re.A)),
+    (re.compile(rf" {{0,3}}</?(?:{HTML_BLOCK_TAGS})(?:\s|/?>|$)", re.I | re.A), HTML_ENDS_AT_BLANK),
 ]
 # Kind 7: any other complete open or closing tag alone on its line. Unlike the
-# others it can't interrupt a paragraph.
+# others it can't interrupt a paragraph. All HTML patterns are re.ASCII: the
+# tag grammar is ASCII, so a non-breaking space or "\u017f" (long s, which
+# Unicode case-folds to "s") makes a line paragraph text, as GitHub reads it.
 HTML_OTHER_TAG = re.compile(
-    rf" {{0,3}}(?:<[A-Za-z][A-Za-z0-9-]*(?:{HTML_ATTRIBUTE})*\s*/?>|</[A-Za-z][A-Za-z0-9-]*\s*>)\s*$"
+    rf" {{0,3}}(?:<[A-Za-z][A-Za-z0-9-]*(?:{HTML_ATTRIBUTE})*\s*/?>|</[A-Za-z][A-Za-z0-9-]*\s*>)\s*$",
+    re.A,
 )
 # The level of the "## " post sections that nest_headings' text is inserted under.
 SECTION_LEVEL = 2
 QUOTE_MARKER = re.compile(r"^ {0,3}> ?")
-LIST_MARKER = re.compile(r"^ {0,3}([-+*]|\d{1,9}[.)])(?=[ \t]|$)")
+LIST_MARKER = re.compile(r"^ {0,3}([-+*]|[0-9]{1,9}[.)])(?=[ \t]|$)")
 # Position-anchored versions for scan_blocks, which matches containers at an
 # offset into the line instead of slicing a new suffix for every level.
 QUOTE_AT = re.compile(r" {0,3}> ?")
-LIST_AT = re.compile(r" {0,3}([-+*]|\d{1,9}[.)])(?=[ \t]|$)")
+LIST_AT = re.compile(r" {0,3}([-+*]|[0-9]{1,9}[.)])(?=[ \t]|$)")
 SPACES_AT = re.compile(r" *")
 
 
