@@ -13,7 +13,7 @@ using Microsoft.Extensions.Primitives;
 namespace AtelierStore.Web.Tests.Integration;
 
 /// <summary>
-/// <c>/health</c>, <c>/account/login</c> and <c>/account/logout</c> against a full test host
+/// <c>/health</c>, <c>/new-in</c>, <c>/account/login</c> and <c>/account/logout</c> against a full test host
 /// (<see cref="AtelierWebApplicationFactory"/>), with Auth0 replaced by fakes so no request ever reaches
 /// the real Auth0 tenant. Every client disables auto-redirect, so 302s to the fake Auth0 host are asserted
 /// directly instead of the <see cref="HttpClient"/> trying to follow them onto a host that doesn't exist.
@@ -38,6 +38,22 @@ public sealed class EndpointTests(PostgresContainerFixture fixture) : IDisposabl
 		response.StatusCode.Should().Be(HttpStatusCode.OK);
 		string body = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
 		body.Should().Be("Healthy");
+	}
+
+	[Fact]
+	public async Task NewIn_ReturnsTheSeededNewArrivals()
+	{
+		// Arrange
+		HttpClient client = _factory.CreateClient();
+
+		// Act
+		HttpResponseMessage response = await client.GetAsync(new Uri("/new-in", UriKind.Relative), TestContext.Current.CancellationToken);
+
+		// Assert
+		response.StatusCode.Should().Be(HttpStatusCode.OK);
+		string body = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
+		body.Should().Contain("<h1 id=\"new-in-title\"");
+		body.Should().Contain("class=\"product-card\"");
 	}
 
 	[Fact]

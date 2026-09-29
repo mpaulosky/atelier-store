@@ -28,3 +28,7 @@ pnpm run css:watch
   The output `wwwroot/app.css` is generated, so don't edit it by hand.
   Classes used outside `Components/` won't be picked up.
 - **Error routing**: `/Error` handles exceptions outside Development. Status codes re-execute to `/not-found` (the Router's `NotFoundPage`).
+- **Product listing pages** (currently `/new-in`, `Components/Pages/NewIn.razor`) follow one pattern.
+  A `.breadcrumb`, then a `section-header section-header-split` with an eyebrow, an `h1.headline` and a count caption, then a `.product-grid` of `ProductCard`s.
+  When the catalog returns nothing, they show a centred `.lead` message and a `link-cta` home instead of the grid.
+  `ProductCard` already badges sold-out pieces, so listings keep them in place rather than filtering them out.

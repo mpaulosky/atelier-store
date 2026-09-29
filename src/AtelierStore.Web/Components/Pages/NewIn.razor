@@ -1,0 +1,55 @@
+@page "/new-in"
+@inject IProductCatalog Catalog
+
+<PageTitle>New in | Atelier</PageTitle>
+
+<div class="container-page">
+	<nav class="breadcrumb" aria-label="Breadcrumb">
+		<ol>
+			<li><a class="link-quiet" href="">Home</a></li>
+			<li><span aria-current="page">New in</span></li>
+		</ol>
+	</nav>
+</div>
+
+@* The full "New in" edit: the home page's section, expanded to the newest pieces. *@
+<section class="section pt-0" aria-labelledby="new-in-title">
+	<div class="container-page">
+		<header class="section-header section-header-split">
+			<div>
+				<p class="eyebrow text-muted">Just arrived</p>
+				<h1 id="new-in-title" class="headline mt-3">New in</h1>
+			</div>
+			@if (newArrivals.Count > 0)
+			{
+				<p class="caption">@newArrivals.Count @(newArrivals.Count == 1 ? "piece" : "pieces")</p>
+			}
+		</header>
+
+		@if (newArrivals.Count > 0)
+		{
+			<div class="product-grid">
+				@foreach (Product product in newArrivals)
+				{
+					<ProductCard Product="product" />
+				}
+			</div>
+		}
+		else
+		{
+			<div class="stack-lg items-center py-16 text-center">
+				<p class="lead">Nothing new just yet. Check back soon.</p>
+				<a class="link-cta" href="">Back to home</a>
+			</div>
+		}
+	</div>
+</section>
+
+@code {
+	private const int NewArrivalsCount = 24;
+
+	private IReadOnlyList<Product> newArrivals = [];
+
+	protected override async Task OnInitializedAsync() =>
+		newArrivals = await Catalog.GetNewArrivalsAsync(NewArrivalsCount);
+}
