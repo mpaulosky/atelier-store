@@ -335,6 +335,12 @@ def test_scanning_stays_linear_in_nesting_depth_and_length(shape):
         ("> quote\n<span>\n# after", "> quote\n<span>\n# after"),
         # A comment can close on the line that opens it.
         ("<!-->\n# after", "<!-->\n### after"),
+        # Processing instructions, declarations and CDATA stay opaque until their own marker.
+        ("<?php\n# x\n?>\n# after", "<?php\n# x\n?>\n### after"),
+        ("<!DOCTYPE html\n# x\n>\n# after", "<!DOCTYPE html\n# x\n>\n### after"),
+        ("<![CDATA[\n# x\n]]>\n# after", "<![CDATA[\n# x\n]]>\n### after"),
+        # A declaration needs an uppercase letter: GitHub reads "<!doctype" as text.
+        ("<!doctype html\n# x", "<!doctype html\n### x"),
     ],
 )
 def test_nest_headings_leaves_raw_html_blocks_alone(text, expected):

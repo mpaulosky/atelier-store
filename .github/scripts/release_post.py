@@ -223,7 +223,8 @@ HTML_BLOCKS = [
     (re.compile(r" {0,3}<(?:pre|script|style|textarea)(?:\s|>|$)", re.I), re.compile(r"</(?:pre|script|style|textarea)>", re.I)),
     (re.compile(r" {0,3}<!--"), re.compile(r"-->")),
     (re.compile(r" {0,3}<\?"), re.compile(r"\?>")),
-    (re.compile(r" {0,3}<![A-Za-z]"), re.compile(r">")),
+    # Kind 4 needs an uppercase letter, as GitHub (cmark-gfm) reads it: "<!doctype" is text.
+    (re.compile(r" {0,3}<![A-Z]"), re.compile(r">")),
     (re.compile(r" {0,3}<!\[CDATA\["), re.compile(r"\]\]>")),
     (re.compile(rf" {{0,3}}</?(?:{HTML_BLOCK_TAGS})(?:\s|/?>|$)", re.I), HTML_ENDS_AT_BLANK),
 ]
