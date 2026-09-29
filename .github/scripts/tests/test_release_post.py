@@ -169,6 +169,39 @@ def test_a_closing_fence_followed_by_a_thematic_break_stays_a_fence():
     assert rp.nest_headings(text) == "```\ncode\n```\n---\n### After"
 
 
+def test_adjacent_thematic_breaks_are_not_setext_text():
+    text = "Text.\n\n---\n---\n\n# After"
+    assert rp.nest_headings(text) == "Text.\n\n---\n---\n\n### After"
+
+
+def test_a_setext_heading_takes_its_whole_paragraph():
+    text = "Release\nNotes\n===\n\nBody.\n\nSub\nheading\n---\n\n- item\nlazy continuation\n---"
+    assert rp.nest_headings(text) == (
+        "### Release Notes\n\nBody.\n\n#### Sub heading\n\n- item\nlazy continuation\n---"
+    )
+
+
+@pytest.mark.parametrize(
+    ("text", "expected"),
+    [
+        # Table-like and #hashtag lines are paragraph text, so the underline takes them too.
+        ("text\n| a | b |\n===", "### text | a | b |"),
+        ("#hashtag\nPara\n---", "### #hashtag Para"),
+        # A lone === line is text, and becomes part of the heading below it.
+        ("===\nTitle\n---", "### === Title"),
+        # Text continuing a list item or quote can't be underlined into a heading.
+        ("1. one\n===\ntext\n---", "1. one\n===\ntext\n---"),
+        ("> quote\n===\n===", "> quote\n===\n==="),
+        ("- item\n\n    indented\nPara\n---", "- item\n\n    indented\nPara\n---"),
+        # A quote closes at a blank line; a list closes at a thematic break.
+        ("> quote\n\nPara\n---", "> quote\n\n### Para"),
+        ("- item\ntext\n---\nPara\n---", "- item\ntext\n---\n### Para"),
+    ],
+)
+def test_setext_headings_follow_commonmark_paragraphs(text, expected):
+    assert rp.nest_headings(text) == expected
+
+
 def test_a_fence_line_with_an_info_string_does_not_close_the_fence():
     text = "```\n```python\n# comment\n```\n# Heading"
     assert rp.nest_headings(text) == "```\n```python\n# comment\n```\n### Heading"

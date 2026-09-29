@@ -206,9 +206,12 @@ def request_summary(api_key, model, prompt, urlopen=urllib.request.urlopen):
 ATX_HEADING = re.compile(r"^( {0,3})(#{1,6})(?=[ \t]|$)")
 FENCE = re.compile(r"^ {0,3}(`{3,}|~{3,})(.*)$")
 SETEXT_UNDERLINE = re.compile(r"^ {0,3}(=+|-+)[ \t]*$")
-# Lines a setext underline can't turn into a heading: blank, list items,
-# quotes, table rows, headings and indented code.
-NOT_SETEXT_TEXT = re.compile(r"^(\s*$| {0,3}([-+*>|#]|\d+[.)])(\s|$)| {4,}|\t)")
+THEMATIC_BREAK = re.compile(r"^ {0,3}([-*_])([ \t]*\1){2,}[ \t]*$")
+# Block quotes and list items: they start a new block even inside a paragraph,
+# except an ordered item not numbered 1 or an empty item.
+CONTAINER_START = re.compile(r"^ {0,3}(>|[-+*][ \t]+\S|1[.)][ \t]+\S)")
+CONTAINER_LINE = re.compile(r"^ {0,3}(>|[-+*](?:[ \t]|$)|\d{1,9}[.)](?:[ \t]|$))")
+INDENTED_CODE = re.compile(r"^( {4}|\t)")
 
 
 def code_lines(lines):
@@ -235,34 +238,67 @@ def code_lines(lines):
     return code
 
 
+def container_kind(line):
+    """"quote" or "list" for a line that opens a block quote or list item, else None."""
+    if not CONTAINER_LINE.match(line):
+        return None
+    return "quote" if line.lstrip().startswith(">") else "list"
+
+
 def nest_headings(markdown, parent_level=2):
     """Re-levels the ATX headings in text inserted under a "## " section.
 
     Distinct levels keep their order but close up (#, ####, ###### become
     ###, ####, #####), and no heading sits more than one level below the one
     before it, so the post keeps a single H1 and never skips a level. Setext
-    headings (text over a === or --- line) become ATX headings first. Fenced
-    code is left alone.
+    headings (a paragraph over a === or --- line, by CommonMark's paragraph
+    rules) become ATX headings first. Fenced code is left alone.
     """
     lines = markdown.split("\n")
     code = code_lines(lines)
     headings = []  # (line index, indent, original level, rest of line)
+    # paragraph: first line of the open paragraph a setext underline would
+    # turn into a heading. container: the list or quote it sits in, if any;
+    # there the underline can't reach the text, so it stays a break. A list
+    # stays open across blank lines, so an indented line continues the item.
+    paragraph = None
+    container = None
     for index, line in enumerate(lines):
         if index in code:
+            paragraph = container = None
+            continue
+        if not line.strip():
+            paragraph = None
+            if container == "quote":
+                container = None
             continue
         heading = ATX_HEADING.match(line)
         if heading:
             headings.append((index, heading.group(1), len(heading.group(2)), line[heading.end():]))
+            paragraph = container = None
             continue
-        underline = SETEXT_UNDERLINE.match(line)
-        if not underline or index == 0 or index - 1 in code:
+        if paragraph is not None:
+            underline = SETEXT_UNDERLINE.match(line)
+            if underline and container is None:
+                level = 1 if underline.group(1)[0] == "=" else 2
+                text = " ".join(lines[i].strip() for i in range(paragraph, index))
+                headings.append((paragraph, "", level, " " + text))
+                for i in range(paragraph + 1, index + 1):
+                    lines[i] = None
+                paragraph = None
+            elif THEMATIC_BREAK.match(line):
+                paragraph = container = None
+            elif CONTAINER_START.match(line):
+                paragraph, container = index, container_kind(line)
             continue
-        previous_line = lines[index - 1] or ""
-        previous_is_heading = headings and headings[-1][0] == index - 1
-        if not NOT_SETEXT_TEXT.match(previous_line) and not previous_is_heading:
-            level = 1 if underline.group(1)[0] == "=" else 2
-            headings.append((index - 1, "", level, " " + previous_line.strip()))
-            lines[index] = None
+        if INDENTED_CODE.match(line):
+            if container == "list":
+                paragraph = index
+            continue
+        if THEMATIC_BREAK.match(line):
+            container = None
+            continue
+        paragraph, container = index, container_kind(line)
 
     rank = {level: i for i, level in enumerate(sorted({level for _, _, level, _ in headings}))}
     previous = parent_level
