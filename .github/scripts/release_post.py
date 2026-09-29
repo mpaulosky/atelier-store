@@ -208,7 +208,32 @@ FENCE = re.compile(r"^ {0,3}(`{3,}|~{3,})(.*)$")
 SETEXT_UNDERLINE = re.compile(r"^ {0,3}(=+|-+)[ \t]*$")
 THEMATIC_BREAK = re.compile(r"^ {0,3}([-*_])([ \t]*\1){2,}[ \t]*$")
 INDENTED_CODE = re.compile(r"^( {4}|\t)")
-HTML_COMMENT_START = re.compile(r"^ {0,3}<!--")
+# CommonMark's seven kinds of HTML block, as (start, end) pairs; the end is a
+# pattern searched on each line, or HTML_ENDS_AT_BLANK. Their lines are raw
+# HTML, so a "#" line inside one is text, not a heading.
+HTML_ENDS_AT_BLANK = "blank line"
+HTML_BLOCK_TAGS = (
+    "address|article|aside|base|basefont|blockquote|body|caption|center|col|colgroup|dd|details|dialog|dir|div|dl|dt"
+    "|fieldset|figcaption|figure|footer|form|frame|frameset|h1|h2|h3|h4|h5|h6|head|header|hr|html|iframe|legend|li"
+    "|link|main|menu|menuitem|nav|noframes|ol|optgroup|option|p|param|search|section|summary|table|tbody|td|tfoot"
+    "|th|thead|title|tr|track|ul"
+)
+HTML_ATTRIBUTE = r"""\s+[A-Za-z_:][A-Za-z0-9_.:-]*(?:\s*=\s*(?:[^\s"'=<>`]+|'[^']*'|"[^"]*"))?"""
+HTML_BLOCKS = [
+    (re.compile(r" {0,3}<(?:pre|script|style|textarea)(?:\s|>|$)", re.I), re.compile(r"</(?:pre|script|style|textarea)>", re.I)),
+    (re.compile(r" {0,3}<!--"), re.compile(r"-->")),
+    (re.compile(r" {0,3}<\?"), re.compile(r"\?>")),
+    (re.compile(r" {0,3}<![A-Za-z]"), re.compile(r">")),
+    (re.compile(r" {0,3}<!\[CDATA\["), re.compile(r"\]\]>")),
+    (re.compile(rf" {{0,3}}</?(?:{HTML_BLOCK_TAGS})(?:\s|/?>|$)", re.I), HTML_ENDS_AT_BLANK),
+]
+# Kind 7: any other complete open or closing tag alone on its line. Unlike the
+# others it can't interrupt a paragraph.
+HTML_OTHER_TAG = re.compile(
+    rf" {{0,3}}(?:<[A-Za-z][A-Za-z0-9-]*(?:{HTML_ATTRIBUTE})*\s*/?>|</[A-Za-z][A-Za-z0-9-]*\s*>)\s*$"
+)
+# The level of the "## " post sections that nest_headings' text is inserted under.
+SECTION_LEVEL = 2
 QUOTE_MARKER = re.compile(r"^ {0,3}> ?")
 LIST_MARKER = re.compile(r"^ {0,3}([-+*]|\d{1,9}[.)])(?=[ \t]|$)")
 # Position-anchored versions for scan_blocks, which matches containers at an
@@ -227,12 +252,32 @@ def closes_fence(fence, line):
     return marker[0] == fence[0] and len(marker) >= len(fence) and not info.strip()
 
 
+def html_block_end(line, in_paragraph=False):
+    """The end condition of an HTML block opened by this line, or None if it opens none.
+
+    Kinds 1 to 5 end on the line matching their end pattern (possibly this
+    one), kinds 6 and 7 at a blank line. Inside a paragraph, only kinds 1 to 6
+    can start.
+    """
+    for start, end in HTML_BLOCKS:
+        if start.match(line):
+            return end
+    if not in_paragraph and HTML_OTHER_TAG.match(line):
+        return HTML_ENDS_AT_BLANK
+    return None
+
+
+def html_block_ends(end, line):
+    """Whether an HTML block with this end condition ends on this (non-blank) line."""
+    return end is not HTML_ENDS_AT_BLANK and bool(end.search(line))
+
+
 def code_lines(lines):
-    """Indexes of the lines that aren't Markdown text: fenced code and HTML comments, at any depth.
+    """Indexes of the lines that aren't Markdown text: fenced code and raw HTML blocks, at any depth.
 
     A fence closes on a run of the same character at least as long as the
     opener, with nothing but whitespace after it, or where its quote or list
-    item ends; an HTML comment closes on the line containing "-->".
+    item ends; an HTML block closes as html_block_end() describes.
     """
     code = set()
     scan_blocks(list(lines), [], code)
@@ -284,7 +329,7 @@ def interrupts_paragraph(line):
         ATX_HEADING.match(line)
         or FENCE.match(line)
         or THEMATIC_BREAK.match(line)
-        or HTML_COMMENT_START.match(line)
+        or html_block_end(line, in_paragraph=True) is not None
         or QUOTE_MARKER.match(line)
         or (width is not None and line[width:].strip() and re.match(r" {0,3}([-+*]|1[.)])", line))
     )
@@ -297,7 +342,7 @@ def scan_blocks(lines, headings, code=None):
     ATX or setext heading, where the prefix is everything before the "#"s
     (container markers and indent). The later lines of a setext heading,
     including its underline, are set to None in `lines`. When `code` is a set,
-    the indexes of fenced code and HTML comment lines are added to it.
+    the indexes of fenced code and raw HTML block lines are added to it.
 
     This follows CommonMark's block parsing in one pass: each line first
     matches the open quotes and list items, may lazily continue an open
@@ -313,7 +358,8 @@ def scan_blocks(lines, headings, code=None):
     quote_levels = []
     paragraph = None  # [(line index, container prefix, text)] of the open paragraph
     fence = None
-    comment = False
+    html_end = None  # end condition of the open HTML block, see html_block_end()
+
     def mark_content():
         if stack and stack[-1]["kind"] == "list":
             stack[-1]["has_content"] = True
@@ -342,24 +388,28 @@ def scan_blocks(lines, headings, code=None):
 
         if matched < len(stack):
             # A line that opens no new block lazily continues the open paragraph.
-            # Here any list item opens one: the rule that only some items can
-            # interrupt a paragraph applies only once every container matched.
-            opens_block = interrupts_paragraph(rest) or list_item_width(rest) is not None
+            # Here any list item or HTML block opens one: the rule that only
+            # some of them can interrupt a paragraph applies only once every
+            # container matched.
+            opens_block = (
+                interrupts_paragraph(rest) or list_item_width(rest) is not None or html_block_end(rest) is not None
+            )
             if paragraph is not None and rest.strip() and not opens_block:
                 paragraph.append((index, line[:offset], rest))
                 continue
             del stack[matched:]
             while quote_levels and quote_levels[-1] >= matched:
                 quote_levels.pop()
-            paragraph = fence = None
-            comment = False
+            paragraph = fence = html_end = None
 
-        if fence is not None or comment:
+        if html_end is HTML_ENDS_AT_BLANK and not rest.strip():
+            html_end = None  # the blank line ends the block and is read as usual
+        if fence is not None or html_end is not None:
             code.add(index)
             if fence is not None:
                 fence = None if closes_fence(fence, rest) else fence
-            else:
-                comment = "-->" not in rest
+            elif html_block_ends(html_end, rest):
+                html_end = None
             continue
 
         # Open new quotes and list items. A quote always interrupts a paragraph;
@@ -391,12 +441,13 @@ def scan_blocks(lines, headings, code=None):
         mark_content()
 
         fence_match = FENCE.match(rest)
-        if fence_match or HTML_COMMENT_START.match(rest):
+        html_start = None if fence_match else html_block_end(rest, in_paragraph=paragraph is not None)
+        if fence_match or html_start is not None:
             code.add(index)
             if fence_match:
                 fence = fence_match.group(1)
-            else:
-                comment = "-->" not in rest[rest.index("<!--") + 4:]
+            elif not html_block_ends(html_start, rest):
+                html_end = html_start
             paragraph = None
             continue
         heading = ATX_HEADING.match(rest)
@@ -424,7 +475,7 @@ def scan_blocks(lines, headings, code=None):
         paragraph = [(index, line[:offset], rest)]
 
 
-def nest_headings(markdown, parent_level=2):
+def nest_headings(markdown):
     """Re-levels the ATX headings in text inserted under a "## " section.
 
     Distinct levels keep their order but close up (#, ####, ###### become
@@ -432,17 +483,17 @@ def nest_headings(markdown, parent_level=2):
     before it, so the post keeps a single H1 and never skips a level. Setext
     headings (a paragraph over a === or --- line, by CommonMark's paragraph
     rules) become ATX headings first. Headings inside block quotes and list
-    items are re-levelled too, keeping their markers. Fenced code and HTML
-    comments are left alone.
+    items are re-levelled too, keeping their markers. Fenced code and raw HTML
+    blocks are left alone.
     """
     lines = markdown.split("\n")
     headings = []  # (line index, prefix, original level, rest of line), in document order
     scan_blocks(lines, headings)
 
     rank = {level: i for i, level in enumerate(sorted({level for _, _, level, _ in headings}))}
-    previous = parent_level
+    previous = SECTION_LEVEL
     for index, prefix, level, rest in headings:
-        new_level = min(parent_level + 1 + rank[level], previous + 1, 6)
+        new_level = min(SECTION_LEVEL + 1 + rank[level], previous + 1, 6)
         lines[index] = f"{prefix}{'#' * new_level}{rest}"
         previous = new_level
     return "\n".join(line for line in lines if line is not None)
@@ -627,7 +678,7 @@ def first_paragraph(markdown):
 
 
 def blank_code(markdown):
-    """The Markdown with fenced code and HTML comment lines blanked, so they split and skip like blank lines."""
+    """The Markdown with fenced code and raw HTML block lines blanked, so they split and skip like blank lines."""
     lines = markdown.split("\n")
     code = code_lines(lines)
     return "\n".join("" if index in code else line for index, line in enumerate(lines))
