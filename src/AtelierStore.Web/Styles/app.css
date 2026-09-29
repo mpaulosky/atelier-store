@@ -707,6 +707,9 @@
 			font-size: var(--text-caption);
 			line-height: var(--text-caption--line-height);
 			letter-spacing: 0.02em;
+			/* Set here, not inherited from the h3 base style, so the name looks the same at any heading level. */
+			text-transform: uppercase;
+			font-weight: 500;
 		}
 
 		& .product-card-price {

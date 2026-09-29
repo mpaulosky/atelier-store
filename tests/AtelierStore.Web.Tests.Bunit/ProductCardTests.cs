@@ -62,4 +62,28 @@ public sealed class ProductCardTests : BunitContext
 		// Assert
 		cut.Find("a.product-card-link").GetAttribute("href").Should().Be("products/wool-coat");
 	}
+
+	[Theory]
+	[InlineData(null, "H3")]
+	[InlineData(2, "H2")]
+	public void ProductCard_HeadingLevel_SetsTheNameHeadingTag(int? headingLevel, string expectedTag)
+	{
+		// Arrange
+		Product product = TestProducts.InStock(name: "Wool Coat");
+
+		// Act
+		IRenderedComponent<ProductCard> cut = Render<ProductCard>(parameters =>
+		{
+			parameters.Add(p => p.Product, product);
+			if (headingLevel is int level)
+			{
+				parameters.Add(p => p.HeadingLevel, level);
+			}
+		});
+
+		// Assert
+		AngleSharp.Dom.IElement name = cut.Find(".product-card-name");
+		name.TagName.Should().Be(expectedTag);
+		name.QuerySelector("a.product-card-link")!.TextContent.Should().Be("Wool Coat");
+	}
 }
