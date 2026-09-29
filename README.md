@@ -80,6 +80,7 @@ The app fails at startup if `Auth0:Domain`, `Auth0:ClientId`, or `ConnectionStri
 
 | Version | Date | Title | Blog post |
 | ------- | ---- | ----- | --------- |
+| [v0.0.29](https://github.com/mpaulosky/atelier-store/releases/tag/v0.0.29) | 2026-09-29 | docs: Pin README badges to main and add the build-ui skill | [Post](https://github.com/mpaulosky/atelier-store/blob/main/docs/blogs/2026-09-29-pr-70-docs-pin-readme-badges-to-main-and-add-the-build-ui-skill.md) |
 | [v0.0.28](https://github.com/mpaulosky/atelier-store/releases/tag/v0.0.28) | 2026-09-29 | fix(release): Start release posts with an H1 title | [Post](https://github.com/mpaulosky/atelier-store/blob/main/docs/blogs/2026-09-29-pr-64-fix-release-start-release-posts-with-an-h1-title.md) |
 | [v0.0.27](https://github.com/mpaulosky/atelier-store/releases/tag/v0.0.27) | 2026-09-29 | feat(web): Add the New in page | [Post](https://github.com/mpaulosky/atelier-store/blob/main/docs/blogs/2026-09-29-pr-66-feat-web-add-the-new-in-page.md) |
 | [v0.0.26](https://github.com/mpaulosky/atelier-store/releases/tag/v0.0.26) | 2026-09-28 | fix(web): Serve app.css on a clean build | [Post](https://github.com/mpaulosky/atelier-store/blob/main/docs/blogs/2026-09-28-pr-62-fix-web-serve-app-css-on-a-clean-build.md) |
@@ -89,7 +90,6 @@ The app fails at startup if `Auth0:Domain`, `Auth0:ClientId`, or `ConnectionStri
 | [v0.0.22](https://github.com/mpaulosky/atelier-store/releases/tag/v0.0.22) | 2026-09-28 | fix(scripts): Keep squad cleanup going when a local delete is refused | [Post](https://github.com/mpaulosky/atelier-store/blob/main/docs/blogs/2026-09-28-pr-54-fix-scripts-keep-squad-cleanup-going-when-a-local-delete-is-refused.md) |
 | [v0.0.21](https://github.com/mpaulosky/atelier-store/releases/tag/v0.0.21) | 2026-09-28 | ci: Add nightly squad branch and worktree cleanup | [Post](https://github.com/mpaulosky/atelier-store/blob/main/docs/blogs/2026-09-28-pr-52-ci-add-nightly-squad-branch-and-worktree-cleanup.md) |
 | [v0.0.20](https://github.com/mpaulosky/atelier-store/releases/tag/v0.0.20) | 2026-09-27 | docs(readme): use an absolute URL for the LICENSE badge link | [Post](https://github.com/mpaulosky/atelier-store/blob/main/docs/blogs/2026-09-27-pr-50-docs-readme-use-an-absolute-url-for-the-license-badge-link.md) |
-| [v0.0.19](https://github.com/mpaulosky/atelier-store/releases/tag/v0.0.19) | 2026-09-27 | docs(readme): regroup status badges | [Post](https://github.com/mpaulosky/atelier-store/blob/main/docs/blogs/2026-09-27-pr-47-docs-readme-regroup-status-badges.md) |
 
 <!-- RELEASES_END -->
 
