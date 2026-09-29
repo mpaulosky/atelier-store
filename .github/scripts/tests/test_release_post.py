@@ -107,13 +107,27 @@ def test_post_title_is_a_valid_yaml_double_quoted_scalar():
 
 
 def heading_levels(post):
-    """ATX heading levels in a rendered post, including headings inside quotes and list items."""
+    """ATX heading levels in a rendered post, including headings inside quotes and list items.
+
+    Continuation lines of a list item are recognised by their indentation, so
+    "- # A" followed by "  #### B" counts both headings.
+    """
     body = post.split("---\n", 2)[2]
     fence = None
     comment = False
     levels = []
+    item_width = 0  # content column of the last list item seen
     for line in body.splitlines():
-        line = re.sub(r"^(?: {0,3}(?:> ?|[-+*] +|\d+[.)] +))+", "", line)
+        indent = len(line) - len(line.lstrip(" "))
+        if item_width and line.strip() and indent >= item_width:
+            line = line[item_width:]
+        elif line.strip():
+            item_width = 0
+        markers = re.match(r"(?: {0,3}(?:> ?|[-+*] +|\d+[.)] +))+", line)
+        if markers:
+            if re.search(r"(?:[-+*]|\d+[.)]) +$", markers.group(0)):
+                item_width += len(markers.group(0))
+            line = line[markers.end():]
         marker = re.match(r" {0,3}(`{3,}|~{3,})(.*)", line)
         if comment:
             comment = "-->" not in line
@@ -153,6 +167,7 @@ def test_post_starts_with_one_h1_and_never_skips_a_level():
         "```\n```bash\n# a fence line with an info string doesn't close the fence\n```\n\n# After",
         "> # Context\n\n- # Context\n\n1. # Context",
         "<!--\n```\n-->\n# Context",
+        "- # A\n  #### B",
     ],
 )
 def test_headings_in_the_description_and_summary_stay_nested(description):
@@ -228,6 +243,12 @@ def test_setext_headings_follow_commonmark_paragraphs(text, expected):
         ("- <!--\n  ```\n  -->\n# Context", "- <!--\n  ```\n  -->\n### Context"),
         # Tabs expand to 4-column stops, so a tab-indented line continues the list item.
         ("-\t# First\n\t# Second", "-   ### First\n    ### Second"),
+        # A line that fails to continue a quote or list item may open any list item
+        # (CommonMark's reference parser agrees); inside the item, only "1." interrupts.
+        ("> paragraph\n2. # Context", "> paragraph\n2. ### Context"),
+        ("- a\n2. # b", "- a\n2. ### b"),
+        ("- a\n  2. # b", "- a\n  2. # b"),
+        ("-\n  # A", "-\n  ### A"),
     ],
 )
 def test_nest_headings_reaches_into_containers_and_skips_html_comments(text, expected):
@@ -241,6 +262,12 @@ def test_a_fence_in_an_html_comment_does_not_swallow_the_rest_of_the_post(commen
     post = rp.render_post({"number": 7, "body": body}, "T", "v1.2.3", "2026-09-26", commits, [], None, "m")
     assert rp.post_excerpt(post) == "The real description."
     assert "Add a thing" not in rp.section(post, "PR description")
+
+
+def test_deeply_nested_containers_do_not_exhaust_the_stack():
+    # A size-bounded PR body can nest far deeper than Python's recursion limit.
+    assert rp.nest_headings("> " * 1100 + "# Context").endswith("> ### Context")
+    assert rp.nest_headings("- " * 1100 + "# Context").endswith("- ### Context")
 
 
 def test_a_fence_line_with_an_info_string_does_not_close_the_fence():

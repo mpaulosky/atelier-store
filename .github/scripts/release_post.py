@@ -248,202 +248,142 @@ def list_item_width(line):
     return marker.end() + (spaces if rest.strip() and 1 <= spaces <= 4 else 1)
 
 
-def starts_block(line):
-    """Whether a line opens a new block, so it can't lazily continue a quote or list paragraph."""
+def interrupts_paragraph(line):
+    """Whether a line ends a paragraph in the same container by opening a new block.
+
+    Only a non-empty list item interrupts, and an ordered one only when
+    numbered 1. (A line that fails to continue a quote or list item is judged
+    differently: there any list item opens a new block.)
+    """
+    width = list_item_width(line)
     return bool(
         ATX_HEADING.match(line)
         or FENCE.match(line)
         or THEMATIC_BREAK.match(line)
         or HTML_COMMENT_START.match(line)
         or QUOTE_MARKER.match(line)
-        or list_item_width(line) is not None
+        or (width is not None and line[width:].strip() and re.match(r" {0,3}([-+*]|1[.)])", line))
     )
 
 
 def scan_blocks(lines, headings, code=None):
-    """Finds the headings in Markdown lines, recursing into block quotes and list items.
+    """Finds the headings in Markdown lines, including those inside block quotes and list items.
 
     Appends (line index, prefix, level, rest of line) to `headings` for each
     ATX or setext heading, where the prefix is everything before the "#"s
     (container markers and indent). The later lines of a setext heading,
     including its underline, are set to None in `lines`. When `code` is a set,
     the indexes of fenced code and HTML comment lines are added to it.
-    Columns are measured with tabs expanded to CommonMark's 4-column stops.
+
+    This follows CommonMark's block parsing in one pass: each line first
+    matches the open quotes and list items, may lazily continue an open
+    paragraph, then opens new containers before its content is read. Columns
+    are measured with tabs expanded to CommonMark's 4-column stops.
     """
-    prefix = [""] * len(lines)
-    content = [line.expandtabs(4) for line in lines]
-    lazy = [False] * len(lines)
     code = set() if code is None else code
+    # Open containers, outermost first: {"kind": "quote"}, or
+    # {"kind": "list", "width": content column, "has_content": bool}.
+    stack = []
+    paragraph = None  # [(line index, container prefix, text)] of the open paragraph
+    fence = None
+    comment = False
+    for index, raw in enumerate(lines):
+        line = raw.expandtabs(4)
+        offset = 0
+        matched = 0
+        for container in stack:
+            rest = line[offset:]
+            if container["kind"] == "quote":
+                marker = QUOTE_MARKER.match(rest)
+                if not marker:
+                    break
+                offset += marker.end()
+            elif rest.strip():
+                if len(rest) - len(rest.lstrip(" ")) < container["width"]:
+                    break
+                offset += container["width"]
+            matched += 1
+        rest = line[offset:]
 
-    def is_blank(index):
-        return not content[index].strip()
+        if matched < len(stack):
+            # A line that opens no new block lazily continues the open paragraph.
+            # Here any list item opens one: the rule that only some items can
+            # interrupt a paragraph applies only once every container matched.
+            opens_block = interrupts_paragraph(rest) or list_item_width(rest) is not None
+            if paragraph is not None and rest.strip() and not opens_block:
+                paragraph.append((index, line[:offset], rest))
+                continue
+            del stack[matched:]
+            paragraph = fence = None
+            comment = False
 
-    def scan(ids, record=True):
-        """Scans a block's lines; returns whether it ends inside an open paragraph.
-
-        With record=False nothing is recorded, so the scan can be used to ask
-        whether the next line would be a lazy continuation.
-        """
-        # paragraph: position in ids of the first line of the open paragraph,
-        # which a setext underline would turn into a heading. inner_open: the
-        # block just scanned was a quote or list item ending in a paragraph.
-        paragraph = None
-        inner_open = False
-        fence = None
-        comment = False
-        position = 0
-        while position < len(ids):
-            inner_open = False
-            index = ids[position]
-            line = content[index]
-            if fence is not None or comment:
-                if record:
-                    code.add(index)
-                if fence is not None:
-                    fence = None if closes_fence(fence, line) else fence
-                else:
-                    comment = "-->" not in line
-                position += 1
-                continue
-            if is_blank(index):
-                paragraph = None
-                position += 1
-                continue
-            if paragraph is not None and lazy[index]:
-                position += 1  # lazy paragraph text, never an underline
-                continue
-            fence_match = FENCE.match(line)
-            if fence_match or HTML_COMMENT_START.match(line):
-                if record:
-                    code.add(index)
-                if fence_match:
-                    fence = fence_match.group(1)
-                else:
-                    comment = "-->" not in line[line.index("<!--") + 4:]
-                paragraph = None
-                position += 1
-                continue
-            heading = ATX_HEADING.match(line)
-            if heading:
-                if record:
-                    level = len(heading.group(2))
-                    headings.append((index, prefix[index] + heading.group(1), level, line[heading.end():]))
-                paragraph = None
-                position += 1
-                continue
-            if paragraph is not None:
-                underline = SETEXT_UNDERLINE.match(line)
-                if underline:
-                    if record:
-                        first = ids[paragraph]
-                        text = " ".join(content[i].strip() for i in ids[paragraph:position])
-                        level = 1 if underline.group(1)[0] == "=" else 2
-                        headings.append((first, prefix[first], level, " " + text))
-                        for i in ids[paragraph + 1:position + 1]:
-                            lines[i] = None
-                    paragraph = None
-                    position += 1
-                    continue
-                if THEMATIC_BREAK.match(line):
-                    paragraph = None
-                    position += 1
-                    continue
-                width = list_item_width(line)
-                # Only a non-empty item, and an ordered one only from 1, interrupts a paragraph.
-                interrupts = width is not None and line[width:].strip() and re.match(r" {0,3}([-+*]|1[.)])", line)
-                if not QUOTE_MARKER.match(line) and not interrupts:
-                    position += 1  # paragraph continuation
-                    continue
-            elif INDENTED_CODE.match(line) or THEMATIC_BREAK.match(line):
-                position += 1
-                continue
-            if QUOTE_MARKER.match(line):
-                position, inner_open = scan_quote(ids, position, record)
-            elif list_item_width(line) is not None:
-                position, inner_open = scan_list_item(ids, position, record)
+        if fence is not None or comment:
+            code.add(index)
+            if fence is not None:
+                fence = None if closes_fence(fence, rest) else fence
             else:
-                paragraph = position
-                position += 1
-                continue
-            paragraph = None
-        return paragraph is not None or inner_open
+                comment = "-->" not in rest
+            continue
 
-    def ends_in_paragraph(block):
-        """Whether the block's lines so far end inside a paragraph, which a lazy line would continue."""
-        saved = [(i, prefix[i], content[i], lazy[i]) for i in block]
-        try:
-            return scan(block, record=False)
-        finally:
-            for i, saved_prefix, saved_content, saved_lazy in saved:
-                prefix[i], content[i], lazy[i] = saved_prefix, saved_content, saved_lazy
-
-    def take_lazy(ids, position, block):
-        """Adds the next line as lazy paragraph continuation if it is one; returns the next position."""
-        if (
-            position < len(ids)
-            and not is_blank(ids[position])
-            and not starts_block(content[ids[position]])
-            and ends_in_paragraph(block)
-        ):
-            lazy[ids[position]] = True
-            block.append(ids[position])
-            position += 1
-        return position
-
-    def scan_quote(ids, position, record):
-        block = []
-        while position < len(ids):
-            index = ids[position]
-            marker = QUOTE_MARKER.match(content[index])
+        # Open new quotes and list items. A quote always interrupts a paragraph;
+        # a list item only when interrupts_paragraph() says so.
+        opened = len(stack)
+        while not INDENTED_CODE.match(rest):
+            marker = QUOTE_MARKER.match(rest)
+            width = None if marker else list_item_width(rest)
             if marker:
-                prefix[index] += content[index][:marker.end()]
-                content[index] = content[index][marker.end():]
-                block.append(index)
-                position += 1
-                continue
-            if not block or is_blank(index):
+                stack.append({"kind": "quote"})
+                offset += marker.end()
+            elif width is not None and (paragraph is None or interrupts_paragraph(rest)):
+                stack.append({"kind": "list", "width": width, "has_content": bool(rest[width:].strip())})
+                offset += width
+            else:
                 break
-            after = take_lazy(ids, position, block)
-            if after == position:
-                break
-            position = after
-        return position, scan(block, record)
+            paragraph = None
+            rest = line[offset:]
 
-    def scan_list_item(ids, position, record):
-        first = ids[position]
-        width = list_item_width(content[first])
-        prefix[first] += content[first][:width]
-        content[first] = content[first][width:]
-        block = [first]
-        position += 1
-        while position < len(ids):
-            index = ids[position]
-            line = content[index]
-            if is_blank(index) and block == [first] and is_blank(first):
-                break  # an item that starts empty ends at a blank line
-            if is_blank(index):
-                block.append(index)
-                position += 1
-                continue
-            if len(line) - len(line.lstrip(" ")) >= width:
-                prefix[index] += line[:width]
-                content[index] = line[width:]
-                block.append(index)
-                position += 1
-                continue
-            if block and is_blank(block[-1]):
-                break
-            after = take_lazy(ids, position, block)
-            if after == position:
-                break
-            position = after
-        # Trailing blank lines belong to the enclosing block.
-        while len(block) > 1 and is_blank(block[-1]):
-            block.pop()
-            position -= 1
-        return position, scan(block, record)
+        if not rest.strip():
+            paragraph = None
+            # An item that starts empty ends at its first blank line (not at its own marker line).
+            if len(stack) == opened and stack and stack[-1]["kind"] == "list" and not stack[-1]["has_content"]:
+                stack.pop()
+            continue
+        for container in stack:
+            if container["kind"] == "list":
+                container["has_content"] = True
 
-    scan(list(range(len(lines))))
+        fence_match = FENCE.match(rest)
+        if fence_match or HTML_COMMENT_START.match(rest):
+            code.add(index)
+            if fence_match:
+                fence = fence_match.group(1)
+            else:
+                comment = "-->" not in rest[rest.index("<!--") + 4:]
+            paragraph = None
+            continue
+        heading = ATX_HEADING.match(rest)
+        if heading:
+            headings.append((index, line[:offset] + heading.group(1), len(heading.group(2)), rest[heading.end():]))
+            paragraph = None
+            continue
+        if paragraph is not None:
+            underline = SETEXT_UNDERLINE.match(rest)
+            if underline:
+                first, first_prefix, _ = paragraph[0]
+                text = " ".join(part.strip() for _, _, part in paragraph)
+                headings.append((first, first_prefix, 1 if underline.group(1)[0] == "=" else 2, " " + text))
+                for later, _, _ in paragraph[1:]:
+                    lines[later] = None
+                lines[index] = None
+                paragraph = None
+            elif THEMATIC_BREAK.match(rest):
+                paragraph = None
+            else:
+                paragraph.append((index, line[:offset], rest))
+            continue
+        if INDENTED_CODE.match(rest) or THEMATIC_BREAK.match(rest):
+            continue
+        paragraph = [(index, line[:offset], rest)]
 
 
 def nest_headings(markdown, parent_level=2):
