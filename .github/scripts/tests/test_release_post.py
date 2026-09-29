@@ -164,6 +164,11 @@ def test_nest_headings_converts_setext_headings_but_keeps_thematic_breaks():
     assert rp.nest_headings(text) == "### Title\n\nText.\n\n---\n\n- item\n---\n\n#### Sub"
 
 
+def test_a_closing_fence_followed_by_a_thematic_break_stays_a_fence():
+    text = "```\ncode\n```\n---\n# After"
+    assert rp.nest_headings(text) == "```\ncode\n```\n---\n### After"
+
+
 def test_a_fence_line_with_an_info_string_does_not_close_the_fence():
     text = "```\n```python\n# comment\n```\n# Heading"
     assert rp.nest_headings(text) == "```\n```python\n# comment\n```\n### Heading"
@@ -176,6 +181,17 @@ def test_section_ignores_a_summary_heading_from_inside_the_pr_description():
     old_post = "## T\n\n### PR description\n\n## Summary\n\nFrom the PR body.\n\n### Commits\n"
     assert rp.section(new_post, "Summary") == ""
     assert rp.section(old_post, "Summary") == ""
+
+
+@pytest.mark.parametrize(("title", "level"), [("#", "##"), ("##", "###")])
+def test_excerpt_skips_a_summary_heading_inside_a_fenced_example(title, level):
+    fenced = f"```markdown\n{level} Summary\n\nCode sample, not a summary.\n```"
+    post = (
+        f"---\npost_title: \"T\"\n---\n{title} T\n\n{level} PR description\n\n"
+        f"The real description.\n\n{fenced}\n\n{level} Commits\n\n- Add a thing\n"
+    )
+    assert rp.section(post, "Summary") == ""
+    assert rp.post_excerpt(post) == "The real description."
 
 
 def test_nested_description_headings_do_not_end_the_section():

@@ -211,6 +211,30 @@ SETEXT_UNDERLINE = re.compile(r"^ {0,3}(=+|-+)[ \t]*$")
 NOT_SETEXT_TEXT = re.compile(r"^(\s*$| {0,3}([-+*>|#]|\d+[.)])(\s|$)| {4,}|\t)")
 
 
+def code_lines(lines):
+    """Indexes of the fence lines, and the lines between them, in a list of Markdown lines.
+
+    A fence closes on a run of the same character at least as long as the
+    opener, with nothing but whitespace after it. An unclosed fence runs to
+    the end.
+    """
+    code = set()
+    fence = None
+    for index, line in enumerate(lines):
+        fence_match = FENCE.match(line)
+        if fence is None:
+            if fence_match:
+                fence = fence_match.group(1)
+                code.add(index)
+            continue
+        code.add(index)
+        if fence_match:
+            marker, info = fence_match.groups()
+            if marker[0] == fence[0] and len(marker) >= len(fence) and not info.strip():
+                fence = None
+    return code
+
+
 def nest_headings(markdown, parent_level=2):
     """Re-levels the ATX headings in text inserted under a "## " section.
 
@@ -221,27 +245,21 @@ def nest_headings(markdown, parent_level=2):
     code is left alone.
     """
     lines = markdown.split("\n")
-    fence = None
+    code = code_lines(lines)
     headings = []  # (line index, indent, original level, rest of line)
     for index, line in enumerate(lines):
-        fence_match = FENCE.match(line)
-        if fence_match:
-            marker, info = fence_match.groups()
-            if fence is None:
-                fence = marker
-            elif marker[0] == fence[0] and len(marker) >= len(fence) and not info.strip():
-                fence = None
-            continue
-        if fence is not None:
+        if index in code:
             continue
         heading = ATX_HEADING.match(line)
         if heading:
             headings.append((index, heading.group(1), len(heading.group(2)), line[heading.end():]))
             continue
         underline = SETEXT_UNDERLINE.match(line)
-        previous_line = (lines[index - 1] or "") if index else ""
+        if not underline or index == 0 or index - 1 in code:
+            continue
+        previous_line = lines[index - 1] or ""
         previous_is_heading = headings and headings[-1][0] == index - 1
-        if underline and not NOT_SETEXT_TEXT.match(previous_line) and not previous_is_heading:
+        if not NOT_SETEXT_TEXT.match(previous_line) and not previous_is_heading:
             level = 1 if underline.group(1)[0] == "=" else 2
             headings.append((index - 1, "", level, " " + previous_line.strip()))
             lines[index] = None
@@ -403,14 +421,21 @@ def section(text, heading):
 
     Posts written before the title became an H1 start with a "## " title and
     use "### " for these sections. Only the post's own section level is read,
-    so a heading nested inside the PR description never passes for a section.
+    and lines inside fenced code are never headings, so a heading from the PR
+    description (nested, or in a code example) never passes for a section.
     """
-    first_heading = re.search(r"^(#+) ", text, flags=re.MULTILINE)
-    level = "##" if first_heading and first_heading.group(1) == "#" else "###"
-    match = re.search(
-        rf"^{level} {re.escape(heading)}\n(.*?)(?=^{level} |\Z)", text, flags=re.DOTALL | re.MULTILINE
-    )
-    return match.group(1) if match else ""
+    lines = text.split("\n")
+    code = code_lines(lines)
+    headings = [index for index, line in enumerate(lines) if index not in code and ATX_HEADING.match(line)]
+    if not headings:
+        return ""
+    level = "##" if lines[headings[0]].startswith("# ") else "###"
+    starts = [index for index in headings if lines[index].startswith(level + " ")]
+    for position, start in enumerate(starts):
+        if lines[start] == f"{level} {heading}":
+            end = starts[position + 1] if position + 1 < len(starts) else len(lines)
+            return "\n".join(lines[start + 1:end]) + ("\n" if end < len(lines) else "")
+    return ""
 
 
 def first_paragraph(markdown):
