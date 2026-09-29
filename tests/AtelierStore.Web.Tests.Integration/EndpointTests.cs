@@ -1,5 +1,7 @@
 using System.Net;
 using Auth0.AspNetCore.Authentication;
+using AtelierStore.Web.Data;
+using AtelierStore.Web.Tests.Integration.Builders;
 using AtelierStore.Web.Tests.Integration.Infrastructure;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
@@ -41,9 +43,21 @@ public sealed class EndpointTests(PostgresContainerFixture fixture) : IDisposabl
 	}
 
 	[Fact]
-	public async Task NewIn_ReturnsTheSeededNewArrivals()
+	public async Task NewIn_ListsTheCatalogsNewArrivals()
 	{
 		// Arrange
+		// Other tests in this collection reset the shared database to empty, so the seeded catalog may be
+		// gone by now: start from empty too and insert the one product this test looks for.
+		await fixture.ResetDatabaseAsync();
+		await using (AppDbContext db = await fixture.CreateDbContextFactory().CreateDbContextAsync(TestContext.Current.CancellationToken))
+		{
+			Category category = new CategoryBuilder().Build();
+			db.Categories.Add(category);
+			await db.SaveChangesAsync(TestContext.Current.CancellationToken);
+			db.Products.Add(new ProductBuilder().WithSlug("new-in-coat").WithName("New In Coat").InCategory(category.Id).Build());
+			await db.SaveChangesAsync(TestContext.Current.CancellationToken);
+		}
+
 		HttpClient client = _factory.CreateClient();
 
 		// Act
@@ -53,7 +67,7 @@ public sealed class EndpointTests(PostgresContainerFixture fixture) : IDisposabl
 		response.StatusCode.Should().Be(HttpStatusCode.OK);
 		string body = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
 		body.Should().Contain("<h1 id=\"new-in-title\"");
-		body.Should().Contain("class=\"product-card\"");
+		body.Should().Contain("class=\"product-card\"").And.Contain("New In Coat");
 	}
 
 	[Fact]
