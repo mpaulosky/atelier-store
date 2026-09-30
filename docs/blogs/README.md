@@ -19,6 +19,10 @@ This directory contains concise release-review posts for merged PR releases.
 | 2026-09-28 | [chore: Remove unused squad branch cleanup tooling](2026-09-28-pr-56-chore-remove-unused-squad-branch-cleanup-tooling.md) | release,automation |
 | 2026-09-28 | [fix(scripts): Keep squad cleanup going when a local delete is refused](2026-09-28-pr-54-fix-scripts-keep-squad-cleanup-going-when-a-local-delete-is-refused.md) | release,automation |
 | 2026-09-28 | [ci: Add nightly squad branch and worktree cleanup](2026-09-28-pr-52-ci-add-nightly-squad-branch-and-worktree-cleanup.md) | release,automation |
+| 2026-09-27 | [chore(agents): Add Beast Mode custom agent without gate-bypassing tools](2026-09-27-pr-22-chore-agents-add-beast-mode-custom-agent-without-gate-bypassing-tools.md) | release,automation |
+| 2026-09-27 | [chore(vscode): Auto-approve agent git add/commit but not --no-verify](2026-09-27-pr-21-chore-vscode-auto-approve-agent-git-add-commit-but-not-no-verify.md) | release,automation |
+| 2026-09-27 | [chore: Ignore Claude Code worktrees](2026-09-27-pr-15-chore-ignore-claude-code-worktrees.md) | release,automation |
+| 2026-09-27 | [test(Web): Add bUnit tests for catalog components and pages](2026-09-27-pr-14-test-web-add-bunit-tests-for-catalog-components-and-pages.md) | release,automation |
 | 2026-09-27 | [docs(readme): use an absolute URL for the LICENSE badge link](2026-09-27-pr-50-docs-readme-use-an-absolute-url-for-the-license-badge-link.md) | release,automation |
 | 2026-09-27 | [docs(readme): regroup status badges](2026-09-27-pr-47-docs-readme-regroup-status-badges.md) | release,automation |
 | 2026-09-27 | [docs(readme): Add a Statuses badge section](2026-09-27-pr-44-docs-readme-add-a-statuses-badge-section.md) | release,automation |
@@ -31,3 +35,7 @@ This directory contains concise release-review posts for merged PR releases.
 | 2026-09-27 | [chore(ci): Run code metrics on manual dispatch only](2026-09-27-pr-27-chore-ci-run-code-metrics-on-manual-dispatch-only.md) | release,automation |
 | 2026-09-27 | [fix(ci): Write markdownlint-clean table separators in release tables](2026-09-27-pr-28-fix-ci-write-markdownlint-clean-table-separators-in-release-tables.md) | release,automation |
 | 2026-09-27 | [test(Web): Add Playwright E2E tests for storefront flows](2026-09-27-pr-19-test-web-add-playwright-e2e-tests-for-storefront-flows.md) | release,automation |
+| 2026-09-26 | [test(Web): Add unit tests for stock state, image URLs and return URLs](2026-09-26-pr-13-test-web-add-unit-tests-for-stock-state-image-urls-and-return-urls.md) | release,automation |
+| 2026-09-26 | [build(tests): Add test foundation and catalog/return-URL seams](2026-09-26-pr-12-build-tests-add-test-foundation-and-catalog-return-url-seams.md) | release,automation |
+| 2026-09-26 | [ci: Lint workflows and shell scripts before push and in CI](2026-09-26-pr-10-ci-lint-workflows-and-shell-scripts-before-push-and-in-ci.md) | release,automation |
+| 2026-09-26 | [ci: Add CI, lint, release automation, and git hooks](2026-09-26-pr-2-ci-add-ci-lint-release-automation-and-git-hooks.md) | release,automation |
