@@ -154,7 +154,8 @@ jobs:
       - name: Run pytest
         run: python -m pytest .github/scripts/tests
 
-  # Tests for .github/hooks/pre-push and scripts/gate.sh, with stubbed tools.
+  # Tests for .github/hooks/pre-commit, .github/hooks/pre-push and scripts/gate.sh,
+  # with stubbed tools.
   # Also not a required status check.
   hook-tests:
     name: Hook tests
@@ -169,6 +170,9 @@ jobs:
 
       - name: Run pre-push hook tests
         run: bash .github/hooks/tests/pre-push.test.sh
+
+      - name: Run pre-commit hook tests
+        run: bash .github/hooks/tests/pre-commit.test.sh
 
   # Dependabot PRs run the full test suite: a dependency bump is exactly the
   # change the tests must vet, and none of these jobs needs a secret.
