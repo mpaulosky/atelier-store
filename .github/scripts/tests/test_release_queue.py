@@ -189,7 +189,9 @@ class FakeGitHub:
         return self._pulls
 
     def pull(self, number):
-        return next(p for p in self._pulls if p["number"] == number)
+        if number in getattr(self, "extra", {}):
+            return self.extra[number]
+        return next(dict(p, base={"ref": "main"}) for p in self._pulls if p["number"] == number)
 
     def releases(self):
         return self._releases
@@ -210,6 +212,20 @@ def test_main_prints_the_queue_as_json_and_lists_merges_since_the_cutoff_pr(caps
     assert json.loads(capsys.readouterr().out) == [10, 11]
     assert gh.since == "2026-09-29T09:00:00Z"
 
+
+
+def test_main_skips_a_manually_named_pr_merged_into_another_branch(capsys):
+    # A manual run can name any PR. One merged elsewhere is never owed a release from main,
+    # so it's left out instead of failing the run on a merge commit main doesn't have.
+    other = dict(pull(12, "2026-09-29T10:05:00Z"), base={"ref": "develop"})
+    gh = FakeGitHub(pulls=[pull(9, "2026-09-29T09:00:00Z"), pull(10, "2026-09-29T10:00:00Z")],
+                    releases=[release("v0.0.9", 9)])
+    gh.extra = {12: other}
+
+    rq.main(["--repo", "octo/demo", "--pr", "12"], gh=gh, contains=lambda tag, sha: sha == "sha9",
+            main_order={"sha9": 0, "sha10": 1})
+
+    assert json.loads(capsys.readouterr().out) == [10]
 
 def test_main_ignores_a_tag_whose_release_was_never_published(capsys):
     # PR 10 got its tag, but the run failed before the Release: it's still owed one,

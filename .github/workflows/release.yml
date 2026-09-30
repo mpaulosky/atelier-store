@@ -314,8 +314,15 @@ jobs:
           IS_DRAFT=$(gh release view "$TAG" --json isDraft --jq '.isDraft' 2>/dev/null || echo "none")
           if [ "$IS_DRAFT" = "true" ]; then
             # A draft doesn't count as released anywhere in this workflow, so
-            # publish it rather than leave the PR owed forever.
-            gh release edit "$TAG" --draft=false
+            # publish it rather than leave the PR owed forever. The planner and
+            # the ordering guard know a Release by its "Source PR: #n" line, so
+            # add these notes first unless the draft already names the PR,
+            # keeping whatever the draft says.
+            BODY=$(gh release view "$TAG" --json body --jq '.body')
+            if ! grep -qE "^[[:space:]]*Source PR: #${PR_NUMBER}[[:space:]]*$" <<< "$BODY"; then
+              BODY=$(printf '%s\n\n%s\n' "$BODY" "$EXTRA_NOTES")
+            fi
+            gh release edit "$TAG" --draft=false --notes "$BODY"
             echo "Published the draft Release ${TAG}."
           elif [ "$IS_DRAFT" = "false" ]; then
             echo "Release ${TAG} already exists."

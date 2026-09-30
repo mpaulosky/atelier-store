@@ -150,7 +150,10 @@ def main(argv=None, gh=None, contains=tag_contains, main_order=None):
     pulls = gh.merged_pulls(since=gh.pull(cutoff_pr)["merged_at"]) if cutoff_tag else []
     trigger_pull = None
     if args.pr is not None and all(pr["number"] != args.pr for pr in pulls):
-        trigger_pull = gh.pull(args.pr)
+        fetched = gh.pull(args.pr)
+        # A manual run can name any PR; only one merged into main can be owed a release.
+        if (fetched.get("base") or {}).get("ref") == "main":
+            trigger_pull = fetched
 
     result = queue(
         pulls,
