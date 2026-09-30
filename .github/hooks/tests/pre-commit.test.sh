@@ -142,9 +142,14 @@ git -C "$REPO" -c core.hooksPath=/dev/null commit -q -m notes
 git -C "$REPO" mv NOTES.md GUIDE.md
 echo 'BAD text.' >> "$REPO/GUIDE.md"
 git -C "$REPO" add GUIDE.md
-[[ "$(git -C "$REPO" diff --cached --name-status)" == R* ]] || echo "setup: expected a staged rename"
-run_hook
-expect "a violation in a renamed Markdown file refuses the commit" refused linted
+# The case only proves something if git reports a rename; fail it otherwise.
+OUTPUT="$(git -C "$REPO" diff --cached --name-status)"
+if [[ "$OUTPUT" == R* ]]; then
+  run_hook
+  expect "a violation in a renamed Markdown file refuses the commit" refused linted
+else
+  fail "a violation in a renamed Markdown file refuses the commit" "setup: git didn't report a staged rename"
+fi
 git -C "$REPO" reset -q --hard HEAD~1
 
 # The stub linter fails without a config, so an unstaged config shows up here.
