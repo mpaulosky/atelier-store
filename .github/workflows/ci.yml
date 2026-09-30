@@ -25,10 +25,12 @@ permissions:
     paths-ignore:
       - "docs/**"
 
-  # No paths-ignore here: the "Build Solution" job below is a required
-  # status check on main's ruleset. A docs-only PR that this workflow
-  # never runs against would leave that check permanently missing,
-  # blocking the PR from merging forever (see PR #26).
+  # No paths-ignore here: "Build Solution" and "Test Report Summary" below
+  # are required status checks on main's ruleset. A docs-only PR that this
+  # workflow never runs against would leave them permanently missing,
+  # blocking the PR from merging forever (see PR #26). The changes job skips
+  # the build and tests for such a PR instead; a skipped required check
+  # counts as passing.
   pull_request:
     types: [opened, synchronize, reopened, ready_for_review]
 
@@ -54,8 +56,44 @@ env:
   DOTNET_CLI_TELEMETRY_OPTOUT: true
 
 jobs:
+  # Whether the PR changes anything the build or tests depend on. A PR that
+  # changes only Markdown and files under docs/ (such as a release blog PR)
+  # skips the build, the test matrix and coverage. Everything else counts as
+  # code, including workflows and scripts, so an unexpected path runs the full
+  # suite. Pushes and manual runs always run it.
+  changes:
+    name: Detect Changes
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      code: ${{ steps.diff.outputs.code }}
+    steps:
+      - name: Checkout code
+        if: github.event_name == 'pull_request'
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+
+      - name: Classify changed files
+        id: diff
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: |
+          if [ "$EVENT_NAME" != "pull_request" ]; then
+            echo "code=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          # detect_changes.py (tested in .github/scripts/tests) lists the
+          # changed files against the base and appends code=true|false.
+          python3 .github/scripts/detect_changes.py --base "$BASE_SHA" --output "$GITHUB_OUTPUT"
+
   build:
     name: Build Solution
+    needs: changes
+    if: needs.changes.outputs.code == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 15
 
@@ -478,6 +516,7 @@ jobs:
       pull-requests: write
       issues: read
     needs:
+      - changes
       - build
       - discover-tests
       - test
@@ -513,6 +552,8 @@ jobs:
           # PR-controlled project paths: read from the environment, not
           # interpolated into the script.
           TEST_MATRIX: ${{ needs.discover-tests.outputs.matrix }}
+          CHANGES_STATUS: ${{ needs.changes.result }}
+          CODE_CHANGED: ${{ needs.changes.outputs.code }}
           BUILD_STATUS: ${{ needs.build.result }}
           DISCOVER_STATUS: ${{ needs.discover-tests.result }}
           TEST_STATUS: ${{ needs.test.result }}
@@ -521,6 +562,9 @@ jobs:
             echo "## Test Execution Summary"
             echo ""
             echo "### Job Status"
+            if [ "$CHANGES_STATUS" = "success" ] && [ "$CODE_CHANGED" = "false" ]; then
+              echo "- **Docs-only change:** the build and tests were skipped."
+            fi
             echo "- **Build:** ${BUILD_STATUS}"
             echo "- **Discovered Tests:** ${DISCOVER_STATUS}"
             echo "- **Test Matrix:** ${TEST_STATUS}"
@@ -537,8 +581,11 @@ jobs:
 
           # This job is the required status check that stands in for the
           # dynamically named "Tests: …" matrix jobs, so it must fail when
-          # they do. A skipped test matrix (no test projects) still passes.
-          if [[ "$BUILD_STATUS" =~ ^(failure|cancelled)$ \
+          # they do. A skipped test matrix (no test projects, or a docs-only
+          # change) still passes, but only when the changes job itself
+          # succeeded: if it failed, the build was skipped for the wrong reason.
+          if [[ "$CHANGES_STATUS" != "success" \
+            || "$BUILD_STATUS" =~ ^(failure|cancelled)$ \
             || "$DISCOVER_STATUS" =~ ^(failure|cancelled)$ \
             || "$TEST_STATUS" =~ ^(failure|cancelled)$ ]]; then
             echo "❌ **Overall Status:** FAILED" >> "$GITHUB_STEP_SUMMARY"

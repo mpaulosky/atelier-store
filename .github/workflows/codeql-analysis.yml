@@ -21,9 +21,14 @@ name: "CodeQL"
       - "**.csproj"
       - ".github/workflows/**"
 
+  # Not a required check, and main's push and weekly runs still cover the
+  # code, so a docs-only PR (such as a release blog PR) skips the analysis.
   pull_request:
     branches:
       - "**"
+    paths-ignore:
+      - "docs/**"
+      - "**/*.md"
 
   workflow_dispatch:
     inputs:
