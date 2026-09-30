@@ -173,8 +173,9 @@ for branch in fix/2-fix-a-thing hotfix/3-urgent chore/tidy-up chore/upgrade-net1
   expect "pushing a $branch branch runs the gates" allowed tests-ran
 done
 
-# A chore/ slug starts with a letter, so it can't pass for an issue-linked name.
-for branch in squad/4-old-style sprint/5-old-style feature/no-issue fix/no-issue hotfix/no-issue chore/7-Upper chore/7-cleanup; do
+# Slugs are lowercase, and a chore/ slug starts with a letter, so it can't pass
+# for an issue-linked name.
+for branch in squad/4-old-style sprint/5-old-style feature/no-issue fix/no-issue hotfix/no-issue feature/9-Upper chore/tidy-Up chore/7-cleanup; do
   run_hook feature/1-x "HEAD $SHA refs/heads/$branch $ZERO"
   expect "pushing to $branch is refused" refused tests-skipped "Branch name '$branch' does not match"
 done
