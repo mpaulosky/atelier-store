@@ -879,6 +879,14 @@
 					<ul class="post-grid">
 					  <li class="post-card">
 					    <article>
+					      <p class="post-meta"><time datetime="2026-09-30">30 Sep 2026</time><span class="post-tag">v0.0.35</span></p>
+					      <h3 class="post-title"><a href="https://github.com/mpaulosky/atelier-store/blob/main/docs/blogs/2026-09-30-pr-87-ci-hooks-lint-the-staged-markdown-not-the-working-copy.md">ci(hooks): Lint the staged Markdown, not the working copy</a></h3>
+					      <p class="post-excerpt">Part 1 of #86, porting mpaulosky/IssueTracker#170. .github/hooks/pre-commit ran markdownlint on the working-tree paths, so with a partly staged Markdown file the working copy could pass while the…</p>
+					      <p class="post-source"><a href="https://github.com/mpaulosky/atelier-store/pull/87">PR #87</a></p>
+					    </article>
+					  </li>
+					  <li class="post-card">
+					    <article>
 					      <p class="post-meta"><time datetime="2026-09-29">29 Sep 2026</time><span class="post-tag">v0.0.34</span></p>
 					      <h3 class="post-title"><a href="https://github.com/mpaulosky/atelier-store/blob/main/docs/blogs/2026-09-29-pr-84-fix-release-treat-raw-html-blocks-as-opaque-and-pin-the-section-level.md">fix(release): Treat raw HTML blocks as opaque, and pin the section level</a></h3>
 					      <p class="post-excerpt">I re-checked the review findings on #64/#71/#77 that were never adopted, this time against GitHub&#x27;s own renderer (gh api markdown, GFM mode), since these posts are read on GitHub.</p>
@@ -949,14 +957,6 @@
 					      <p class="post-source"><a href="https://github.com/mpaulosky/atelier-store/pull/62">PR #62</a></p>
 					    </article>
 					  </li>
-					  <li class="post-card">
-					    <article>
-					      <p class="post-meta"><time datetime="2026-09-28">28 Sep 2026</time><span class="post-tag">v0.0.25</span></p>
-					      <h3 class="post-title"><a href="https://github.com/mpaulosky/atelier-store/blob/main/docs/blogs/2026-09-28-pr-60-ci-let-readme-sync-prs-run-their-required-checks.md">ci: Let README sync PRs run their required checks</a></h3>
-					      <p class="post-excerpt">README sync PRs could never merge. sync-readme.yml committed with the skip-CI marker in the message, and GitHub skips every workflow when the head commit carries it. So main&#x27;s required checks never…</p>
-					      <p class="post-source"><a href="https://github.com/mpaulosky/atelier-store/pull/60">PR #60</a></p>
-					    </article>
-					  </li>
 					</ul>
 					<!-- BLOGS_HTML_END -->
 				</div>
@@ -983,6 +983,12 @@
 					      </tr>
 					    </thead>
 					    <tbody>
+					      <tr>
+					        <td><a href="https://github.com/mpaulosky/atelier-store/releases/tag/v0.0.35">v0.0.35</a></td>
+					        <td>2026-09-30</td>
+					        <td>ci(hooks): Lint the staged Markdown, not the working copy</td>
+					        <td><a href="https://github.com/mpaulosky/atelier-store/blob/main/docs/blogs/2026-09-30-pr-87-ci-hooks-lint-the-staged-markdown-not-the-working-copy.md">Post</a></td>
+					      </tr>
 					      <tr>
 					        <td><a href="https://github.com/mpaulosky/atelier-store/releases/tag/v0.0.34">v0.0.34</a></td>
 					        <td>2026-09-29</td>
@@ -1036,12 +1042,6 @@
 					        <td>2026-09-28</td>
 					        <td>fix(web): Serve app.css on a clean build</td>
 					        <td><a href="https://github.com/mpaulosky/atelier-store/blob/main/docs/blogs/2026-09-28-pr-62-fix-web-serve-app-css-on-a-clean-build.md">Post</a></td>
-					      </tr>
-					      <tr>
-					        <td><a href="https://github.com/mpaulosky/atelier-store/releases/tag/v0.0.25">v0.0.25</a></td>
-					        <td>2026-09-28</td>
-					        <td>ci: Let README sync PRs run their required checks</td>
-					        <td><a href="https://github.com/mpaulosky/atelier-store/blob/main/docs/blogs/2026-09-28-pr-60-ci-let-readme-sync-prs-run-their-required-checks.md">Post</a></td>
 					      </tr>
 					    </tbody>
 					  </table>
