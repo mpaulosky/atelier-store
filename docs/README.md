@@ -80,6 +80,7 @@ The app fails at startup if `Auth0:Domain`, `Auth0:ClientId`, or `ConnectionStri
 
 | Version | Date | Title | Blog post |
 | ------- | ---- | ----- | --------- |
+| [v0.0.38](https://github.com/mpaulosky/atelier-store/releases/tag/v0.0.38) | 2026-09-30 | fix(release): Decide a draft Release's body in a tested helper | [Post](https://github.com/mpaulosky/atelier-store/blob/main/docs/blogs/2026-09-30-pr-94-fix-release-decide-a-draft-release-s-body-in-a-tested-helper.md) |
 | [v0.0.37](https://github.com/mpaulosky/atelier-store/releases/tag/v0.0.37) | 2026-09-30 | ci(hooks): Adopt the shared branch-name standard | [Post](https://github.com/mpaulosky/atelier-store/blob/main/docs/blogs/2026-09-30-pr-92-ci-hooks-adopt-the-shared-branch-name-standard.md) |
 | [v0.0.36](https://github.com/mpaulosky/atelier-store/releases/tag/v0.0.36) | 2026-09-30 | ci(release): Release merged PRs one at a time, in merge order | [Post](https://github.com/mpaulosky/atelier-store/blob/main/docs/blogs/2026-09-30-pr-90-ci-release-release-merged-prs-one-at-a-time-in-merge-order.md) |
 | [v0.0.35](https://github.com/mpaulosky/atelier-store/releases/tag/v0.0.35) | 2026-09-30 | ci(hooks): Lint the staged Markdown, not the working copy | [Post](https://github.com/mpaulosky/atelier-store/blob/main/docs/blogs/2026-09-30-pr-87-ci-hooks-lint-the-staged-markdown-not-the-working-copy.md) |
@@ -89,7 +90,6 @@ The app fails at startup if `Auth0:Domain`, `Auth0:ClientId`, or `ConnectionStri
 | [v0.0.31](https://github.com/mpaulosky/atelier-store/releases/tag/v0.0.31) | 2026-09-29 | build: write a single-document pnpm lockfile | [Post](https://github.com/mpaulosky/atelier-store/blob/main/docs/blogs/2026-09-29-pr-76-build-write-a-single-document-pnpm-lockfile.md) |
 | [v0.0.30](https://github.com/mpaulosky/atelier-store/releases/tag/v0.0.30) | 2026-09-29 | fix(release): Nest headings inside quotes and lists, skip HTML comments | [Post](https://github.com/mpaulosky/atelier-store/blob/main/docs/blogs/2026-09-29-pr-71-fix-release-nest-headings-inside-quotes-and-lists-skip-html-comments.md) |
 | [v0.0.29](https://github.com/mpaulosky/atelier-store/releases/tag/v0.0.29) | 2026-09-29 | docs: Pin README badges to main and add the build-ui skill | [Post](https://github.com/mpaulosky/atelier-store/blob/main/docs/blogs/2026-09-29-pr-70-docs-pin-readme-badges-to-main-and-add-the-build-ui-skill.md) |
-| [v0.0.28](https://github.com/mpaulosky/atelier-store/releases/tag/v0.0.28) | 2026-09-29 | fix(release): Start release posts with an H1 title | [Post](https://github.com/mpaulosky/atelier-store/blob/main/docs/blogs/2026-09-29-pr-64-fix-release-start-release-posts-with-an-h1-title.md) |
 
 <!-- RELEASES_END -->
 
