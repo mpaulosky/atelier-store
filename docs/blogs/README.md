@@ -4,6 +4,7 @@ This directory contains concise release-review posts for merged PR releases.
 
 | Date | Title | Tags |
 | ---- | ----- | ---- |
+| 2026-09-30 | [fix(release): Decide a draft Release's body in a tested helper](2026-09-30-pr-94-fix-release-decide-a-draft-release-s-body-in-a-tested-helper.md) | release,automation |
 | 2026-09-30 | [ci(hooks): Adopt the shared branch-name standard](2026-09-30-pr-92-ci-hooks-adopt-the-shared-branch-name-standard.md) | release,automation |
 | 2026-09-30 | [ci(release): Release merged PRs one at a time, in merge order](2026-09-30-pr-90-ci-release-release-merged-prs-one-at-a-time-in-merge-order.md) | release,automation |
 | 2026-09-30 | [ci(hooks): Lint the staged Markdown, not the working copy](2026-09-30-pr-87-ci-hooks-lint-the-staged-markdown-not-the-working-copy.md) | release,automation |
