@@ -80,6 +80,7 @@ The app fails at startup if `Auth0:Domain`, `Auth0:ClientId`, or `ConnectionStri
 
 | Version | Date | Title | Blog post |
 | ------- | ---- | ----- | --------- |
+| [v0.0.36](https://github.com/mpaulosky/atelier-store/releases/tag/v0.0.36) | 2026-09-30 | ci(release): Release merged PRs one at a time, in merge order | [Post](https://github.com/mpaulosky/atelier-store/blob/main/docs/blogs/2026-09-30-pr-90-ci-release-release-merged-prs-one-at-a-time-in-merge-order.md) |
 | [v0.0.35](https://github.com/mpaulosky/atelier-store/releases/tag/v0.0.35) | 2026-09-30 | ci(hooks): Lint the staged Markdown, not the working copy | [Post](https://github.com/mpaulosky/atelier-store/blob/main/docs/blogs/2026-09-30-pr-87-ci-hooks-lint-the-staged-markdown-not-the-working-copy.md) |
 | [v0.0.34](https://github.com/mpaulosky/atelier-store/releases/tag/v0.0.34) | 2026-09-29 | fix(release): Treat raw HTML blocks as opaque, and pin the section level | [Post](https://github.com/mpaulosky/atelier-store/blob/main/docs/blogs/2026-09-29-pr-84-fix-release-treat-raw-html-blocks-as-opaque-and-pin-the-section-level.md) |
 | [v0.0.33](https://github.com/mpaulosky/atelier-store/releases/tag/v0.0.33) | 2026-09-29 | test(release): Track only column-zero fences in heading_levels() | [Post](https://github.com/mpaulosky/atelier-store/blob/main/docs/blogs/2026-09-29-pr-81-test-release-track-only-column-zero-fences-in-heading-levels.md) |
@@ -89,7 +90,6 @@ The app fails at startup if `Auth0:Domain`, `Auth0:ClientId`, or `ConnectionStri
 | [v0.0.29](https://github.com/mpaulosky/atelier-store/releases/tag/v0.0.29) | 2026-09-29 | docs: Pin README badges to main and add the build-ui skill | [Post](https://github.com/mpaulosky/atelier-store/blob/main/docs/blogs/2026-09-29-pr-70-docs-pin-readme-badges-to-main-and-add-the-build-ui-skill.md) |
 | [v0.0.28](https://github.com/mpaulosky/atelier-store/releases/tag/v0.0.28) | 2026-09-29 | fix(release): Start release posts with an H1 title | [Post](https://github.com/mpaulosky/atelier-store/blob/main/docs/blogs/2026-09-29-pr-64-fix-release-start-release-posts-with-an-h1-title.md) |
 | [v0.0.27](https://github.com/mpaulosky/atelier-store/releases/tag/v0.0.27) | 2026-09-29 | feat(web): Add the New in page | [Post](https://github.com/mpaulosky/atelier-store/blob/main/docs/blogs/2026-09-29-pr-66-feat-web-add-the-new-in-page.md) |
-| [v0.0.26](https://github.com/mpaulosky/atelier-store/releases/tag/v0.0.26) | 2026-09-28 | fix(web): Serve app.css on a clean build | [Post](https://github.com/mpaulosky/atelier-store/blob/main/docs/blogs/2026-09-28-pr-62-fix-web-serve-app-css-on-a-clean-build.md) |
 
 <!-- RELEASES_END -->
 
