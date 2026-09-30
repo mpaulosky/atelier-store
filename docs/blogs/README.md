@@ -4,6 +4,7 @@ This directory contains concise release-review posts for merged PR releases.
 
 | Date | Title | Tags |
 | ---- | ----- | ---- |
+| 2026-09-30 | [fix(ci): Escape logged paths; wait for a new Release to be listed](2026-09-30-pr-101-fix-ci-escape-logged-paths-wait-for-a-new-release-to-be-listed.md) | release,automation |
 | 2026-09-30 | [ci: Drop the build cache no job restores](2026-09-30-pr-99-ci-drop-the-build-cache-no-job-restores.md) | release,automation |
 | 2026-09-30 | [ci: Skip the build and tests for docs-only pull requests](2026-09-30-pr-95-ci-skip-the-build-and-tests-for-docs-only-pull-requests.md) | release,automation |
 | 2026-09-30 | [fix(release): Decide a draft Release's body in a tested helper](2026-09-30-pr-94-fix-release-decide-a-draft-release-s-body-in-a-tested-helper.md) | release,automation |
