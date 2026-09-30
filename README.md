@@ -80,6 +80,7 @@ The app fails at startup if `Auth0:Domain`, `Auth0:ClientId`, or `ConnectionStri
 
 | Version | Date | Title | Blog post |
 | ------- | ---- | ----- | --------- |
+| [v0.0.41](https://github.com/mpaulosky/atelier-store/releases/tag/v0.0.41) | 2026-09-30 | fix(ci): Escape logged paths; wait for a new Release to be listed | [Post](https://github.com/mpaulosky/atelier-store/blob/main/docs/blogs/2026-09-30-pr-101-fix-ci-escape-logged-paths-wait-for-a-new-release-to-be-listed.md) |
 | [v0.0.40](https://github.com/mpaulosky/atelier-store/releases/tag/v0.0.40) | 2026-09-30 | ci: Drop the build cache no job restores | [Post](https://github.com/mpaulosky/atelier-store/blob/main/docs/blogs/2026-09-30-pr-99-ci-drop-the-build-cache-no-job-restores.md) |
 | [v0.0.39](https://github.com/mpaulosky/atelier-store/releases/tag/v0.0.39) | 2026-09-30 | ci: Skip the build and tests for docs-only pull requests | [Post](https://github.com/mpaulosky/atelier-store/blob/main/docs/blogs/2026-09-30-pr-95-ci-skip-the-build-and-tests-for-docs-only-pull-requests.md) |
 | [v0.0.38](https://github.com/mpaulosky/atelier-store/releases/tag/v0.0.38) | 2026-09-30 | fix(release): Decide a draft Release's body in a tested helper | [Post](https://github.com/mpaulosky/atelier-store/blob/main/docs/blogs/2026-09-30-pr-94-fix-release-decide-a-draft-release-s-body-in-a-tested-helper.md) |
@@ -89,7 +90,6 @@ The app fails at startup if `Auth0:Domain`, `Auth0:ClientId`, or `ConnectionStri
 | [v0.0.34](https://github.com/mpaulosky/atelier-store/releases/tag/v0.0.34) | 2026-09-29 | fix(release): Treat raw HTML blocks as opaque, and pin the section level | [Post](https://github.com/mpaulosky/atelier-store/blob/main/docs/blogs/2026-09-29-pr-84-fix-release-treat-raw-html-blocks-as-opaque-and-pin-the-section-level.md) |
 | [v0.0.33](https://github.com/mpaulosky/atelier-store/releases/tag/v0.0.33) | 2026-09-29 | test(release): Track only column-zero fences in heading_levels() | [Post](https://github.com/mpaulosky/atelier-store/blob/main/docs/blogs/2026-09-29-pr-81-test-release-track-only-column-zero-fences-in-heading-levels.md) |
 | [v0.0.32](https://github.com/mpaulosky/atelier-store/releases/tag/v0.0.32) | 2026-09-29 | fix(release): Scan Markdown blocks in one pass with a container stack | [Post](https://github.com/mpaulosky/atelier-store/blob/main/docs/blogs/2026-09-29-pr-77-fix-release-scan-markdown-blocks-in-one-pass-with-a-container-stack.md) |
-| [v0.0.31](https://github.com/mpaulosky/atelier-store/releases/tag/v0.0.31) | 2026-09-29 | build: write a single-document pnpm lockfile | [Post](https://github.com/mpaulosky/atelier-store/blob/main/docs/blogs/2026-09-29-pr-76-build-write-a-single-document-pnpm-lockfile.md) |
 
 <!-- RELEASES_END -->
 
