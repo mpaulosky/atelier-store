@@ -86,27 +86,9 @@ jobs:
             exit 0
           fi
 
-          # HEAD is the PR merged into its base. Diffing against the base the
-          # event names can also pick up commits that reached main since,
-          # which only ever adds paths, so it errs toward running the suite.
-          # --no-renames lists a renamed file under both paths, so moving code
-          # into docs/ or to a .md name still counts as a code change.
-          mapfile -t files < <(git diff --name-only --no-renames "$BASE_SHA" HEAD)
-          code=false
-          for file in "${files[@]}"; do
-            case "$file" in
-              docs/*|*.md) ;;
-              *) code=true; echo "Code change: $file"; break ;;
-            esac
-          done
-          if [ "${#files[@]}" -eq 0 ]; then
-            code=true
-          fi
-
-          echo "code=$code" >> "$GITHUB_OUTPUT"
-          if [ "$code" = "false" ]; then
-            echo "::notice::Docs-only change (${#files[@]} files); the build, tests and coverage are skipped."
-          fi
+          # detect_changes.py (tested in .github/scripts/tests) lists the
+          # changed files against the base and appends code=true|false.
+          python3 .github/scripts/detect_changes.py --base "$BASE_SHA" --output "$GITHUB_OUTPUT"
 
   build:
     name: Build Solution
