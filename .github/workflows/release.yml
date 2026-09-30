@@ -388,8 +388,12 @@ jobs:
           # Optional: without it (or when the API fails) a post is written
           # without the AI Summary section and the release carries on.
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          QUEUE: ${{ needs.plan.outputs.prs }}
         run: |
-          python3 .github/scripts/backfill_blog_posts.py
+          # The release list can lag a Release published seconds ago, so name
+          # the PRs this run released: the script lists again until each has
+          # one, for up to half a minute.
+          python3 .github/scripts/backfill_blog_posts.py --wait-for-prs "$(jq -r 'join(",")' <<< "${QUEUE:-[]}")"
 
           # git status (not git diff) so brand-new, still-untracked files count.
           if [ -z "$(git status --porcelain -- docs/blogs README.md docs/README.md docs/index.html)" ]; then
