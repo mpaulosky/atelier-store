@@ -36,14 +36,22 @@ def changed_paths(base, head="HEAD", cwd=None):
         cwd=cwd,
         check=True,
         capture_output=True,
-        text=True,
     )
-    return [path for path in result.stdout.split("\0") if path]
+    # Decoded by hand: text=True would translate a "\r" in a file name to "\n".
+    output = result.stdout.decode("utf-8", errors="surrogateescape")
+    return [path for path in output.split("\0") if path]
 
 
 def first_code_path(paths):
     """The first path that isn't docs, or None when every path is."""
     return next((path for path in paths if not is_doc(path)), None)
+
+
+def for_log(path):
+    """The path with its line breaks escaped. Git allows them in file names, and a
+    raw one would let the rest of the name start a workflow command on the next
+    log line (such as "::error::")."""
+    return path.replace("\r", "\\r").replace("\n", "\\n")
 
 
 def is_code_change(paths):
@@ -61,7 +69,7 @@ def main(argv=None):
     paths = changed_paths(args.base, args.head)
     code = is_code_change(paths)
     if code and paths:
-        print(f"Code change: {first_code_path(paths)}")
+        print(f"Code change: {for_log(first_code_path(paths))}")
     elif not paths:
         print("No changed files; running the build and tests.")
     else:

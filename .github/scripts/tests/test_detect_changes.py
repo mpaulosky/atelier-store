@@ -158,6 +158,20 @@ def test_main_names_the_first_code_path(repo, tmp_path_factory, monkeypatch, cap
     assert "Code change: src/App.cs" in capsys.readouterr().out
 
 
+def test_a_code_path_with_line_breaks_cant_start_a_workflow_command(repo, tmp_path_factory, monkeypatch, capsys):
+    path, base = repo
+    (path / "src" / "x\n::error::forged\r::warning::also").write_text("x\n")
+    commit(path)
+    output = tmp_path_factory.mktemp("out") / "github_output"
+    monkeypatch.chdir(path)
+
+    dc.main(["--base", base, "--output", str(output)])
+
+    lines = capsys.readouterr().out.splitlines()
+    assert lines == ["Code change: src/x\\n::error::forged\\r::warning::also"]
+    assert output.read_text() == "code=true\n"
+
+
 def test_an_unknown_base_fails(repo, tmp_path_factory, monkeypatch):
     path, _ = repo
     monkeypatch.chdir(path)
