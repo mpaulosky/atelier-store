@@ -221,3 +221,5 @@ After a merge, the release workflow tags a new version and opens a pull request 
 You don't need to do anything for that.
 
 Thanks for contributing!
+
+<!-- docs-only CI probe; this PR is closed without merging -->
