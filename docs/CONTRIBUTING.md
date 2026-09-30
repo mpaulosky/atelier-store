@@ -101,11 +101,12 @@ The pre-push hook only accepts these branch names:
 
 | Pattern | Use it for | Example |
 | --- | --- | --- |
-| `feature/{issue}-{slug}` | New features and most fixes | `feature/16-slug-lowercase` |
+| `feature/{issue}-{slug}` | New features | `feature/16-slug-lowercase` |
+| `fix/{issue}-{slug}` | Bug fixes | `fix/51-cart-total` |
 | `hotfix/{issue}-{slug}` | Urgent fixes | `hotfix/42-login-loop` |
 | `chore/{slug}` | Work without an issue: tooling, CI, docs | `chore/pause-code-metrics` |
 
-Slugs are lowercase words separated by hyphens.
+Slugs are lowercase letters and digits in words separated by hyphens. A `chore/` slug starts with a letter.
 
 ### Commit messages
 

@@ -51,7 +51,7 @@ the generated posts in `docs/blogs/`.
 **Workflows and hooks.** Steps that publish anything (open a PR, push, tag, release) run only for `main`: a
 `github.ref == 'refs/heads/main'` check, or a merged-into-`main` condition as in `release.yml`. `workflow_dispatch`
 runs on any branch, and pull request runs check out a detached merge commit. Branch names in hooks and docs follow
-`feature/{issue}-{slug}`, `hotfix/{issue}-{slug}` or `chore/{slug}`. The job named `Build Solution` in `ci.yml` is a
+`feature/{issue}-{slug}`, `fix/{issue}-{slug}`, `hotfix/{issue}-{slug}` or `chore/{slug}`. The job named `Build Solution` in `ci.yml` is a
 required status check on `main`, so it must run on every pull request.
 
 ## Out of scope
