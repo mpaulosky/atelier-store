@@ -156,18 +156,6 @@ jobs:
           dotnet build "$SOLUTION_FILE" --configuration Release
           --no-restore -warnaserror
 
-      - name: Cache build artifacts
-        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6
-        with:
-          path: |
-            **/bin/Release/
-            **/obj/
-          key: >-
-            ${{ runner.os }}-build-${{ hashFiles('**/*.csproj',
-            '**/Directory.Packages.props', 'global.json') }}
-          restore-keys: |
-            ${{ runner.os }}-build-
-
   # Unit tests for .github/scripts (the release blog generator).
   # Deliberately not a required status check on main's ruleset.
   python-tests:
@@ -280,6 +268,12 @@ jobs:
             echo "::notice::Discovered ${project_count} test projects under tests/"
           fi
 
+  # Each matrix job restores and builds its own test project. Measured on
+  # mpaulosky/IssueTracker#144: sharing the build job's output (with
+  # --no-build) saved nothing, because packing and downloading it costs as
+  # much as the build, and one job running every project used 60% fewer
+  # runner-minutes but took about 1.5 minutes longer. So the matrix stays,
+  # with no build cache.
   test:
     if: ${{ needs.discover-tests.outputs.has_tests == 'true' }}
     name: "Tests: ${{ matrix.test_name }}"
