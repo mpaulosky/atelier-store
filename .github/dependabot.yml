@@ -1,7 +1,6 @@
-# To get started with Dependabot version updates, you'll need to specify which
-# package ecosystems to update and where the package manifests are located.
-# Please see the documentation for all configuration options:
-# https://docs.github.com/github/administering-a-repository/configuration-options-for-dependency-updates
+# Dependabot version updates. Every label used below must exist in the repo:
+# Dependabot doesn't create them, and silently leaves them off the PR.
+# https://docs.github.com/code-security/dependabot/working-with-dependabot/dependabot-options-reference
 ---
 
 version: 2
@@ -45,6 +44,12 @@ updates:
       - "nuget"
       - "dependencies"
     groups:
+      # Testcontainers modules only work with the matching core version,
+      # so they always move together. A dependency joins the first group
+      # that matches it, so this group stays ahead of all-nuget.
+      testcontainers:
+        patterns:
+          - "Testcontainers*"
       all-nuget:
         patterns:
           - "*"
