@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Tests for .github/hooks/pre-push.
 # Each case runs the hook in a throwaway repo, holding a copy of
-# scripts/gate.sh, with the refs git would pass on stdin. Stub `dotnet`, `pnpm`,
+# scripts/gate.sh, with the refs git would pass on stdin. Stub `dotnet`, `npx`,
 # `markdownlint-cli2`, `yamllint`, `actionlint`, `zizmor` and `shellcheck`
 # binaries log each call, and fail when the call matches the FAIL glob, so no
 # real build or network access is needed.
@@ -21,7 +21,7 @@ STUBS="$WORK/bin"
 LOG="$WORK/gates.log"
 
 mkdir -p "$STUBS"
-for tool in dotnet pnpm markdownlint-cli2 yamllint actionlint zizmor shellcheck; do
+for tool in dotnet npx markdownlint-cli2 yamllint actionlint zizmor shellcheck; do
   cat > "$STUBS/$tool" <<EOF
 #!/usr/bin/env bash
 call="$tool \$*"

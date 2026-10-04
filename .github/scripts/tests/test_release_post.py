@@ -70,6 +70,8 @@ def make_repo(tmp_path):
     (tmp_path / "docs" / "blogs").mkdir(parents=True)
     readme = "# Demo\n\n## About\n\nText.\n\n## Releases\n\n<!-- RELEASES_START -->\nold\n<!-- RELEASES_END -->\n\n## License\n"
     (tmp_path / "README.md").write_text(readme, encoding="utf-8")
+    # A repo that publishes its README as the Pages landing page.
+    (tmp_path / "docs" / "README.md").write_text(readme, encoding="utf-8")
     (tmp_path / "docs" / "index.html").write_text(
         "<html>\n  <body>\n"
         "    <!-- RELEASES_HTML_START -->\n    old\n    <!-- RELEASES_HTML_END -->\n"
@@ -505,6 +507,15 @@ def test_replace_between_without_markers_returns_none():
     assert rp.replace_between("no markers", "X", ["y"]) is None
 
 
+def test_run_leaves_a_missing_docs_readme_missing(tmp_path):
+    make_repo(tmp_path)
+    (tmp_path / "docs" / "README.md").unlink()
+    run(tmp_path)
+
+    assert "v0.0.3" in (tmp_path / "README.md").read_text(encoding="utf-8")
+    assert not (tmp_path / "docs" / "README.md").exists()
+
+
 def test_run_writes_readme_and_index_tables(tmp_path):
     make_repo(tmp_path)
     run(tmp_path)
@@ -708,6 +719,8 @@ def test_real_pages_site_is_unchanged_by_a_second_table_update(tmp_path):
     # The committed docs/index.html must already be what update_tables writes,
     # so a release run only changes it when releases or posts change.
     source = Path(__file__).resolve().parents[3] / "docs" / "index.html"
+    if not source.exists():
+        pytest.skip("this repo has no docs/index.html Pages site")
     (tmp_path / "docs" / "blogs").mkdir(parents=True)
     (tmp_path / "docs" / "index.html").write_text(source.read_text(encoding="utf-8"), encoding="utf-8")
     rp.update_tables(REPO, FakeGitHub(), tmp_path)
@@ -738,12 +751,13 @@ def test_no_key_writes_post_without_summary(tmp_path, capsys):
         "author1: mpaulosky",
         'post_slug: "v0.0.3-pr-42"',
         "microsoft_alias: n/a",
-        'featured_image: ""',
         "  - release:v0.0.3",
         'summary: "Release notes seed for v0.0.3 from PR #42."',
         'post_date: "2026-09-24"',
     ]:
         assert line in post
+    # Nothing renders a featured image, so the post doesn't carry one.
+    assert "featured_image" not in post
     assert post.index("## PR description") < post.index("## Commits") < post.index("## Files changed")
     assert "Adds a theme." in post
 

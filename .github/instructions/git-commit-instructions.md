@@ -28,7 +28,7 @@ All commit messages **must** follow this structure:
 
 ### Scope
 
-The scope should be the name of the affected project, folder, or feature (e.g., `Web`, `Catalog`, `Data`, `ci`,
+The scope should be the name of the affected project, folder, or feature (e.g., `Web`, `Data`, `Tests`, `ci`,
 `docs`).
 
 ### Short Summary
@@ -47,18 +47,18 @@ The scope should be the name of the affected project, folder, or feature (e.g., 
 ## Examples
 
 ```text
-feat(Web): Add user authentication with Auth0
+feat(Web): Let users sort the list by date
 
-Implements login and logout functionality using Auth0.
-Updates navigation bar to show user info when authenticated.
+Adds a Sort by date option above the list. The choice is kept in the
+query string, so a shared link keeps the order.
 Fixes #42
 ```
 
 ```text
-fix(Catalog): Treat products without a stock row as sold out
+fix(Data): Return an empty list when a record has no children
 
-Maps a missing product_stock row to zero instead of failing to
-materialize a NULL quantity.
+The query returned null for records without children, which the
+details page then dereferenced.
 ```
 
 ```text

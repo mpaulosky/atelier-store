@@ -521,7 +521,6 @@ def render_post(pr, title_line, tag, merged_date, commits, files, summary, model
             "author1: mpaulosky",
             f'post_slug: "{tag.lower()}-pr-{number}"',
             "microsoft_alias: n/a",
-            'featured_image: ""',
             "categories:",
             "  - engineering",
             "tags:",
@@ -967,7 +966,11 @@ def update_tables(repository, gh, root=Path("."), current=None):
     readme = readme_path.read_text(encoding="utf-8") if readme_path.exists() else ""
     readme = update_readme(readme, render_releases_markdown(entries), repository)
     readme_path.write_text(readme, encoding="utf-8")
-    (root / "docs" / "README.md").write_text(readme, encoding="utf-8")
+    # Only a repo that publishes its README as the Pages landing page keeps
+    # this copy; don't create one in a repo whose docs site has its own.
+    docs_readme = root / "docs" / "README.md"
+    if docs_readme.exists():
+        docs_readme.write_text(readme, encoding="utf-8")
 
     update_index_html(root / "docs" / "index.html", entries, read_blog_posts(blog_dir), repository)
 
