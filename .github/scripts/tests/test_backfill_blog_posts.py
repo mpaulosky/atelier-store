@@ -60,6 +60,7 @@ def make_repo(tmp_path):
     (tmp_path / "README.md").write_text(
         "# Demo\n\n## Releases\n\n<!-- RELEASES_START -->\nold\n<!-- RELEASES_END -->\n", encoding="utf-8"
     )
+    (tmp_path / "docs" / "README.md").write_text("# Demo\n", encoding="utf-8")
     (tmp_path / "docs" / "index.html").write_text(
         "<!-- RELEASES_HTML_START -->\n<!-- RELEASES_HTML_END -->\n"
         "<!-- BLOGS_HTML_START -->\n<!-- BLOGS_HTML_END -->\n",

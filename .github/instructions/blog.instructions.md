@@ -10,7 +10,7 @@ Follow `markdown.instructions.md`. In addition, start every post with YAML front
 - `post_title`: the post's title.
 - `author1`: the primary author.
 - `post_slug`: the URL slug.
-- `featured_image`: the URL of the featured image.
+- `microsoft_alias`: the author's Microsoft alias, or `n/a` when there is none.
 - `categories`: the post's categories.
 - `tags`: the post's tags.
 - `ai_note`: whether AI was used to write the post.
