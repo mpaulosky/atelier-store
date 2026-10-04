@@ -67,3 +67,5 @@ Exact NuGet versions are in `Directory.Packages.props`, the .NET SDK is pinned i
 - [Blazor Server and EF Core](https://learn.microsoft.com/aspnet/core/blazor/blazor-ef-core) – Why the app uses `IDbContextFactory` for a short-lived context per query
 - [Conventional Commits](https://www.conventionalcommits.org/) – The basis for this repo's commit message format
 - [Contributor Covenant](https://www.contributor-covenant.org/) – The code of conduct
+
+<!-- docs-only CI probe; not for merging -->
