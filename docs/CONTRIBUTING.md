@@ -2,7 +2,8 @@
 
 Thanks for helping out.
 Atelier Store is a .NET 10 Blazor Web App (Interactive Server) with Tailwind CSS v4, Auth0 login, and PostgreSQL through EF Core.
-This guide covers how to set up, what the repo checks for, and how a change gets merged.
+This guide covers how to set up and what the repo checks for.
+How a change gets from a branch to `main` (branches, worktrees, commits, PRs, review, merging and releases) is in [PROCESS.md](PROCESS.md).
 
 ## Table of contents
 
@@ -11,8 +12,7 @@ This guide covers how to set up, what the repo checks for, and how a change gets
 - [Set up your environment](#set-up-your-environment)
 - [Project layout](#project-layout)
 - [Make a change](#make-a-change)
-  - [Branches](#branches)
-  - [Commit messages](#commit-messages)
+  - [Branches and commits](#branches-and-commits)
   - [Code style](#code-style)
   - [Database changes](#database-changes)
 - [Tests](#tests)
@@ -94,37 +94,12 @@ CONTEXT.md                             Domain language
 
 ## Make a change
 
-### Branches
+### Branches and commits
 
-Branch from `main`, and open your pull request against `main`.
-The pre-push hook only accepts these branch names:
-
-| Pattern | Use it for | Example |
-| --- | --- | --- |
-| `feature/{issue}-{slug}` | New features | `feature/16-slug-lowercase` |
-| `fix/{issue}-{slug}` | Bug fixes | `fix/51-cart-total` |
-| `hotfix/{issue}-{slug}` | Urgent fixes | `hotfix/42-login-loop` |
-| `chore/{slug}` | Work without an issue: tooling, CI, docs | `chore/pause-code-metrics` |
-
-Slugs are lowercase letters and digits in words separated by hyphens. A `chore/` slug starts with a letter.
-
-### Commit messages
-
-Use the `<type>(<scope>): <Summary>` format from [git-commit-instructions.md](../.github/instructions/git-commit-instructions.md).
-For example:
-
-```text
-fix(Web): Require lowercase product and category slugs
-
-Explain what changed and why in the body.
-
-Fixes #16
-```
-
-- **Type:** `feat`, `fix`, `docs`, `style`, `refactor`, `perf`, `test`, `build`, `ci`, `chore`, or `revert`.
-- **Scope:** the affected project or area, such as `Web`, `Catalog`, `Data`, or `ci`.
-- **Summary:** imperative mood, capitalized, 72 characters or fewer, and no closing period.
-- **Issues:** reference them in the body with `Fixes #123` or `Refs #123`.
+Work on a branch named to the standard (such as `fix/51-cart-total`), in its own worktree under `../atelier-store-worktrees/`.
+Commits and PR titles use the `<type>(<scope>): <Summary>` format from [git-commit-instructions.md](../.github/instructions/git-commit-instructions.md).
+[PROCESS.md](PROCESS.md#branches-and-worktrees) has the branch names, the worktree commands and the commit rules.
+Scopes here are the affected project or area, such as `Web`, `Catalog`, `Data`, or `ci`.
 
 ### Code style
 
@@ -206,18 +181,9 @@ If a check fails, fix the cause.
 
 ## Pull requests
 
-1. Push your branch and open a pull request against `main`.
-   Link the issue in the description (for example, `Fixes #16`), and say what changed and how you tested it.
-1. CI runs the build, all four test projects, coverage, linting (Markdown, YAML, actionlint, zizmor, shellcheck), and CodeQL.
-   Every check must pass.
-1. Copilot reviews each push automatically.
-   Reply to every review comment: fix the ones that are right, and explain the ones that aren't.
-   Then resolve the thread.
-1. A pull request from a branch in this repository is squash-merged into `main` automatically.
-   That happens once all checks pass, Copilot has reviewed the latest commit, and every review thread is resolved.
-   A maintainer merges pull requests from forks.
-
-After a merge, the release workflow tags a new version and opens a pull request with a short release blog post.
-You don't need to do anything for that.
+Push your branch and open a pull request against `main` using the template.
+Every PR is reviewed by Copilot on each push, and merges once its required checks pass and every review thread is resolved:
+a same-repo PR merges on its own, and the maintainer merges a fork's.
+[PROCESS.md](PROCESS.md#checks-review-and-merging) covers the PR description, the required checks, review, merging and releases.
 
 Thanks for contributing!

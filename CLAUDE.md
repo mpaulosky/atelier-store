@@ -20,7 +20,6 @@ Featured collections are editorial content and are still hard-coded in `Catalog/
 cp .env.example .env                  # fill in Auth0 values
 docker compose up -d                  # local Postgres 17 on :5432
 dotnet tool restore                   # installs dotnet-ef (tool manifest: dotnet-tools.json)
-git config core.hooksPath .github/hooks  # enable the repo git hooks (one-time, per clone)
 dotnet build AtelierStore.slnx
 dotnet run --project src/AtelierStore.Web --launch-profile https   # https://localhost:7207
 dotnet test --project tests/AtelierStore.Web.Tests.Unit            # one test project (MTP runner)
@@ -49,6 +48,11 @@ Tests therefore never touch the real Auth0 tenant or the developer database, and
 CI (`.github/workflows/ci.yml`) discovers every csproj under `tests/` and runs each as its own matrix job.
 A **Coverage Analysis** job merges their Cobertura reports and fails if line coverage is below 80%.
 Locally, `scripts/gate.sh` (run by the pre-push hook) runs each test project in turn.
+
+## Process
+
+Branches, worktrees, commits, PR titles and descriptions, checks, merging and releases follow [docs/PROCESS.md](docs/PROCESS.md),
+including the one-time hook setup (`git config core.hooksPath .github/hooks`).
 
 ## Solution-wide conventions
 
