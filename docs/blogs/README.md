@@ -4,6 +4,7 @@ This directory contains concise release-review posts for merged PR releases.
 
 | Date | Title | Tags |
 | ---- | ----- | ---- |
+| 2026-10-05 | [chore: Re-apply the repo-ci-baseline Template](2026-10-05-pr-109-chore-re-apply-the-repo-ci-baseline-template.md) | release,automation |
 | 2026-10-05 | [chore: Re-apply the repo-ci-baseline Template](2026-10-05-pr-107-chore-re-apply-the-repo-ci-baseline-template.md) | release,automation |
 | 2026-10-04 | [chore: Standardize on the repo-ci-baseline Template](2026-10-04-pr-103-chore-standardize-on-the-repo-ci-baseline-template.md) | release,automation |
 | 2026-09-30 | [fix(ci): Escape logged paths; wait for a new Release to be listed](2026-09-30-pr-101-fix-ci-escape-logged-paths-wait-for-a-new-release-to-be-listed.md) | release,automation |
