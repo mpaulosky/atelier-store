@@ -80,6 +80,7 @@ The app fails at startup if `Auth0:Domain`, `Auth0:ClientId`, or `ConnectionStri
 
 | Version | Date | Title | Blog post |
 | ------- | ---- | ----- | --------- |
+| [v0.0.43](https://github.com/mpaulosky/atelier-store/releases/tag/v0.0.43) | 2026-10-05 | chore: Re-apply the repo-ci-baseline Template | [Post](https://github.com/mpaulosky/atelier-store/blob/main/docs/blogs/2026-10-05-pr-107-chore-re-apply-the-repo-ci-baseline-template.md) |
 | [v0.0.42](https://github.com/mpaulosky/atelier-store/releases/tag/v0.0.42) | 2026-10-04 | chore: Standardize on the repo-ci-baseline Template | [Post](https://github.com/mpaulosky/atelier-store/blob/main/docs/blogs/2026-10-04-pr-103-chore-standardize-on-the-repo-ci-baseline-template.md) |
 | [v0.0.41](https://github.com/mpaulosky/atelier-store/releases/tag/v0.0.41) | 2026-09-30 | fix(ci): Escape logged paths; wait for a new Release to be listed | [Post](https://github.com/mpaulosky/atelier-store/blob/main/docs/blogs/2026-09-30-pr-101-fix-ci-escape-logged-paths-wait-for-a-new-release-to-be-listed.md) |
 | [v0.0.40](https://github.com/mpaulosky/atelier-store/releases/tag/v0.0.40) | 2026-09-30 | ci: Drop the build cache no job restores | [Post](https://github.com/mpaulosky/atelier-store/blob/main/docs/blogs/2026-09-30-pr-99-ci-drop-the-build-cache-no-job-restores.md) |
@@ -89,7 +90,6 @@ The app fails at startup if `Auth0:Domain`, `Auth0:ClientId`, or `ConnectionStri
 | [v0.0.36](https://github.com/mpaulosky/atelier-store/releases/tag/v0.0.36) | 2026-09-30 | ci(release): Release merged PRs one at a time, in merge order | [Post](https://github.com/mpaulosky/atelier-store/blob/main/docs/blogs/2026-09-30-pr-90-ci-release-release-merged-prs-one-at-a-time-in-merge-order.md) |
 | [v0.0.35](https://github.com/mpaulosky/atelier-store/releases/tag/v0.0.35) | 2026-09-30 | ci(hooks): Lint the staged Markdown, not the working copy | [Post](https://github.com/mpaulosky/atelier-store/blob/main/docs/blogs/2026-09-30-pr-87-ci-hooks-lint-the-staged-markdown-not-the-working-copy.md) |
 | [v0.0.34](https://github.com/mpaulosky/atelier-store/releases/tag/v0.0.34) | 2026-09-29 | fix(release): Treat raw HTML blocks as opaque, and pin the section level | [Post](https://github.com/mpaulosky/atelier-store/blob/main/docs/blogs/2026-09-29-pr-84-fix-release-treat-raw-html-blocks-as-opaque-and-pin-the-section-level.md) |
-| [v0.0.33](https://github.com/mpaulosky/atelier-store/releases/tag/v0.0.33) | 2026-09-29 | test(release): Track only column-zero fences in heading_levels() | [Post](https://github.com/mpaulosky/atelier-store/blob/main/docs/blogs/2026-09-29-pr-81-test-release-track-only-column-zero-fences-in-heading-levels.md) |
 
 <!-- RELEASES_END -->
 
