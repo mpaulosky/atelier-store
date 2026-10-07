@@ -80,6 +80,7 @@ The app fails at startup if `Auth0:Domain`, `Auth0:ClientId`, or `ConnectionStri
 
 | Version | Date | Title | Blog post |
 | ------- | ---- | ----- | --------- |
+| [v0.0.48](https://github.com/mpaulosky/atelier-store/releases/tag/v0.0.48) | 2026-10-07 | chore: Re-apply the repo-ci-baseline Template | [Post](https://github.com/mpaulosky/atelier-store/blob/main/docs/blogs/2026-10-07-pr-118-chore-re-apply-the-repo-ci-baseline-template.md) |
 | [v0.0.47](https://github.com/mpaulosky/atelier-store/releases/tag/v0.0.47) | 2026-10-07 | chore: Re-apply the repo-ci-baseline Template | [Post](https://github.com/mpaulosky/atelier-store/blob/main/docs/blogs/2026-10-07-pr-115-chore-re-apply-the-repo-ci-baseline-template.md) |
 | [v0.0.46](https://github.com/mpaulosky/atelier-store/releases/tag/v0.0.46) | 2026-10-05 | chore: Re-apply the repo-ci-baseline Template for the release-post fixes | [Post](https://github.com/mpaulosky/atelier-store/blob/main/docs/blogs/2026-10-05-pr-113-chore-re-apply-the-repo-ci-baseline-template-for-the-release-post-fixes.md) |
 | [v0.0.45](https://github.com/mpaulosky/atelier-store/releases/tag/v0.0.45) | 2026-10-05 | chore: Use pnpm instead of npx in the gate and hooks | [Post](https://github.com/mpaulosky/atelier-store/blob/main/docs/blogs/2026-10-05-pr-110-chore-use-pnpm-instead-of-npx-in-the-gate-and-hooks.md) |
@@ -89,7 +90,6 @@ The app fails at startup if `Auth0:Domain`, `Auth0:ClientId`, or `ConnectionStri
 | [v0.0.41](https://github.com/mpaulosky/atelier-store/releases/tag/v0.0.41) | 2026-09-30 | fix(ci): Escape logged paths; wait for a new Release to be listed | [Post](https://github.com/mpaulosky/atelier-store/blob/main/docs/blogs/2026-09-30-pr-101-fix-ci-escape-logged-paths-wait-for-a-new-release-to-be-listed.md) |
 | [v0.0.40](https://github.com/mpaulosky/atelier-store/releases/tag/v0.0.40) | 2026-09-30 | ci: Drop the build cache no job restores | [Post](https://github.com/mpaulosky/atelier-store/blob/main/docs/blogs/2026-09-30-pr-99-ci-drop-the-build-cache-no-job-restores.md) |
 | [v0.0.39](https://github.com/mpaulosky/atelier-store/releases/tag/v0.0.39) | 2026-09-30 | ci: Skip the build and tests for docs-only pull requests | [Post](https://github.com/mpaulosky/atelier-store/blob/main/docs/blogs/2026-09-30-pr-95-ci-skip-the-build-and-tests-for-docs-only-pull-requests.md) |
-| [v0.0.38](https://github.com/mpaulosky/atelier-store/releases/tag/v0.0.38) | 2026-09-30 | fix(release): Decide a draft Release's body in a tested helper | [Post](https://github.com/mpaulosky/atelier-store/blob/main/docs/blogs/2026-09-30-pr-94-fix-release-decide-a-draft-release-s-body-in-a-tested-helper.md) |
 
 <!-- RELEASES_END -->
 
