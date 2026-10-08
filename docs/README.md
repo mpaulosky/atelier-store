@@ -80,6 +80,7 @@ The app fails at startup if `Auth0:Domain`, `Auth0:ClientId`, or `ConnectionStri
 
 | Version | Date | Title | Blog post |
 | ------- | ---- | ----- | --------- |
+| [v0.0.50](https://github.com/mpaulosky/atelier-store/releases/tag/v0.0.50) | 2026-10-08 | chore: Re-apply the repo-ci-baseline Template | [Post](https://github.com/mpaulosky/atelier-store/blob/main/docs/blogs/2026-10-08-pr-122-chore-re-apply-the-repo-ci-baseline-template.md) |
 | [v0.0.49](https://github.com/mpaulosky/atelier-store/releases/tag/v0.0.49) | 2026-10-08 | chore: Re-apply the repo-ci-baseline Template | [Post](https://github.com/mpaulosky/atelier-store/blob/main/docs/blogs/2026-10-08-pr-120-chore-re-apply-the-repo-ci-baseline-template.md) |
 | [v0.0.48](https://github.com/mpaulosky/atelier-store/releases/tag/v0.0.48) | 2026-10-07 | chore: Re-apply the repo-ci-baseline Template | [Post](https://github.com/mpaulosky/atelier-store/blob/main/docs/blogs/2026-10-07-pr-118-chore-re-apply-the-repo-ci-baseline-template.md) |
 | [v0.0.47](https://github.com/mpaulosky/atelier-store/releases/tag/v0.0.47) | 2026-10-07 | chore: Re-apply the repo-ci-baseline Template | [Post](https://github.com/mpaulosky/atelier-store/blob/main/docs/blogs/2026-10-07-pr-115-chore-re-apply-the-repo-ci-baseline-template.md) |
@@ -89,7 +90,6 @@ The app fails at startup if `Auth0:Domain`, `Auth0:ClientId`, or `ConnectionStri
 | [v0.0.43](https://github.com/mpaulosky/atelier-store/releases/tag/v0.0.43) | 2026-10-05 | chore: Re-apply the repo-ci-baseline Template | [Post](https://github.com/mpaulosky/atelier-store/blob/main/docs/blogs/2026-10-05-pr-107-chore-re-apply-the-repo-ci-baseline-template.md) |
 | [v0.0.42](https://github.com/mpaulosky/atelier-store/releases/tag/v0.0.42) | 2026-10-04 | chore: Standardize on the repo-ci-baseline Template | [Post](https://github.com/mpaulosky/atelier-store/blob/main/docs/blogs/2026-10-04-pr-103-chore-standardize-on-the-repo-ci-baseline-template.md) |
 | [v0.0.41](https://github.com/mpaulosky/atelier-store/releases/tag/v0.0.41) | 2026-09-30 | fix(ci): Escape logged paths; wait for a new Release to be listed | [Post](https://github.com/mpaulosky/atelier-store/blob/main/docs/blogs/2026-09-30-pr-101-fix-ci-escape-logged-paths-wait-for-a-new-release-to-be-listed.md) |
-| [v0.0.40](https://github.com/mpaulosky/atelier-store/releases/tag/v0.0.40) | 2026-09-30 | ci: Drop the build cache no job restores | [Post](https://github.com/mpaulosky/atelier-store/blob/main/docs/blogs/2026-09-30-pr-99-ci-drop-the-build-cache-no-job-restores.md) |
 
 <!-- RELEASES_END -->
 
