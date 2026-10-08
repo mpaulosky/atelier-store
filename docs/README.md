@@ -80,6 +80,7 @@ The app fails at startup if `Auth0:Domain`, `Auth0:ClientId`, or `ConnectionStri
 
 | Version | Date | Title | Blog post |
 | ------- | ---- | ----- | --------- |
+| [v0.0.55](https://github.com/mpaulosky/atelier-store/releases/tag/v0.0.55) | 2026-10-08 | chore: Re-apply the repo-ci-baseline Template | [Post](https://github.com/mpaulosky/atelier-store/blob/main/docs/blogs/2026-10-08-pr-132-chore-re-apply-the-repo-ci-baseline-template.md) |
 | [v0.0.54](https://github.com/mpaulosky/atelier-store/releases/tag/v0.0.54) | 2026-10-08 | chore: Re-apply the repo-ci-baseline Template | [Post](https://github.com/mpaulosky/atelier-store/blob/main/docs/blogs/2026-10-08-pr-130-chore-re-apply-the-repo-ci-baseline-template.md) |
 | [v0.0.53](https://github.com/mpaulosky/atelier-store/releases/tag/v0.0.53) | 2026-10-08 | chore: Re-apply the repo-ci-baseline Template | [Post](https://github.com/mpaulosky/atelier-store/blob/main/docs/blogs/2026-10-08-pr-128-chore-re-apply-the-repo-ci-baseline-template.md) |
 | [v0.0.52](https://github.com/mpaulosky/atelier-store/releases/tag/v0.0.52) | 2026-10-08 | chore: Re-apply the repo-ci-baseline Template | [Post](https://github.com/mpaulosky/atelier-store/blob/main/docs/blogs/2026-10-08-pr-126-chore-re-apply-the-repo-ci-baseline-template.md) |
@@ -89,7 +90,6 @@ The app fails at startup if `Auth0:Domain`, `Auth0:ClientId`, or `ConnectionStri
 | [v0.0.48](https://github.com/mpaulosky/atelier-store/releases/tag/v0.0.48) | 2026-10-07 | chore: Re-apply the repo-ci-baseline Template | [Post](https://github.com/mpaulosky/atelier-store/blob/main/docs/blogs/2026-10-07-pr-118-chore-re-apply-the-repo-ci-baseline-template.md) |
 | [v0.0.47](https://github.com/mpaulosky/atelier-store/releases/tag/v0.0.47) | 2026-10-07 | chore: Re-apply the repo-ci-baseline Template | [Post](https://github.com/mpaulosky/atelier-store/blob/main/docs/blogs/2026-10-07-pr-115-chore-re-apply-the-repo-ci-baseline-template.md) |
 | [v0.0.46](https://github.com/mpaulosky/atelier-store/releases/tag/v0.0.46) | 2026-10-05 | chore: Re-apply the repo-ci-baseline Template for the release-post fixes | [Post](https://github.com/mpaulosky/atelier-store/blob/main/docs/blogs/2026-10-05-pr-113-chore-re-apply-the-repo-ci-baseline-template-for-the-release-post-fixes.md) |
-| [v0.0.45](https://github.com/mpaulosky/atelier-store/releases/tag/v0.0.45) | 2026-10-05 | chore: Use pnpm instead of npx in the gate and hooks | [Post](https://github.com/mpaulosky/atelier-store/blob/main/docs/blogs/2026-10-05-pr-110-chore-use-pnpm-instead-of-npx-in-the-gate-and-hooks.md) |
 
 <!-- RELEASES_END -->
 
