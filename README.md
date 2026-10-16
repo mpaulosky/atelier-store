@@ -80,6 +80,7 @@ The app fails at startup if `Auth0:Domain`, `Auth0:ClientId`, or `ConnectionStri
 
 | Version | Date | Title | Blog post |
 | ------- | ---- | ----- | --------- |
+| [v0.0.64](https://github.com/mpaulosky/atelier-store/releases/tag/v0.0.64) | 2026-10-16 | build(deps): Update NuGet packages | [Post](https://github.com/mpaulosky/atelier-store/blob/main/docs/blogs/2026-10-16-pr-150-build-deps-update-nuget-packages.md) |
 | [v0.0.63](https://github.com/mpaulosky/atelier-store/releases/tag/v0.0.63) | 2026-10-15 | chore: Re-apply the repo-ci-baseline Template | [Post](https://github.com/mpaulosky/atelier-store/blob/main/docs/blogs/2026-10-15-pr-148-chore-re-apply-the-repo-ci-baseline-template.md) |
 | [v0.0.62](https://github.com/mpaulosky/atelier-store/releases/tag/v0.0.62) | 2026-10-10 | chore: Re-apply the repo-ci-baseline Template | [Post](https://github.com/mpaulosky/atelier-store/blob/main/docs/blogs/2026-10-10-pr-146-chore-re-apply-the-repo-ci-baseline-template.md) |
 | [v0.0.61](https://github.com/mpaulosky/atelier-store/releases/tag/v0.0.61) | 2026-10-10 | chore: Re-apply the repo-ci-baseline Template | [Post](https://github.com/mpaulosky/atelier-store/blob/main/docs/blogs/2026-10-10-pr-144-chore-re-apply-the-repo-ci-baseline-template.md) |
@@ -89,7 +90,6 @@ The app fails at startup if `Auth0:Domain`, `Auth0:ClientId`, or `ConnectionStri
 | [v0.0.57](https://github.com/mpaulosky/atelier-store/releases/tag/v0.0.57) | 2026-10-10 | chore: Re-apply the repo-ci-baseline Template | [Post](https://github.com/mpaulosky/atelier-store/blob/main/docs/blogs/2026-10-10-pr-136-chore-re-apply-the-repo-ci-baseline-template.md) |
 | [v0.0.56](https://github.com/mpaulosky/atelier-store/releases/tag/v0.0.56) | 2026-10-09 | chore: Re-apply the repo-ci-baseline Template | [Post](https://github.com/mpaulosky/atelier-store/blob/main/docs/blogs/2026-10-09-pr-134-chore-re-apply-the-repo-ci-baseline-template.md) |
 | [v0.0.55](https://github.com/mpaulosky/atelier-store/releases/tag/v0.0.55) | 2026-10-08 | chore: Re-apply the repo-ci-baseline Template | [Post](https://github.com/mpaulosky/atelier-store/blob/main/docs/blogs/2026-10-08-pr-132-chore-re-apply-the-repo-ci-baseline-template.md) |
-| [v0.0.54](https://github.com/mpaulosky/atelier-store/releases/tag/v0.0.54) | 2026-10-08 | chore: Re-apply the repo-ci-baseline Template | [Post](https://github.com/mpaulosky/atelier-store/blob/main/docs/blogs/2026-10-08-pr-130-chore-re-apply-the-repo-ci-baseline-template.md) |
 
 <!-- RELEASES_END -->
 

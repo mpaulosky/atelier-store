@@ -4,6 +4,7 @@ This directory contains concise release-review posts for merged PR releases.
 
 | Date | Title | Tags |
 | ---- | ----- | ---- |
+| 2026-10-16 | [build(deps): Update NuGet packages](2026-10-16-pr-150-build-deps-update-nuget-packages.md) | release,automation |
 | 2026-10-15 | [chore: Re-apply the repo-ci-baseline Template](2026-10-15-pr-148-chore-re-apply-the-repo-ci-baseline-template.md) | release,automation |
 | 2026-10-10 | [chore: Re-apply the repo-ci-baseline Template](2026-10-10-pr-146-chore-re-apply-the-repo-ci-baseline-template.md) | release,automation |
 | 2026-10-10 | [chore: Re-apply the repo-ci-baseline Template](2026-10-10-pr-144-chore-re-apply-the-repo-ci-baseline-template.md) | release,automation |
